@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context path="/gestion-gastos">
+    <Resource auth="Container" 
+              autoReconnect="true" 
+              closeMethod="close" 
+              driverClassName="org.mariadb.jdbc.Driver" 
+              factory="org.apache.tomcat.jdbc.pool.DataSourceFactory" 
+              logAbandoned="true" 
+              maxActive="15" 
+              maxIdle="10" 
+              maxTotal="100" 
+              maxWaitMillis="10000" 
+              name="jdbc/gestion_gastos" 
+              password="usuario" 
+              removeAbandonedOnBorrow="true" 
+              removeAbandonedOnMaintenance="true" 
+              removeAbandonedTimeout="1000" 
+              testOnBorrow="true" 
+              testWhileIdle="true" 
+              timeBetweenEvictionRunsMillis="60000" 
+              type="javax.sql.DataSource" 
+              url="jdbc:mariadb://localhost:3306/gestion_gastos" 
+              username="usuario" 
+              validationInterval="6000" 
+              validationQuery="SELECT 1" 
+              validationQueryTimeout="10"/>
+</Context>

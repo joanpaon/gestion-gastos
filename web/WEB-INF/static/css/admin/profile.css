@@ -1,0 +1,269 @@
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+
+  box-sizing: border-box;
+}
+
+/*---*/
+
+html {
+  font-size: 16px;
+}
+
+/*---*/
+
+body {
+  font-family: sans-serif;
+}
+
+/*---*/
+
+#container {
+  height: 100vh;
+
+  background-color: darkgray;
+  background-image: linear-gradient(rgb(139, 226, 248), rgb(218, 255, 203));
+  /*overflow: hidden;*/
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* --- */
+
+main {
+  width: 90%;
+  max-width: 70rem;
+
+  padding: 1rem;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/*---*/
+
+main header {
+  padding: 1rem;
+
+  border: solid #999 0.1rem;
+  border-radius: 0.3rem;
+
+  display: flex;
+  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+/*---*/
+
+main h2 {
+  margin-right: 3rem;
+
+  color: azure;
+  color: coral;
+  font-size: 2.4rem;
+  text-shadow: .2rem .2rem .2rem rgba(0, 0, 0, 0.7);
+}
+
+/*---*/
+
+main form {
+  padding: 1rem;
+
+  border: solid #999 0.1rem;
+  border-radius: 0.3rem;
+  border-spacing: 0.5rem;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem
+}
+
+/*---*/
+
+main .fieldset {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: .5rem;
+
+  position: relative;
+}
+
+/* --- */
+
+main .fieldset:last-of-type {
+  margin-top: 1rem;
+
+  gap: 2rem;
+}
+
+/* --- */
+
+main .botones {
+  margin-top: 1rem;
+
+  display: flex;
+  justify-content: center;
+  justify-content: space-around;
+  /*justify-content: space-between;*/
+  align-items: center;
+}
+
+/* --- */
+
+main label {
+  min-width: 12rem;
+
+  color: azure;
+  color: coral;
+
+  font-size: 1.4rem;
+  text-align: right;
+  text-shadow: .1rem .1rem .1rem rgba(0, 0, 0, 0.7);
+  /*flex: auto;*/
+}
+
+/* --- */
+
+main input {
+  height: 1.8rem;
+
+  font-family: sans-serif;
+  font-size: 1.2rem;
+
+  flex: auto;
+}
+
+/* --- */
+
+main select {
+  height: 1.8rem;
+
+  font-family: sans-serif;
+  font-size: 1.2rem;
+
+  flex: auto;
+}
+
+/* --- */
+
+main textarea {
+  font-family: sans-serif;
+  font-size: 1.2rem;
+
+  flex: auto;
+}
+
+/* --- */
+
+main .btn {
+  width: 10rem;
+
+  padding: .5rem 0;
+
+  color: azure;
+  font-size: 1rem;
+  text-align: center;
+  text-decoration: none;
+  text-shadow: .1rem .1rem .1rem rgba(0, 0, 0, 0.5);
+
+  border-radius: .2rem;
+  box-shadow: .2rem .2rem .2rem rgba(0, 0, 0, 0.5);
+
+  display: inline-block;
+}
+
+main .btn:hover {
+  color: lightblue;
+
+  box-shadow: .2rem .2rem .4rem rgba(0, 0, 0, 0.5);
+}
+
+main .btn:active {
+  color: lightcyan;
+
+  box-shadow: .1rem .1rem .1rem rgba(0, 0, 0, 0.5);
+}
+
+/* --- */
+
+main .btn-listar {
+  background-color: green;
+  /*background-color: darkgreen;*/
+}
+
+/* --- */
+
+main .btn-submit {
+  background-color: darkgreen;
+  background-color: deepskyblue;
+  background-color: mediumblue;
+  background-color: royalblue;
+}
+
+/* --- */
+
+main .btn-reset {
+  background-color: darkgreen;
+  background-color: deepskyblue;
+  background-color: mediumblue;
+  background-color: grey;
+}
+
+/* --- */
+
+main form .feedback {
+  color: red;
+  font-size: 1.2rem;
+  font-weight: bolder;
+
+  position: absolute;
+  /*left: 10.3rem;*/
+  left: 0;
+
+  display: none;
+}
+
+main form .user {
+  /*top: 5.3rem;*/
+}
+
+main form .pass {
+  /*top: 10.3rem;*/
+}
+
+/* --- */
+
+main _form [type="text"]:invalid ~ .feedback {
+  display: block;
+}
+
+main _form [type="password"]:invalid ~ .feedback {
+  display: block;
+}
+
+/* --- */
+
+@media(max-width: 740px) {
+  main header {
+    flex-direction: column;
+  }
+}
+@media(max-width: 600px) {
+  main {
+    width: 100%;
+    min-width: 520px;
+  }
+}

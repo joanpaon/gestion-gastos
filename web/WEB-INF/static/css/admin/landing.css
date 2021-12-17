@@ -1,0 +1,122 @@
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  /*font-size: 3vh;*/
+}
+
+body {
+  font-family: sans-serif; 
+}
+
+/* --- */
+
+#container {
+  height: 100vh;
+
+  background-color: darkgray;
+  background-image: linear-gradient(rgb(139, 226, 248), rgb(218, 255, 203));
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /*align-items: center;*/
+}
+
+/* --- */
+
+main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+/* --- */
+
+main .holder {
+  height: 400px;
+  /* height: 16rem; */
+  width: 600px;
+  /* width: 14rem; */
+
+  background-color: blanchedalmond;
+  border-radius: 1px;
+  box-shadow: 5px 5px 15px 0 rgba(0, 0, 0, 0.5);
+
+  position: relative;
+  z-index: 0;
+
+  /* display: grid;
+  place-items: center; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+main .holder > img {
+  height: 100%;
+  width: 100%;
+
+  border-radius: 1px;
+
+  position: absolute;
+  z-index: -1;
+
+  transition: all 1000ms ease;
+}
+
+main .holder > p {
+  width: 80%;
+
+  padding: 20px 30px;
+
+  text-align: center;
+
+  border: transparent solid 1px;
+
+  transition: all 1000ms ease;
+}
+
+main .holder > p > a {
+  color: transparent;
+  font-weight: lighter;
+  text-decoration: none;
+  /* text-shadow: 1px 1px 8px rgba(0, 0, 0, 0.5); */
+
+  transition: all 1000ms ease;
+}
+
+main .holder:hover > img {
+}
+
+main .holder:hover > p {
+  background-color: rgba(0, 0, 0, 0.1);
+  border-color: rgba(240, 248, 255, 0.4);
+}
+
+main .holder:hover > p > a {
+  color: rgba(240, 248, 255, 0.4);
+  text-shadow: 1px 1px 8px rgba(0, 0, 0, 0.5);
+}
+
+main .holder > p:hover {
+  background-color: rgba(0, 0, 0, 0.4);
+  border-color: rgba(240, 248, 255, 1);
+}
+
+main .holder > p:hover + img {
+  filter: brightness(50%);
+}
+
+main .holder > p:hover > a {
+  color: rgba(240, 248, 255, 1);
+}

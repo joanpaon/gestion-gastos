@@ -1,0 +1,27 @@
+main th:nth-child(1), td:nth-child(1) {
+  width: 5%;
+
+  text-align: center;
+}
+
+/* --- */
+
+main th:nth-child(2), td:nth-child(2) {
+  width: 25%;
+
+  text-align: left;
+}
+
+/* --- */
+
+main th:nth-child(3), td:nth-child(3) {
+  width: 60%;
+
+  text-align: left;
+}
+
+/* --- */
+
+main th:nth-child(4), td:nth-child(4) {
+  text-align: center;
+}

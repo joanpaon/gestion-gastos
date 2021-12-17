@@ -1,0 +1,32 @@
+main th:nth-child(1), td:nth-child(1) {
+  width: 7rem;
+
+  text-align: center;
+}
+
+/* --- */
+
+main th:nth-child(2), td:nth-child(2) {
+  width: 30rem;
+
+  text-align: left;
+}
+
+/* --- */
+
+main th:nth-child(3), td:nth-child(3) {
+  width: 15rem;
+  width: auto;
+
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- */
+
+main th:nth-child(4), td:nth-child(4) {
+  width: 7rem;
+
+  text-align: center;
+}

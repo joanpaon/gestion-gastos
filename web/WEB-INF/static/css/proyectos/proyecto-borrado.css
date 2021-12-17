@@ -1,0 +1,239 @@
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+
+  box-sizing: border-box;
+}
+
+/*---*/
+
+html {
+  font-size: 16px;
+}
+
+/*---*/
+
+body {
+  font-family: sans-serif;
+}
+
+/*---*/
+
+#container {
+  min-width: 840px;
+  min-height: 100vh;
+
+  background-color: darkgray;
+  background-image: linear-gradient(rgb(139, 226, 248), rgb(218, 255, 203));
+  /*overflow: hidden;*/
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+/*---*/
+
+main {
+  width: 90%;
+  max-width: 70rem;
+
+  padding: 1rem;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1rem;
+}
+
+/*---*/
+
+main header {
+  padding: 1rem;
+
+  border: solid #999 0.1rem;
+  border-radius: 0.3rem;
+
+  display: flex;
+  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/*---*/
+
+main h2 {
+  margin-right: 3rem;
+
+  color: azure;
+  color: coral;
+  font-size: 2.4rem;
+  text-shadow: .2rem .2rem .2rem rgba(0, 0, 0, 0.7);
+}
+
+/* --- */
+
+main .content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* --- */
+
+main table {
+  height: 18rem;
+
+  border: solid #999 0.1rem;
+  border-radius: 0.3rem;
+  border-spacing: 0.5rem;
+
+  flex: auto;
+}
+
+/* --- */
+
+main th {
+  padding: 0.2rem 0.5rem;
+
+  text-align: left;
+
+  background-color: honeydew;
+}
+
+main th:first-child {
+  width: 6rem;
+}
+
+main th:last-child {
+  /*width: 15rem;*/
+}
+
+/* --- */
+
+main td {
+  padding: 0.2rem 0.5rem;
+}
+
+main tr:nth-child(odd) td {
+  background-color: lavenderblush;
+}
+
+main tr:nth-child(even) td {
+  background-color: lightcyan;
+}
+
+/* --- */
+
+main .imagen {
+  height: 18rem;
+  width: 24rem;
+
+  padding: .5rem;
+
+  /*background-color: blueviolet;*/
+  border: solid #999 0.1rem;
+  border-radius: 0.3rem;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: none;
+}
+
+main .imagen-margen {
+  height: 100%;
+  width: 100%;
+
+  background-color: white;
+  border-radius: 0.3rem;
+  overflow: hidden;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: none;
+}
+
+main img {
+  height: 100%;
+}
+
+/* --- */
+
+main .botones {
+  padding: 1rem;
+
+  border: solid #999 0.1rem;
+  border-radius: 0.3rem;
+
+  display: flex;
+  justify-content: center;
+  justify-content: space-around;
+  /*justify-content: space-between;*/
+  align-items: center;
+}
+
+/* --- */
+
+main .btn {
+  width: 10rem;
+
+  padding: .5rem 0;
+
+  color: azure;
+  font-size: 1rem;
+  text-align: center;
+  text-decoration: none;
+  text-shadow: .1rem .1rem .1rem rgba(0, 0, 0, 0.5);
+
+  border-radius: .2rem;
+  box-shadow: .2rem .2rem .2rem rgba(0, 0, 0, 0.5);
+
+  display: inline-block;
+}
+
+main .btn:hover {
+  color: lightblue;
+
+  box-shadow: .2rem .2rem .4rem rgba(0, 0, 0, 0.5);
+}
+
+main .btn:active {
+  color: lightcyan;
+
+  box-shadow: .1rem .1rem .1rem rgba(0, 0, 0, 0.5);
+}
+
+/* --- */
+
+main .btn-borrar {
+  background-color: red;
+  background-color: crimson;
+}
+
+/* --- */
+
+main .btn-listar {
+  background-color: green;
+  /*background-color: darkgreen;*/
+}
+
+/* --- */
+
+main .btn-modificar {
+  background-color: blue;
+  background-color: cornflowerblue;
+}
+
+/* --- */
+
+main .btn-cancelar {
+    background-color: blue;
+    background-color: #777;
+}

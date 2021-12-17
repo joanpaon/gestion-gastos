@@ -1,0 +1,321 @@
+main table {
+  font-size: 1.1rem;
+
+  border: solid #999 0.1rem;
+  border-radius: 0.2rem;
+  border-spacing: 0.2rem;
+}
+
+/* --- */
+
+main tr:nth-child(odd) td {
+  background-color: lavenderblush;
+}
+
+main tr:nth-child(even) td {
+  background-color: lightcyan;
+}
+
+/* --- */
+
+main th {
+  padding: 0.2rem 0.5rem;
+
+  font-style: normal;
+  text-align: center;
+
+  background-color: honeydew;
+}
+
+/* --- */
+
+main th div {
+  font-style: normal;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* --- */
+
+main th a {
+  color: black;
+  font-style: normal;
+  text-decoration: none;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  transition: text-shadow .1s;
+}
+
+main th a:last-child {
+  margin-left: auto;
+  margin-bottom: .2rem;
+}
+
+main th a:hover {
+  color: gold;
+  color: tomato;
+  text-shadow: .1rem .1rem .2rem rgba(0, 0, 0, 0.5);
+}
+
+/* --- */
+
+main th:nth-child(1), td:nth-child(1) {
+  width: 5rem;
+
+  text-align: center;
+}
+
+/* --- */
+
+main th:nth-child(2), td:nth-child(2) {
+  width: 30rem;
+
+  text-align: left;
+}
+
+/* --- */
+
+main th:nth-child(3), td:nth-child(3) {
+  width: 15rem;
+  width: auto;
+
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- */
+
+main th:nth-child(4), td:nth-child(4) {
+  width: 7rem;
+
+  text-align: center;
+}
+
+/* --- */
+
+main td {
+  height: 2rem;
+
+  padding: 0 0.5rem;
+}
+
+main td:last-child {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: .4rem;
+}
+
+/* --- */
+
+main .btn {
+  width: 3rem;
+  height: 1.8rem;
+  
+  padding-top: .1rem;
+
+  color: black;
+  font-family: sans-serif;
+  font-size: 1.2rem;
+  text-decoration: none;
+
+  background-color: #eee;
+  border: solid .05rem grey;
+  border-radius: .2rem;
+  box-shadow: .05rem .05rem .1rem rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  transition: box-shadow .3s, background-color .3s;
+}
+
+main .btn:hover {
+  color: lightblue;
+
+  box-shadow: .1rem .1rem .2rem rgba(0, 0, 0, 0.5);
+}
+
+main .btn:active {
+  color: lightcyan;
+}
+
+/* --- */
+
+main .btn-principal {
+  margin-left: auto;
+
+  font-weight: bolder;
+
+  background-color: blueviolet;
+  background-color: goldenrod;
+}
+
+/* --- */
+
+main .btn-insertar {
+  font-weight: bolder;
+
+  background-color: royalblue;
+}
+
+/* --- */
+
+main .btn-consultar {
+  height: 1.6rem;
+  width: 2.2rem;
+
+  font-weight: bolder;
+
+  background-color: darkcyan;
+}
+
+/* --- */
+
+main .btn-modificar {
+  height: 1.6rem;
+  width: 2.2rem;
+
+  font-size: 1.2rem;
+  font-weight: bolder;
+
+  background-color: violet;
+}
+
+/* --- */
+
+main .btn-borrar {
+  height: 1.6rem;
+  width: 2.2rem;
+
+  font-size: 1.2rem;
+  font-weight: bolder;
+
+  background-color: tomato;
+}
+
+/* --- */
+
+main .paginacion {
+  height: 4rem;
+
+  padding: 1rem;
+
+  border: solid #999 0.1rem;
+  border-radius: 0.3rem;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+main .paginacion .btn {
+  color: black;
+  font-family: monospace;
+  font-size: .9rem;
+  font-weight: bolder;
+
+  background-color: #eee;
+  border: solid .05rem grey;
+  border-radius: .2rem;
+  box-shadow: .05rem .05rem .1rem rgba(0, 0, 0, 0.5);
+}
+
+main .paginacion .btn:hover  {
+  background-color: #ddd;
+  box-shadow: .1rem .1rem .2rem rgba(0, 0, 0, 0.5);
+}
+
+main .paginacion .btn:active  {
+  background-color: #fff;
+  box-shadow: 0rem 0rem .1rem rgba(0, 0, 0, 0.5);
+}
+
+/* --- */
+
+main .paginacion .slider {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* --- */
+
+main .paginacion input[type="range"] {
+  width: 10rem;
+}
+
+/* --- */
+
+main .paginacion .filter {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* --- */
+
+main .paginacion input[type="text"] {
+  height: 2.0rem;
+  width: 16rem;
+
+  margin-top: .1rem;
+  padding: 0 .4rem;
+
+  font-size: 1.1rem;
+}
+
+/* --- */
+
+main .paginacion .btn-filter {
+  padding-top: 0;
+  
+  font-family: sans-serif;
+}
+
+/* --- */
+
+main .paginacion .rows-page {
+  font-weight: bolder;
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* --- */
+
+main .paginacion select {
+  width: 4rem;
+  height: 1.8rem;
+
+  color: black;
+  font-family: monospace;
+  font-size: .9rem;
+  font-weight: bolder;
+
+  background-color: #eee;
+  border: solid .05rem grey;
+  border-radius: .2rem;
+  box-shadow: .05rem .05rem .1rem rgba(0, 0, 0, 0.5);
+}
+
+/* --- */
+
+@media(max-width: 900px) {
+  main .btn-principal {
+    margin-left: 0;
+  }
+}
