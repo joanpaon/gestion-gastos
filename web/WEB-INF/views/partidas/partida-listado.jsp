@@ -1,4 +1,6 @@
-<%@page import="org.japo.java.entities.Partida"%>
+<%@page import="org.japo.java.entities.EntityPerfil"%>
+<%@page import="org.japo.java.entities.EntityUsuario"%>
+<%@page import="org.japo.java.entities.EntityPartida"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
 
@@ -8,14 +10,14 @@
 <html lang="es">
 
   <%
-      // Datos Inyectados
-      List<Partida> lista = (ArrayList<Partida>) request.getAttribute("lista");
-      String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
-      String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
-      String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
-      Long rowCount = (Long) request.getAttribute("row-count");
-      Long rowIndex = (Long) request.getAttribute("row-index");
-      Long rowsPage = (Long) request.getAttribute("rows-page");
+    // Datos Inyectados
+    List<EntityPartida> partidas = (ArrayList<EntityPartida>) request.getAttribute("partidas");
+    String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
+    String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
+    String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
+    Long rowCount = (Long) request.getAttribute("row-count");
+    Long rowIndex = (Long) request.getAttribute("row-index");
+    Long rowsPage = (Long) request.getAttribute("rows-page");
   %>
 
   <head>
@@ -51,7 +53,14 @@
       <main>
         <header>
           <h2>Listado de Partidas</h2>
-          <a class="btn btn-principal" href="controller?cmd=main" title="Principal">P</a>
+          <% EntityUsuario usuario = (EntityUsuario) session.getAttribute("usuario"); %>
+          <% if (usuario.getPerfilID() == EntityPerfil.DEVEL) { %>
+          <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
+          <% } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) { %>
+          <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
+          <% } else { %>
+          <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
+          <% }%>
           <a class="btn btn-insertar" href="controller?cmd=partida-insercion&op=captura" title="Nuevo">N</a>
         </header>
 
@@ -98,7 +107,7 @@
           </div>
         </nav>
 
-        <% if (lista.isEmpty()) { %>
+        <% if (partidas.isEmpty()) { %>
 
         <h2>No hay partidas disponibles</h2>
 
@@ -179,16 +188,16 @@
           </thead>
 
           <tbody>
-            <% for (Partida p : lista) {%>
+            <% for (EntityPartida partida : partidas) {%>
 
             <tr>
-              <td><%= p.getId()%></td>
-              <td><%= p.getNombre()%></td>
-              <td><%= p.getInfo()%></td>
+              <td><%= partida.getId()%></td>
+              <td><%= partida.getNombre()%></td>
+              <td><%= partida.getInfo()%></td>
               <td>
-                <a class="btn btn-consultar" href="controller?cmd=partida-consulta&id=<%= p.getId()%>" title="Consulta">C</a>
-                <a class="btn btn-modificar" href="controller?cmd=partida-modificacion&id=<%= p.getId()%>" title="Modificación">M</a>
-                <a class="btn btn-borrar" href="controller?cmd=partida-borrado&id=<%= p.getId() %>" title="Eliminación">B</a>
+                <a class="btn btn-consultar" href="controller?cmd=partida-consulta&id=<%= partida.getId()%>" title="Consulta">C</a>
+                <a class="btn btn-modificar" href="controller?cmd=partida-modificacion&id=<%= partida.getId()%>" title="Modificación">M</a>
+                <a class="btn btn-borrar" href="controller?cmd=partida-borrado&id=<%= partida.getId()%>" title="Eliminación">B</a>
               </td>
             </tr>
 

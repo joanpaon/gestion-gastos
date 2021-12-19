@@ -1,5 +1,4 @@
-<%@page import="org.japo.java.entities.Usuario"%>
-<%@page import="org.japo.java.entities.Perfil"%>
+<%@page import="org.japo.java.entities.EntityUsuario"%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
@@ -7,9 +6,8 @@
 <html lang="es">
 
   <%
-      // Datos Inyectados
-      Usuario u = (Usuario) request.getAttribute("usuario");
-      Perfil p = (Perfil) request.getAttribute("perfil");
+    // Datos Inyectados
+    EntityUsuario usuario = (EntityUsuario) request.getAttribute("usuario");
   %>
 
   <head>
@@ -54,35 +52,35 @@
             <tbody>
               <tr>
                 <td>ID</td>
-                <td><%= u.getId()%></td>
+                <td><%= usuario.getId()%></td>
               </tr>
               <tr>
                 <td>Nombre</td>
-                <td><%= u.getUser()%></td>
+                <td><%= usuario.getUser()%></td>
               </tr>
               <tr>
                 <td>EMail</td>
-                <td><%= u.getEmail()%></td>
+                <td><%= usuario.getEmail()%></td>
               </tr>
               <tr>
                 <td>Perfil</td>
-                <td><%= p.getNombre()%></td>
+                <td><%= usuario.getPerfilInfo()%></td>
               </tr>
               <tr>
                 <td>Información</td>
-                <td><%= u.getInfo()%></td>
+                <td><%= usuario.getInfo()%></td>
               </tr>
             </tbody>
           </table>
           <div class="imagen">
             <div class="imagen-margen">
-              <img src="<%= u.getIcono()%>" alt="<%= u.getUser()%>"/> 
+              <img src="<%= usuario.getIcono()%>" alt="<%= usuario.getUser()%>"/> 
             </div>
           </div>
         </div>
         <nav class="botones">
-          <a class="btn btn-borrar" href="controller?cmd=usuario-borrado&id=<%= u.getId()%>&op=proceso">Borrar</a>
-          <a class="btn btn-cancelar" href="controller?cmd=usuario-consulta&id=<%= u.getId()%>&op=captura">Cancelar</a>
+          <a class="btn btn-borrar" href="controller?cmd=usuario-borrado&id=<%= usuario.getId()%>&op=proceso">Borrar</a>
+          <a class="btn btn-cancelar" href="controller?cmd=usuario-consulta&id=<%= usuario.getId()%>&op=captura">Cancelar</a>
         </nav>
       </main>
 

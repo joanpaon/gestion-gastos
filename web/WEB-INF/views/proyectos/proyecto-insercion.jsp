@@ -10,8 +10,8 @@
 
   <%
       // Datos Inyectados
-      List<Usuario> listaUsr = (ArrayList<Usuario>) request.getAttribute("usuario-lista");
-      List<Cuota> listaCta = (ArrayList<Cuota>) request.getAttribute("cuota-lista");
+      List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuario-lista");
+      List<Cuota> cuotas = (ArrayList<Cuota>) request.getAttribute("cuota-lista");
   %>
 
   <head>
@@ -57,7 +57,7 @@
             <label for="propietario">Propietario</label>
             <select id="propietario" name="propietario">
               <option disabled selected value></option>
-              <% for (Usuario u : listaUsr) {%>
+              <% for (Usuario u : usuarios) {%>
               <option value="<%= u.getId()%>"><%= u.getUser()%></option>
               <% }%>
             </select>
@@ -66,7 +66,7 @@
             <label for="cuota">Cuota</label>
             <select id="cuota" name="cuota">
               <option disabled selected value></option>
-              <% for (Cuota c : listaCta) {%>
+              <% for (Cuota c : cuotas) {%>
               <option value="<%= c.getId()%>"><%= c.getNombre()%></option>
               <% }%>
             </select>

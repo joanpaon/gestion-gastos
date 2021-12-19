@@ -1,4 +1,5 @@
-<%@page import="org.japo.java.entities.Perfil"%>
+<%@page import="org.japo.java.entities.EntityUsuario"%>
+<%@page import="org.japo.java.entities.EntityPerfil"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
 
@@ -8,14 +9,14 @@
 <html lang="es">
 
   <%
-      // Datos Inyectados
-      List<Perfil> lista = (ArrayList<Perfil>) request.getAttribute("lista");
-      String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
-      String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
-      String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
-      Long rowCount = (Long) request.getAttribute("row-count");
-      Long rowIndex = (Long) request.getAttribute("row-index");
-      Long rowsPage = (Long) request.getAttribute("rows-page");
+    // Datos Inyectados
+    List<EntityPerfil> perfiles = (ArrayList<EntityPerfil>) request.getAttribute("perfiles");
+    String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
+    String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
+    String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
+    Long rowCount = (Long) request.getAttribute("row-count");
+    Long rowIndex = (Long) request.getAttribute("row-index");
+    Long rowsPage = (Long) request.getAttribute("rows-page");
   %>
 
   <head>
@@ -51,7 +52,14 @@
       <main>
         <header>
           <h2>Listado de Perfiles</h2>
-          <a class="btn btn-principal" href="controller?cmd=main" title="Principal">P</a>
+          <% EntityUsuario usuario = (EntityUsuario) session.getAttribute("usuario"); %>
+          <% if (usuario.getPerfilID() == EntityPerfil.DEVEL) { %>
+          <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
+          <% } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) { %>
+          <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
+          <% } else { %>
+          <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
+          <% }%>
           <a class="btn btn-insertar" href="controller?cmd=perfil-insercion&op=captura" title="Nuevo">N</a>
         </header>
 
@@ -98,7 +106,7 @@
           </div>
         </nav>
 
-        <% if (lista.isEmpty()) { %>
+        <% if (perfiles.isEmpty()) { %>
 
         <h2>No hay perfiles disponibles</h2>
 
@@ -179,16 +187,16 @@
           </thead>
 
           <tbody>
-            <% for (Perfil g : lista) {%>
+            <% for (EntityPerfil perfil : perfiles) {%>
 
             <tr>
-              <td><%= g.getId()%></td>
-              <td><%= g.getNombre()%></td>
-              <td><%= g.getInfo()%></td>
+              <td><%= perfil.getId()%></td>
+              <td><%= perfil.getNombre()%></td>
+              <td><%= perfil.getInfo()%></td>
               <td>
-                <a class="btn btn-consultar" href="controller?cmd=perfil-consulta&id=<%= g.getId()%>" title="Consulta">C</a>
-                <a class="btn btn-modificar" href="controller?cmd=perfil-modificacion&id=<%= g.getId()%>" title="Modificación">M</a>
-                <a class="btn btn-borrar" href="controller?cmd=perfil-borrado&id=<%= g.getId() %>" title="Eliminación">B</a>
+                <a class="btn btn-consultar" href="controller?cmd=perfil-consulta&id=<%= perfil.getId()%>" title="Consulta">C</a>
+                <a class="btn btn-modificar" href="controller?cmd=perfil-modificacion&id=<%= perfil.getId()%>" title="Modificación">M</a>
+                <a class="btn btn-borrar" href="controller?cmd=perfil-borrado&id=<%= perfil.getId()%>" title="Eliminación">B</a>
               </td>
             </tr>
 

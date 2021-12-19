@@ -11,7 +11,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import org.japo.java.entities.Cuota;
+import org.japo.java.entities.EntityCuota;
 import org.japo.java.entities.ParametrosListado;
 
 /**
@@ -20,12 +20,12 @@ import org.japo.java.entities.ParametrosListado;
  */
 public final class CuotaDAL {
 
-    public List<Cuota> obtenerCuotas() {
+    public List<EntityCuota> obtenerCuotas() {
         // SQL
         final String SQL = "SELECT * FROM cuotas";
 
         // Lista Vacía
-        List<Cuota> lista = new ArrayList<>();
+        List<EntityCuota> lista = new ArrayList<>();
 
         // Obtención del Contexto
         try {
@@ -54,7 +54,7 @@ public final class CuotaDAL {
                         Date updatedAt = rs.getDate("updated_at");
 
                         // Campos > Entidad
-                        Cuota u = new Cuota(id, nombre, info,
+                        EntityCuota u = new EntityCuota(id, nombre, info,
                                 status, data, createdAt, updatedAt);
 
                         // Producto > Lista
@@ -70,12 +70,12 @@ public final class CuotaDAL {
         return lista;
     }
 
-    public Cuota obtenerCuota(int _id) {
+    public EntityCuota obtenerCuota(int _id) {
         // SQL
         final String SQL = "SELECT * FROM cuotas WHERE id=?";
 
         // Referencia de Entidad
-        Cuota c = null;
+        EntityCuota c = null;
 
         // Contexto
         try {
@@ -107,7 +107,7 @@ public final class CuotaDAL {
                         Date updatedAt = rs.getDate("updated_at");
 
                         // Campos > Entidad
-                        c = new Cuota(id, nombre, info,
+                        c = new EntityCuota(id, nombre, info,
                                 status, data, createdAt, updatedAt);
                     }
                 }
@@ -120,7 +120,7 @@ public final class CuotaDAL {
         return c;
     }
 
-    public boolean insertarCuota(Cuota c) {
+    public boolean insertarCuota(EntityCuota c) {
         // SQL
         final String SQL = "INSERT INTO cuotas "
                 + "(nombre, info) "
@@ -192,7 +192,7 @@ public final class CuotaDAL {
         return numReg == 1;
     }
 
-    public boolean modificarCuota(Cuota c) {
+    public boolean modificarCuota(EntityCuota c) {
         // SQL
         final String SQL = "UPDATE cuotas "
                 + "SET nombre=?, info=? "
@@ -239,21 +239,21 @@ public final class CuotaDAL {
 
         // WHERE - Filtro: campo LIKE %expresion%
         String sqlWhere;
-        if (pl.getFilterFld() == null || pl.getFilterFld().isEmpty()) {
-            if (pl.getFilterExp() == null || pl.getFilterExp().isEmpty()) {
+        if (pl.getFilterField() == null || pl.getFilterField().isEmpty()) {
+            if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
                 sqlWhere = "";
             } else {
                 sqlWhere = " WHERE "
-                        + String.format("id LIKE '%%%s%%' OR ", pl.getFilterExp())
-                        + String.format("nombre LIKE '%%%s%%' OR ", pl.getFilterExp())
-                        + String.format("info LIKE '%%%s%%'", pl.getFilterExp());
+                        + String.format("id LIKE '%%%s%%' OR ", pl.getFilterValue())
+                        + String.format("nombre LIKE '%%%s%%' OR ", pl.getFilterValue())
+                        + String.format("info LIKE '%%%s%%'", pl.getFilterValue());
             }
         } else {
-            if (pl.getFilterExp() == null || pl.getFilterExp().isEmpty()) {
+            if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
                 sqlWhere = "";
             } else {
                 sqlWhere = " WHERE "
-                        + String.format("%s LIKE '%%%s%%'", pl.getFilterFld(), pl.getFilterExp());
+                        + String.format("%s LIKE '%%%s%%'", pl.getFilterField(), pl.getFilterValue());
             }
         }
 
@@ -290,38 +290,38 @@ public final class CuotaDAL {
         return filas;
     }
 
-    public List<Cuota> obtenerCuotas(ParametrosListado pl) {
+    public List<EntityCuota> obtenerCuotas(ParametrosListado pl) {
         // SELECT
         String sqlSelec = "SELECT * FROM cuotas";
 
         // WHERE - Filtro: campo LIKE %expresion%
         String sqlWhere;
-        if (pl.getFilterFld() == null || pl.getFilterFld().isEmpty()) {
-            if (pl.getFilterExp() == null || pl.getFilterExp().isEmpty()) {
+        if (pl.getFilterField() == null || pl.getFilterField().isEmpty()) {
+            if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
                 sqlWhere = "";
             } else {
                 sqlWhere = " WHERE "
-                        + String.format("id LIKE '%%%s%%' OR ", pl.getFilterExp())
-                        + String.format("nombre LIKE '%%%s%%' OR ", pl.getFilterExp())
-                        + String.format("info LIKE '%%%s%%'", pl.getFilterExp());
+                        + String.format("id LIKE '%%%s%%' OR ", pl.getFilterValue())
+                        + String.format("nombre LIKE '%%%s%%' OR ", pl.getFilterValue())
+                        + String.format("info LIKE '%%%s%%'", pl.getFilterValue());
             }
         } else {
-            if (pl.getFilterExp() == null || pl.getFilterExp().isEmpty()) {
+            if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
                 sqlWhere = "";
             } else {
                 sqlWhere = " WHERE "
-                        + String.format("%s LIKE '%%%s%%'", pl.getFilterFld(), pl.getFilterExp());
+                        + String.format("%s LIKE '%%%s%%'", pl.getFilterField(), pl.getFilterValue());
             }
         }
 
         // ORDER BY
         String sqlSort;
-        if (pl.getSortDir() == null || pl.getSortDir().isEmpty()) {
+        if (pl.getOrderProgress() == null || pl.getOrderProgress().isEmpty()) {
             sqlSort = "";
-        } else if (pl.getSortFld() == null || pl.getSortFld().isEmpty()) {
+        } else if (pl.getOrderField() == null || pl.getOrderField().isEmpty()) {
             sqlSort = "";
-        } else if (pl.getSortDir().equalsIgnoreCase("asc") || pl.getSortDir().equalsIgnoreCase("desc")) {
-            sqlSort = String.format(" ORDER BY %s %s", pl.getSortFld(), pl.getSortDir());
+        } else if (pl.getOrderProgress().equalsIgnoreCase("asc") || pl.getOrderProgress().equalsIgnoreCase("desc")) {
+            sqlSort = String.format(" ORDER BY %s %s", pl.getOrderField(), pl.getOrderProgress());
         } else {
             sqlSort = "";
         }
@@ -333,7 +333,7 @@ public final class CuotaDAL {
         String sql = String.format("%s%s%s%s", sqlSelec, sqlWhere, sqlSort, sqlLimit);
 
         // Lista Vacía
-        List<Cuota> lista = new ArrayList<>();
+        List<EntityCuota> lista = new ArrayList<>();
 
         // Obtención del Contexto
         try {
@@ -362,7 +362,7 @@ public final class CuotaDAL {
                         Date updatedAt = rs.getDate("updated_at");
 
                         // Campos > Entidad
-                        Cuota c = new Cuota(id, nombre, info,
+                        EntityCuota c = new EntityCuota(id, nombre, info,
                                 status, data, createdAt, updatedAt);
 
                         // Entidad > Lista

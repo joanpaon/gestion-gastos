@@ -25,11 +25,11 @@ import java.util.Properties;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.japo.java.pll.command.Command;
-import org.japo.java.pll.command.admin.CommandUnknown;
-import org.japo.java.pll.service.IService;
-import org.japo.java.pll.service.Service;
-import org.japo.java.pll.service.admin.ServiceUnknown;
+import org.japo.java.bll.command.Command;
+import org.japo.java.bll.command.admin.CommandUnknown;
+import org.japo.java.bll.service.IService;
+import org.japo.java.bll.service.Service;
+import org.japo.java.bll.service.admin.ServiceUnknown;
 
 /**
  *
@@ -188,7 +188,7 @@ public final class UtilesServlet {
     // Nombre de Comando (UCC) > Entidad Comando
     public static final Command obtenerComando(String cmdName) {
         // Paquete donde están los comandos
-        final String PKG = "org.japo.java.pll.command";
+        final String PKG = "org.japo.java.bll.command";
 
         // Referencia del Comando
         Command cmd;
@@ -201,11 +201,12 @@ public final class UtilesServlet {
                     || cmdName.equals("profile")
                     || cmdName.equals("signup") || cmdName.equals("logout")) {
                 sub = "admin";
-            } else if (!cmdName.contains("-")) {
-                sub = cmdName;
-            } else {
+            } else if (cmdName.contains("-")) {
                 sub = cmdName.substring(0, cmdName.lastIndexOf("-")).replaceAll("-", "") + "s";
                 sub = sub.replaceAll("perfils", "perfiles");
+                sub = sub.replaceAll("mains", "main");
+            } else {
+                sub = cmdName;
             }
 
             // Cambiar: Kebab Case > CamelCase
@@ -274,7 +275,7 @@ public final class UtilesServlet {
 
     public static IService obtenerServicio(String svcName) {
         // Paquete donde están los servicios
-        final String PKG = "org.japo.java.pll.service";
+        final String PKG = "org.japo.java.bll.service";
 
         // Referencia del Servicio
         Service svc;

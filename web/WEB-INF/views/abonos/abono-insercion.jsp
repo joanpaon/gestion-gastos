@@ -10,8 +10,8 @@
 
   <%
       // Datos Inyectados
-      List<Proyecto> listaPro = (ArrayList<Proyecto>) request.getAttribute("lista-proyectos");
-      List<Usuario> listaUsr = (ArrayList<Usuario>) request.getAttribute("lista-usuarios");
+      List<Proyecto> proyectos = (ArrayList<Proyecto>) request.getAttribute("proyecto-lista");
+      List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuario-lista");
   %>
 
   <head>
@@ -53,7 +53,7 @@
             <label for="usuario">Usuario</label>
             <select id="usuario" name="usuario">
               <option disabled selected value></option>
-              <% for (Usuario u : listaUsr) {%>
+              <% for (Usuario u : usuarios) {%>
               <option value="<%= u.getId()%>"><%= u.getUser()%></option>
               <% }%>
             </select>
@@ -62,7 +62,7 @@
             <label for="proyecto">Proyecto</label>
             <select id="proyecto" name="proyecto">
               <option disabled selected value></option>
-              <% for (Proyecto p : listaPro) {%>
+              <% for (Proyecto p : proyectos) {%>
               <option value="<%= p.getId()%>"><%= p.getNombre()%></option>
               <% }%>
             </select>

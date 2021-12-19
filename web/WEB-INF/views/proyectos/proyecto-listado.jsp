@@ -1,4 +1,6 @@
-<%@page import="org.japo.java.entities.ProyectoLista"%>
+<%@page import="org.japo.java.entities.EntityPerfil"%>
+<%@page import="org.japo.java.entities.EntityUsuario"%>
+<%@page import="org.japo.java.entities.EntityProyecto"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
 
@@ -8,14 +10,14 @@
 <html lang="es">
 
   <%
-      // Datos Inyectados
-      List<ProyectoLista> lista = (ArrayList<ProyectoLista>) request.getAttribute("lista");
-      String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
-      String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
-      String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
-      Long rowCount = (Long) request.getAttribute("row-count");
-      Long rowIndex = (Long) request.getAttribute("row-index");
-      Long rowsPage = (Long) request.getAttribute("rows-page");
+    // Datos Inyectados
+    List<EntityProyecto> proyectos = (ArrayList<EntityProyecto>) request.getAttribute("proyectos");
+    String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
+    String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
+    String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
+    Long rowCount = (Long) request.getAttribute("row-count");
+    Long rowIndex = (Long) request.getAttribute("row-index");
+    Long rowsPage = (Long) request.getAttribute("rows-page");
   %>
 
   <head>
@@ -50,8 +52,15 @@
 
       <main>
         <header>
-          <h2>Listado de Proyectos</h2>
-          <a class="btn btn-principal" href="controller?cmd=main" title="Principal">P</a>
+          <h2>Listado de EntityProyectos</h2>
+          <% EntityUsuario usuario = (EntityUsuario) session.getAttribute("usuario"); %>
+          <% if (usuario.getPerfilID() == EntityPerfil.DEVEL) { %>
+          <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
+          <% } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) { %>
+          <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
+          <% } else { %>
+          <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
+          <% }%>
           <a class="btn btn-insertar" href="controller?cmd=proyecto-insercion&op=captura" title="Nuevo">N</a>
         </header>
 
@@ -98,7 +107,7 @@
           </div>
         </nav>
 
-        <% if (lista.isEmpty()) { %>
+        <% if (proyectos.isEmpty()) { %>
 
         <h2>No hay proyectos disponibles</h2>
 
@@ -202,17 +211,17 @@
           </thead>
 
           <tbody>
-            <% for (ProyectoLista p : lista) {%>
+            <% for (EntityProyecto p : proyectos) {%>
 
             <tr>
               <td><%= p.getId()%></td>
               <td><%= p.getNombre()%></td>
-              <td><%= p.getPropietario()%></td>
-              <td><%= p.getCuota()%></td>
+              <td><%= p.getPropietarioInfo()%></td>
+              <td><%= p.getCuotaInfo()%></td>
               <td>
                 <a class="btn btn-consultar" href="controller?cmd=proyecto-consulta&id=<%= p.getId()%>" title="Consulta">C</a>
                 <a class="btn btn-modificar" href="controller?cmd=proyecto-modificacion&id=<%= p.getId()%>" title="Modificación">M</a>
-                <a class="btn btn-borrar" href="controller?cmd=proyecto-borrado&id=<%= p.getId() %>" title="Eliminación">B</a>
+                <a class="btn btn-borrar" href="controller?cmd=proyecto-borrado&id=<%= p.getId()%>" title="Eliminación">B</a>
               </td>
             </tr>
 

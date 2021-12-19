@@ -9,9 +9,9 @@
 
   <%
       // Datos Inyectados
-      Proyecto p = (Proyecto) request.getAttribute("proyecto");
-      Usuario u = (Usuario) request.getAttribute("propietario");
-      Cuota c = (Cuota) request.getAttribute("cuota");
+      Proyecto proyecto = (Proyecto) request.getAttribute("proyecto");
+      Usuario propietario = (Usuario) request.getAttribute("propietario");
+      Cuota cuota = (Cuota) request.getAttribute("cuota");
   %>
 
   <head>
@@ -56,35 +56,35 @@
             <tbody>
               <tr>
                 <td>ID</td>
-                <td><%= p.getId()%></td>
+                <td><%= proyecto.getId()%></td>
               </tr>
               <tr>
                 <td>Nombre</td>
-                <td><%= p.getNombre()%></td>
+                <td><%= proyecto.getNombre()%></td>
               </tr>
               <tr>
                 <td>Propietario</td>
-                <td><%= u.getUser()%></td>
+                <td><%= propietario.getUser()%></td>
               </tr>
               <tr>
                 <td>Cuota</td>
-                <td><%= c.getNombre()%></td>
+                <td><%= cuota.getNombre()%></td>
               </tr>
               <tr>
                 <td>Info</td>
-                <td><%= p.getInfo()%></td>
+                <td><%= proyecto.getInfo()%></td>
               </tr>
             </tbody>
           </table>
           <div class="imagen">
             <div class="imagen-margen">
-              <img src="<%= p.getIcono()%>" alt="<%= p.getNombre()%>"/> 
+              <img src="<%= proyecto.getIcono()%>" alt="<%= proyecto.getNombre()%>"/> 
             </div>
           </div>
         </div>
         <nav class="botones">
-          <a class="btn btn-borrar" href="controller?cmd=proyecto-borrado&id=<%= p.getId()%>&op=proceso">Borrar</a>
-          <a class="btn btn-cancelar" href="controller?cmd=proyecto-consulta&id=<%= p.getId()%>">Cancelar</a>
+          <a class="btn btn-borrar" href="controller?cmd=proyecto-borrado&id=<%= proyecto.getId()%>&op=proceso">Borrar</a>
+          <a class="btn btn-cancelar" href="controller?cmd=proyecto-consulta&id=<%= proyecto.getId()%>">Cancelar</a>
         </nav>
       </main>
 

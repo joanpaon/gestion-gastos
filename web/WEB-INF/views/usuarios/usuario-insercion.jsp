@@ -1,4 +1,4 @@
-<%@page import="org.japo.java.entities.Perfil"%>
+<%@page import="org.japo.java.entities.EntityPerfil"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
 
@@ -8,8 +8,8 @@
 <html lang="es">
 
   <%
-      // Datos Inyectados
-      List<Perfil> lista = (ArrayList<Perfil>) request.getAttribute("lista");
+    // Datos Inyectados
+    List<EntityPerfil> perfiles = (ArrayList<EntityPerfil>) request.getAttribute("perfiles");
   %>
 
   <head>
@@ -42,8 +42,8 @@
       <main>
         <header>
           <h2>Incorporación de Usuarios</h2>
-          <a class="btn btn-listar" accept-charset="Windows-1252"
-             href="controller?cmd=usuario-listado">Listado</a>
+          <a class="btn btn-perfilesr" accept-charset="Windows-1252"
+             href="controller?cmd=usuario-perfilesdo">Listado</a>
         </header> 
         <form method="post" accept-charset="Windows-1252"
               action="controller?cmd=usuario-insercion&op=proceso">
@@ -69,8 +69,8 @@
             <label for="perfil">Perfil</label>
             <select id="perfil" name="perfil">
               <option disabled selected value></option>
-              <% for (Perfil g : lista) {%>
-              <option value="<%= g.getId()%>"><%= g.getNombre()%></option>
+              <% for (EntityPerfil p : perfiles) {%>
+              <option value="<%= p.getId()%>"><%= p.getNombre()%></option>
               <% }%>
             </select>
           </div>

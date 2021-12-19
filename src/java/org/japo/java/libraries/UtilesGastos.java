@@ -8,15 +8,15 @@ import java.util.Base64;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
-import org.japo.java.entities.Abono;
-import org.japo.java.entities.Cuota;
-import org.japo.java.entities.Perfil;
+import org.japo.java.entities.EntityAbono;
+import org.japo.java.entities.EntityCuota;
+import org.japo.java.entities.EntityPerfil;
 import org.japo.java.entities.ParametrosListado;
-import org.japo.java.entities.Partida;
-import org.japo.java.entities.PerfilPermiso;
-import org.japo.java.entities.Proceso;
-import org.japo.java.entities.Proyecto;
-import org.japo.java.entities.Usuario;
+import org.japo.java.entities.EntityPartida;
+import org.japo.java.entities.EntityPermiso;
+import org.japo.java.entities.EntityProceso;
+import org.japo.java.entities.EntityProyecto;
+import org.japo.java.entities.EntityUsuario;
 
 /**
  *
@@ -24,13 +24,13 @@ import org.japo.java.entities.Usuario;
  */
 public class UtilesGastos {
 
-    public static final String obtenerNombrePerfil(List<Perfil> lista, int id) {
+    public static final String obtenerNombrePerfil(List<EntityPerfil> lista, int id) {
         // Nombre
         String nombre = "";
 
         // Bucle Búsqueda
         for (int i = 0; i < lista.size(); i++) {
-            Perfil p = lista.get(i);
+            EntityPerfil p = lista.get(i);
             if (p.getId() == id) {
                 nombre = p.getNombre();
                 i = lista.size();
@@ -41,13 +41,13 @@ public class UtilesGastos {
         return nombre;
     }
 
-    public static final String obtenerNombreUsuario(List<Usuario> lista, int id) {
+    public static final String obtenerNombreUsuario(List<EntityUsuario> lista, int id) {
         // Nombre
         String nombre = "";
 
         // Bucle Búsqueda
         for (int i = 0; i < lista.size(); i++) {
-            Usuario u = lista.get(i);
+            EntityUsuario u = lista.get(i);
             if (u.getId() == id) {
                 nombre = u.getUser();
                 i = lista.size();
@@ -58,13 +58,13 @@ public class UtilesGastos {
         return nombre;
     }
 
-    public static final String obtenerNombreProyecto(List<Proyecto> lista, int id) {
+    public static final String obtenerNombreProyecto(List<EntityProyecto> lista, int id) {
         // Nombre
         String nombre = "";
 
         // Bucle Búsqueda
         for (int i = 0; i < lista.size(); i++) {
-            Proyecto p = lista.get(i);
+            EntityProyecto p = lista.get(i);
             if (p.getId() == id) {
                 nombre = p.getNombre();
                 i = lista.size();
@@ -75,13 +75,13 @@ public class UtilesGastos {
         return nombre;
     }
 
-    public static final String obtenerNombreCuota(List<Cuota> lista, int id) {
+    public static final String obtenerNombreCuota(List<EntityCuota> lista, int id) {
         // Nombre
         String nombre = "";
 
         // Bucle Búsqueda
         for (int i = 0; i < lista.size(); i++) {
-            Cuota c = lista.get(i);
+            EntityCuota c = lista.get(i);
             if (c.getId() == id) {
                 nombre = c.getNombre();
                 i = lista.size();
@@ -92,13 +92,13 @@ public class UtilesGastos {
         return nombre;
     }
 
-    public static final String obtenerNombrePartida(List<Partida> lista, int id) {
+    public static final String obtenerNombrePartida(List<EntityPartida> lista, int id) {
         // Nombre
         String nombre = "";
 
         // Bucle Búsqueda
         for (int i = 0; i < lista.size(); i++) {
-            Partida p = lista.get(i);
+            EntityPartida p = lista.get(i);
             if (p.getId() == id) {
                 nombre = p.getNombre();
                 i = lista.size();
@@ -109,13 +109,13 @@ public class UtilesGastos {
         return nombre;
     }
 
-    public static final String obtenerInfoAbono(List<Abono> lista, int id) {
+    public static final String obtenerInfoAbono(List<EntityAbono> lista, int id) {
         // Nombre
         String info = "";
 
         // Bucle Búsqueda
         for (int i = 0; i < lista.size(); i++) {
-            Abono a = lista.get(i);
+            EntityAbono a = lista.get(i);
             if (a.getId() == id) {
                 info = a.getInfo();
                 i = lista.size();
@@ -162,10 +162,10 @@ public class UtilesGastos {
             if (sesion == null) {
                 checkOK = false;
             } else {
-                // Sesion > Usuario
-                Usuario u = (Usuario) sesion.getAttribute("usuario");
+                // Sesion > EntityUsuario
+                EntityUsuario u = (EntityUsuario) sesion.getAttribute("usuario");
 
-                // Valida Usuario
+                // Valida EntityUsuario
                 if (u == null) {
                     sesion.invalidate();
                     checkOK = false;
@@ -191,13 +191,13 @@ public class UtilesGastos {
         return checkOK;
     }
 
-    public static final String obtenerInfoProceso(List<Proceso> lista, int id) {
+    public static final String obtenerInfoProceso(List<EntityProceso> lista, int id) {
         // Info
         String info = "";
 
         // Bucle Búsqueda
         for (int i = 0; i < lista.size(); i++) {
-            Proceso p = lista.get(i);
+            EntityProceso p = lista.get(i);
             if (p.getId() == id) {
                 info = p.getInfo();
                 i = lista.size();
@@ -208,14 +208,14 @@ public class UtilesGastos {
         return info;
     }
 
-    public static int buscarProcesoLista(Proceso proceso, List<PerfilPermiso> lista) {
+    public static int buscarProcesoLista(EntityProceso proceso, List<EntityPermiso> lista) {
         // Posicion
         int posicion = -1;
 
         // Bucle Búsqueda
         for (int i = 0; i < lista.size(); i++) {
-            PerfilPermiso pg = lista.get(i);
-            if (pg.getProceso() == proceso.getId()) {
+            EntityPermiso pg = lista.get(i);
+            if (pg.getProcesoId() == proceso.getId()) {
                 posicion = i;
                 i = lista.size();
             }
@@ -233,8 +233,8 @@ public class UtilesGastos {
         // Request > Sesion
         HttpSession sesion = request.getSession(false);
 
-        // Usuario > Parametros Listado
-        p.setUser((Usuario) sesion.getAttribute("usuario"));
+        // EntityUsuario > Parametros Listado
+        p.setUser((EntityUsuario) sesion.getAttribute("usuario"));
 
         // Tabla > Parametros Listado
         p.setTable(tabla);
@@ -297,8 +297,8 @@ public class UtilesGastos {
         sesion.setAttribute(SESSION_FILTER_EXPRESSION, filterExp);
 
         // Filtro > Entidad
-        p.setFilterFld(filterFld);
-        p.setFilterExp(filterExp);
+        p.setFilterField(filterFld);
+        p.setFilterValue(filterExp);
     }
 
     public static final void definirOrdenacionListado(ParametrosListado p,
@@ -419,8 +419,8 @@ public class UtilesGastos {
         }
 
         // Parámetros Ordenación > Parámetros Listado
-        p.setSortFld(sortFld);
-        p.setSortDir(sortDir);
+        p.setOrderField(sortFld);
+        p.setOrderProgress(sortDir);
     }
 
     public static final void definirNavegacionListado(ParametrosListado p,

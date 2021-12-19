@@ -1,4 +1,6 @@
-<%@page import="org.japo.java.entities.Cuota"%>
+<%@page import="org.japo.java.entities.EntityPerfil"%>
+<%@page import="org.japo.java.entities.EntityUsuario"%>
+<%@page import="org.japo.java.entities.EntityCuota"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
 
@@ -8,14 +10,14 @@
 <html lang="es">
 
   <%
-      // Datos Inyectados
-      List<Cuota> lista = (ArrayList<Cuota>) request.getAttribute("lista-cuotas");
-      String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
-      String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
-      String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
-      Long rowCount = (Long) request.getAttribute("row-count");
-      Long rowIndex = (Long) request.getAttribute("row-index");
-      Long rowsPage = (Long) request.getAttribute("rows-page");
+    // Datos Inyectados
+    List<EntityCuota> Cuotas = (ArrayList<EntityCuota>) request.getAttribute("cuotas");
+    String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
+    String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
+    String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
+    Long rowCount = (Long) request.getAttribute("row-count");
+    Long rowIndex = (Long) request.getAttribute("row-index");
+    Long rowsPage = (Long) request.getAttribute("rows-page");
   %>
 
   <head>
@@ -50,11 +52,18 @@
 
       <main>
         <header>
-          <h2>Listado de Cuotas</h2>
-          <a class="btn btn-principal" href="controller?cmd=main" title="Principal">P</a>
+          <h2>Listado de EntityCuotas</h2>
+          <% EntityUsuario usuario = (EntityUsuario) session.getAttribute("usuario"); %>
+          <% if (usuario.getPerfilID() == EntityPerfil.DEVEL) { %>
+          <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
+          <% } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) { %>
+          <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
+          <% } else { %>
+          <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
+          <% }%>
           <a class="btn btn-insertar" href="controller?cmd=cuota-insercion&op=captura" title="Nuevo">N</a>
         </header>
-        
+
         <nav class="paginacion">
           <a href="controller?cmd=cuota-listado&op=ini" class="btn btn-ini" title="Principio">&lt;&lt;</a>
           <a href="controller?cmd=cuota-listado&op=prv" class="btn btn-prv" title="Anterior">&lt;</a>
@@ -98,7 +107,7 @@
           </div>
         </nav>
 
-        <% if (lista.isEmpty()) { %>
+        <% if (Cuotas.isEmpty()) { %>
 
         <h2>No hay cuotas disponibles</h2>
 
@@ -178,7 +187,7 @@
           <th>Acciones</th>
           </thead>
           <tbody>
-            <% for (Cuota c : lista) {%>
+            <% for (EntityCuota c : Cuotas) {%>
 
             <tr>
               <td><%= c.getId()%></td>
@@ -197,7 +206,7 @@
         </table>
 
         <% }%>
-        
+
         <nav class="paginacion">
           <a href="controller?cmd=cuota-listado&op=ini" class="btn btn-ini" title="Principio">&lt;&lt;</a>
           <a href="controller?cmd=cuota-listado&op=prv" class="btn btn-prv" title="Anterior">&lt;</a>

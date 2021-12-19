@@ -10,9 +10,7 @@
 
   <%
       // Datos Inyectados
-      Gasto g = (Gasto) request.getAttribute("gasto");
-      Abono a = (Abono) request.getAttribute("abono");
-      Partida pda = (Partida) request.getAttribute("partida");
+      Gasto gasto = (Gasto) request.getAttribute("gasto");
   %>
 
   <head>
@@ -57,7 +55,7 @@
             <tbody>
               <tr>
                 <td>ID</td>
-                <td><%= g.getId()%></td>
+                <td><%= gasto.getId()%></td>
               </tr>
               <tr>
                 <td>Abono</td>
@@ -69,23 +67,23 @@
               </tr>
               <tr>
                 <td>Importe</td>
-                <td><%= String.format(Locale.ENGLISH, "%.2f", g.getImporte())%> €</td>
+                <td><%= String.format(Locale.ENGLISH, "%.2f", gasto.getImporte())%> €</td>
               </tr>
               <tr>
                 <td>Información</td>
-                <td><%= g.getInfo()%></td>
+                <td><%= gasto.getInfo()%></td>
               </tr>
             </tbody>
           </table>
           <div class="imagen">
             <div class="imagen-margen">
-              <img src="<%= g.getRecibo()%>" alt="Recibo del Gasto"/> 
+              <img src="<%= gasto.getRecibo()%>" alt="Recibo del Gasto"/> 
             </div>
           </div>
         </div>
         <nav class="botones">
-          <a class="btn btn-borrar" href="controller?cmd=gasto-borrado&id=<%= g.getId()%>&op=proceso">Borrar</a>
-          <a class="btn btn-cancelar" href="controller?cmd=gasto-consulta&id=<%= g.getId()%>">Cancelar</a>
+          <a class="btn btn-borrar" href="controller?cmd=gasto-borrado&id=<%= gasto.getId()%>&op=proceso">Borrar</a>
+          <a class="btn btn-cancelar" href="controller?cmd=gasto-consulta&id=<%= gasto.getId()%>">Cancelar</a>
         </nav>
       </main>
 

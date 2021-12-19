@@ -1,4 +1,6 @@
-<%@page import="org.japo.java.entities.AbonoLista"%>
+<%@page import="org.japo.java.entities.EntityPerfil"%>
+<%@page import="org.japo.java.entities.EntityUsuario"%>
+<%@page import="org.japo.java.entities.EntityAbono"%>
 <%@page import="org.japo.java.libraries.UtilesGastos"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
@@ -9,14 +11,14 @@
 <html lang="es">
 
   <%
-      // Datos Inyectados
-      List<AbonoLista> lista = (ArrayList<AbonoLista>) request.getAttribute("lista");
-      String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
-      String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
-      String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
-      Long rowCount = (Long) request.getAttribute("row-count");
-      Long rowIndex = (Long) request.getAttribute("row-index");
-      Long rowsPage = (Long) request.getAttribute("rows-page");
+    // Datos Inyectados
+    List<EntityAbono> abonos = (ArrayList<EntityAbono>) request.getAttribute("abonos");
+    String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
+    String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
+    String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
+    Long rowCount = (Long) request.getAttribute("row-count");
+    Long rowIndex = (Long) request.getAttribute("row-index");
+    Long rowsPage = (Long) request.getAttribute("rows-page");
   %>
 
   <head>
@@ -51,11 +53,18 @@
 
       <main>
         <header>
-          <h2>Listado de Abonos</h2>
-          <a class="btn btn-principal" href="controller?cmd=main" title="Principal">P</a>
+          <h2>Listado de EntityAbonos</h2>
+          <% EntityUsuario usuario = (EntityUsuario) session.getAttribute("usuario"); %>
+          <% if (usuario.getPerfilID() == EntityPerfil.DEVEL) { %>
+          <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
+          <% } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) { %>
+          <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
+          <% } else { %>
+          <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
+          <% }%>
           <a class="btn btn-insertar" href="controller?cmd=abono-insercion&op=captura" title="Nuevo">N</a>
         </header>
-        
+
         <nav class="paginacion">
           <a href="controller?cmd=abono-listado&op=ini" class="btn btn-ini" title="Principio">&lt;&lt;</a>
           <a href="controller?cmd=abono-listado&op=prv" class="btn btn-prv" title="Anterior">&lt;</a>
@@ -99,9 +108,9 @@
           </div>
         </nav>
 
-        <% if (lista.isEmpty()) { %>
+        <% if (abonos.isEmpty()) { %>
 
-        <h2>No hay Abonos disponibles</h2>
+        <h2>No hay EntityAbonos disponibles</h2>
 
         <% } else {%>
 
@@ -179,12 +188,12 @@
           <th>Acciones</th>
           </thead>
           <tbody>
-            <% for (AbonoLista a : lista) {%>
+            <% for (EntityAbono a : abonos) {%>
 
             <tr>
               <td><%= a.getId()%></td>
-              <td><%= a.getProyecto()%></td>
-              <td><%= a.getUsuario()%></td>
+              <td><%= a.getProyectoInfo()%></td>
+              <td><%= a.getUsuarioInfo()%></td>
               <td>
                 <a class="btn btn-consultar" href="controller?cmd=abono-consulta&id=<%= a.getId()%>" title="Consulta">C</a>
                 <a class="btn btn-modificar" href="controller?cmd=abono-modificacion&id=<%= a.getId()%>" title="Modificación">M</a>
@@ -196,9 +205,9 @@
 
           </tbody>
         </table>
-            
+
         <% }%>
-        
+
         <nav class="paginacion">
           <a href="controller?cmd=abono-listado&op=ini" class="btn btn-ini" title="Principio">&lt;&lt;</a>
           <a href="controller?cmd=abono-listado&op=prv" class="btn btn-prv" title="Anterior">&lt;</a>

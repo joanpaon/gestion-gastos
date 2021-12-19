@@ -1,10 +1,10 @@
 ﻿<%@page import="org.japo.java.libraries.UtilesGastos"%>
-<%@page import="org.japo.java.entities.Usuario"%> 
+<%@page import="org.japo.java.entities.EntityUsuario"%> 
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
-    Usuario u = session == null ? null : (Usuario) (session.getAttribute("usuario"));
+  EntityUsuario usuario = session == null ? null : (EntityUsuario) (session.getAttribute("usuario"));
 %>
 
 <header>
@@ -26,14 +26,14 @@
     <span>0</span>
     <img src="public/img/cart.png" alt="Carrito" />
   </a>
-  <% if (u instanceof Usuario) {%>
-  <a class="user" href="controller?cmd=profile&op=captura&id=<%= u.getId()%>" >
-    <% if (UtilesGastos.validarImagenBase64(u.getIcono())) {%>
-    <img src="<%= u.getIcono()%>" alt="User" />
+  <% if (usuario instanceof EntityUsuario) {%>
+  <a class="user" href="controller?cmd=profile&op=captura&id=<%= usuario.getId()%>" >
+    <% if (UtilesGastos.validarImagenBase64(usuario.getIcono())) {%>
+    <img src="<%= usuario.getIcono()%>" alt="User" />
     <% } else { %>
     <img src="public/img/user.png" alt="User" />
     <% }%>
-    <span><%= u.getUser()%></span>
+    <span><%= usuario.getUser()%></span>
   </a>
   <a class="exit" href="controller?cmd=logout">
     <img src="public/img/exit.png" alt="Salida" />

@@ -2,11 +2,12 @@ package org.japo.java.bll;
 
 import java.util.List;
 import javax.servlet.http.HttpSession;
-import org.japo.java.dal.PerfilPermisoDAL;
+import org.japo.java.dal.PermisoDAL;
 import org.japo.java.dal.ProcesoDAL;
-import org.japo.java.entities.PerfilPermiso;
-import org.japo.java.entities.Proceso;
-import org.japo.java.entities.Usuario;
+import org.japo.java.entities.EntityPerfil;
+import org.japo.java.entities.EntityPermiso;
+import org.japo.java.entities.EntityProceso;
+import org.japo.java.entities.EntityUsuario;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -16,37 +17,42 @@ import org.japo.java.libraries.UtilesGastos;
 public final class AdminBLL {
 
     // Capas de Datos
-    private final PerfilPermisoDAL perfilPermisoDAL = new PerfilPermisoDAL();
+    private final PermisoDAL perfilPermisoDAL = new PermisoDAL();
     private final ProcesoDAL procesoDAL = new ProcesoDAL();
 
     public boolean validarAccesoComando(HttpSession sesion, String comando) {
         // Semáforo
-        boolean validacionOK;
+        boolean checkOK;
 
         try {
             // Sesion > Usuario
-            Usuario user = (Usuario) sesion.getAttribute("usuario");
+            EntityUsuario usuario = (EntityUsuario) sesion.getAttribute("usuario");
 
-            // Usuario > Perfil
-            int perfil = user.getPerfil();
+            // EntityUsuario > Perfil
+            int perfil = usuario.getPerfilID();
 
-            // Perfil + BD > Lista de Comandos
-            List<PerfilPermiso> lista = perfilPermisoDAL.obtenerPerfilPermisos(perfil);
+            // Validar Perfil Desarrollador
+            if (perfil == EntityPerfil.DEVEL) {
+              checkOK = true;
+            } else {
+              // Perfil + BD > Lista de Comandos
+              List<EntityPermiso> permisos = perfilPermisoDAL.obtenerPermisos(perfil);
 
-            // Nombre Comando > Entidad Comando
-            Proceso proceso = procesoDAL.obtenerProceso(comando);
+              // Nombre Comando > Entidad Comando
+              EntityProceso proceso = procesoDAL.obtenerProceso(comando);
 
-            // Valida Acceso Comando
-            int posicion = UtilesGastos.buscarProcesoLista(proceso, lista);
+              // Valida Acceso Comando
+              int posicion = UtilesGastos.buscarProcesoLista(proceso, permisos);
 
-            // Semaforo: true | false
-            validacionOK = posicion > -1;
+              // Semaforo: true | false
+              checkOK = posicion > -1;
+            }
         } catch (Exception e) {
-            validacionOK = false;
+            checkOK = false;
         }
 
         // Retorno: true | false
-        return validacionOK;
+        return checkOK;
     }
 
     public boolean validarAccesoServicio(HttpSession session, String servicio) {

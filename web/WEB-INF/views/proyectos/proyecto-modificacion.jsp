@@ -1,8 +1,8 @@
-<%@page import="org.japo.java.entities.Usuario"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
-<%@page import="org.japo.java.entities.Cuota"%>
 <%@page import="org.japo.java.entities.Proyecto"%>
+<%@page import="org.japo.java.entities.Usuario"%>
+<%@page import="org.japo.java.entities.Cuota"%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
@@ -10,10 +10,10 @@
 <html lang="es">
 
   <%
-      // Datos Inyectados
-      Proyecto p = (Proyecto) request.getAttribute("proyecto");
-      List<Usuario> listaUsr = (ArrayList<Usuario>) request.getAttribute("usuario-lista");
-      List<Cuota> listaCta = (ArrayList<Cuota>) request.getAttribute("cuota-lista");
+    // Datos Inyectados
+    Proyecto proyecto = (Proyecto) request.getAttribute("proyecto");
+    List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuario-lista");
+    List<Cuota> cuotas = (ArrayList<Cuota>) request.getAttribute("cuota-lista");
   %>
 
   <head>
@@ -51,16 +51,16 @@
         </header> 
 
         <form method="post" accept-charset="Windows-1252"
-              action="controller?cmd=proyecto-modificacion&id=<%= p.getId()%>&op=proceso">
+              action="controller?cmd=proyecto-modificacion&id=<%= proyecto.getId()%>&op=proceso">
           <div class="fieldset">
             <label for="nombre">Nombre</label>
-            <input id="nombre" type="text" name="nombre" value="<%= p.getNombre()%>"/>
+            <input id="nombre" type="text" name="nombre" value="<%= proyecto.getNombre()%>"/>
           </div>
           <div class="fieldset">
             <label for="propietario">Propietario</label>
             <select id="propietario" name="propietario">
-              <% for (Usuario u : listaUsr) { %>
-              <% if (u.getId() == p.getPropietario()) {%>
+              <% for (Usuario u : usuarios) { %>
+              <% if (u.getId() == proyecto.getPropietarioID()) {%>
               <option value="<%= u.getId()%>" selected><%= u.getUser()%></option>
               <% } else {%>
               <option value="<%= u.getId()%>"><%= u.getUser()%></option>
@@ -71,8 +71,8 @@
           <div class="fieldset">
             <label for="cuota">Cuota</label>
             <select id="cuota" name="cuota">
-              <% for (Cuota c : listaCta) { %>
-              <% if (c.getId() == p.getCuota()) {%>
+              <% for (Cuota c : cuotas) { %>
+              <% if (c.getId() == proyecto.getCuotaID()) {%>
               <option value="<%= c.getId()%>" selected><%= c.getNombre()%></option>
               <% } else {%>
               <option value="<%= c.getId()%>"><%= c.getNombre()%></option>
@@ -82,11 +82,11 @@
           </div>
           <div class="fieldset">
             <label for="info">Información</label>
-            <input id="info" type="text" name="info" value="<%= p.getInfo()%>"/>
+            <input id="info" type="text" name="info" value="<%= proyecto.getInfo()%>"/>
           </div>
           <div class="fieldset">
             <label for="icono">Icono</label>
-            <textarea id="icono" name="icono" rows="6"/><%= p.getIcono()%></textarea>
+            <textarea id="icono" name="icono" rows="6"/><%= proyecto.getIcono()%></textarea>
           </div>
           <div class="botones">
             <button class="btn btn-submit" type="submit">Enviar</button>

@@ -22,8 +22,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.japo.java.libraries.UtilesServlet;
-import org.japo.java.pll.command.ICommand;
-import org.japo.java.pll.service.IService;
+import org.japo.java.bll.command.ICommand;
+import org.japo.java.bll.service.IService;
 
 /**
  *

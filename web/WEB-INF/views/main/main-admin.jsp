@@ -40,11 +40,9 @@
           <a href="controller?cmd=gasto-listado">Gastos</a>
           <a href="controller?cmd=perfil-listado">Perfiles</a>
           <a href="controller?cmd=partida-listado">Partidas</a>
-          <a href="controller?cmd=perfil-permiso-listado">Permisos de Perfil</a>
-          <a href="controller?cmd=usuario-permiso-listado">Permisos de Usuario</a>
+          <a href="controller?cmd=permiso-listado">Permisos</a>
           <a href="controller?cmd=proyecto-listado">Proyectos</a>
           <a href="controller?cmd=usuario-listado">Usuarios</a>
-          <!--<a href="controller?cmd=logout">Cerrar Sesión</a>--> 
         </nav>
       </main>
       

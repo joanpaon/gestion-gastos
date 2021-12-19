@@ -1,4 +1,6 @@
-<%@page import="org.japo.java.entities.GastoLista"%>
+<%@page import="org.japo.java.entities.EntityPerfil"%>
+<%@page import="org.japo.java.entities.EntityUsuario"%>
+<%@page import="org.japo.java.entities.EntityGasto"%>
 <%@page import="java.text.SimpleDateFormat"%>
 <%@page import="java.util.Locale"%>
 <%@page import="org.japo.java.libraries.UtilesGastos"%>
@@ -11,14 +13,14 @@
 <html lang="es">
 
   <%
-      // Datos Inyectados
-      List<GastoLista> lista = (ArrayList<GastoLista>) request.getAttribute("lista-gastos");
-      String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
-      String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
-      String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
-      Long rowCount = (Long) request.getAttribute("row-count");
-      Long rowIndex = (Long) request.getAttribute("row-index");
-      Long rowsPage = (Long) request.getAttribute("rows-page");
+    // Datos Inyectados
+    List<EntityGasto> gastos = (ArrayList<EntityGasto>) request.getAttribute("gastos");
+    String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
+    String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
+    String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
+    Long rowCount = (Long) request.getAttribute("row-count");
+    Long rowIndex = (Long) request.getAttribute("row-index");
+    Long rowsPage = (Long) request.getAttribute("rows-page");
   %>
 
   <head>
@@ -54,7 +56,14 @@
       <main>
         <header>
           <h2>Listado de Gastos</h2>
-          <a class="btn btn-principal" href="controller?cmd=main" title="Principal">P</a>
+          <% EntityUsuario usuario = (EntityUsuario) session.getAttribute("usuario"); %>
+          <% if (usuario.getPerfilID() == EntityPerfil.DEVEL) { %>
+          <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
+          <% } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) { %>
+          <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
+          <% } else { %>
+          <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
+          <% }%>
           <a class="btn btn-insertar" href="controller?cmd=gasto-insercion&op=captura" title="Nuevo">N</a>
         </header>
 
@@ -101,7 +110,7 @@
           </div>
         </nav>
 
-        <% if (lista.isEmpty()) { %>
+        <% if (gastos.isEmpty()) { %>
 
         <h2>No hay gastos disponibles</h2>
 
@@ -204,17 +213,17 @@
           <th>Acciones</th>
           </thead>
           <tbody>
-            <% for (GastoLista p : lista) {%>
+            <% for (EntityGasto gasto : gastos) {%>
 
             <tr>
-              <td><%= p.getId()%></td>
-              <td><%= p.getInfo()%></td>
-              <td><%= new SimpleDateFormat("dd/MM/yyyy").format(p.getFecha())%></td>
-              <td><%= String.format(Locale.ENGLISH, "%.2f", p.getImporte())%></td>
+              <td><%= gasto.getId()%></td>
+              <td><%= gasto.getInfo()%></td>
+              <td><%= new SimpleDateFormat("dd/MM/yyyy").format(gasto.getCreatedAt())%></td>
+              <td><%= String.format(Locale.ENGLISH, "%.2f", gasto.getImporte())%></td>
               <td>
-                <a class="btn btn-consultar" href="controller?cmd=gasto-consulta&id=<%= p.getId()%>" title="Consulta">C</a>
-                <a class="btn btn-modificar" href="controller?cmd=gasto-modificacion&id=<%= p.getId()%>" title="Modificación">M</a>
-                <a class="btn btn-borrar" href="controller?cmd=gasto-borrado&id=<%= p.getId()%>" title="Eliminación">B</a>
+                <a class="btn btn-consultar" href="controller?cmd=gasto-consulta&id=<%= gasto.getId()%>" title="Consulta">C</a>
+                <a class="btn btn-modificar" href="controller?cmd=gasto-modificacion&id=<%= gasto.getId()%>" title="Modificación">M</a>
+                <a class="btn btn-borrar" href="controller?cmd=gasto-borrado&id=<%= gasto.getId()%>" title="Eliminación">B</a>
               </td>
             </tr>
 

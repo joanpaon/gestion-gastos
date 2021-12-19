@@ -1,5 +1,5 @@
-<%@page import="org.japo.java.entities.Usuario"%>
-<%@page import="org.japo.java.entities.Perfil"%>
+<%@page import="org.japo.java.entities.EntityUsuario"%>
+<%@page import="org.japo.java.entities.EntityPerfil"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
 
@@ -9,9 +9,9 @@
 <html lang="es">
 
   <%
-      // Datos Inyectados
-      Usuario u = (Usuario) request.getAttribute("usuario");
-      List<Perfil> lista = (ArrayList<Perfil>) request.getAttribute("lista");
+    // Datos Inyectados
+    EntityUsuario usuario = (EntityUsuario) request.getAttribute("usuario");
+    List<EntityPerfil> perfiles = (ArrayList<EntityPerfil>) request.getAttribute("perfiles");
   %>
 
   <head>
@@ -48,36 +48,36 @@
           <a class="btn btn-listar" href="controller?cmd=usuario-listado">Listado</a>
         </header> 
         <form method="post" accept-charset="Windows-1252"
-              action="controller?cmd=usuario-modificacion&id=<%= u.getId()%>&op=proceso">
+              action="controller?cmd=usuario-modificacion&id=<%= usuario.getId()%>&op=proceso">
           <div class="fieldset">
             <label for="user">Usuario</label>
             <input id="user" type="text" name="user"
                    pattern="\w{3,20}" required                  
-                   value="<%= u.getUser()%>"/>
+                   value="<%= usuario.getUser()%>"/>
           </div>
           <div class="fieldset">
             <label for="pass">Contraseña</label>
             <input id="pass" type="text" name="pass" 
                    pattern="\w{3,20}" required    
-                   value="<%= u.getPass()%>"/>
+                   value="<%= usuario.getPass()%>"/>
           </div>
           <div class="fieldset">
             <label for="email">Correo Electrónico</label>
             <input id="email" type="email" name="email" required
-                   value="<%= u.getEmail()%>"/>
+                   value="<%= usuario.getEmail()%>"/>
           </div>
           <div class="fieldset">
             <label for="avatar">Avatar</label>
-            <textarea id="avatar" name="avatar" rows="6"/><%= u.getIcono()%></textarea>
+            <textarea id="avatar" name="avatar" rows="6"/><%= usuario.getIcono()%></textarea>
           </div>
           <div class="fieldset">
-            <label for="lista">Perfil</label>
-            <select id="lista" name="lista">
-              <% for (Perfil g : lista) { %>
-              <% if (g.getId() == u.getPerfil()) {%>
-              <option value="<%= g.getId()%>" selected><%= g.getNombre()%></option>
+            <label for="perfiles">Perfil</label>
+            <select id="perfiles" name="perfiles">
+              <% for (EntityPerfil p : perfiles) { %>
+              <% if (p.getId() == usuario.getPerfilID()) {%>
+              <option value="<%= p.getId()%>" selected><%= p.getNombre()%></option>
               <% } else {%>
-              <option value="<%= g.getId()%>"><%= g.getNombre()%></option>
+              <option value="<%= p.getId()%>"><%= p.getNombre()%></option>
               <% }%>
               <% }%>
             </select>
@@ -85,7 +85,7 @@
           <div class="fieldset">
             <label for="info">Información</label>
             <input id="info" type="text" name="info" 
-                   value="<%= u.getInfo()%>"/>
+                   value="<%= usuario.getInfo()%>"/>
           </div>
           <div class="botones">
             <button class="btn btn-submit" type="submit">Enviar</button>

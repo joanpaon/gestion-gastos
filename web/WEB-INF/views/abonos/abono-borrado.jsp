@@ -8,10 +8,8 @@
 <html lang="es">
 
   <%
-      // Datos Inyectados
-      Abono a = (Abono) request.getAttribute("abono");
-      Proyecto p = (Proyecto) request.getAttribute("proyecto");
-      Usuario u = (Usuario) request.getAttribute("usuario");
+    // Datos Inyectados
+    Abono abono = (Abono) request.getAttribute("abono");
   %>
 
   <head>
@@ -56,31 +54,26 @@
             <tbody>
               <tr>
                 <td>ID</td>
-                <td><%= a.getId()%></td>
+                <td><%= abono.getId()%></td>
               </tr>
               <tr>
                 <td>Usuario</td>
-                <td><%= u.getUser()%></td>
+                <td><%= abono.getUsuarioInfo()%></td>
               </tr>
               <tr>
                 <td>Proyecto</td>
-                <td><%= p.getNombre()%></td>
+                <td><%= abono.getProyectoInfo()%></td>
               </tr>
               <tr>
                 <td>Información</td>
-                <td><%= a.getInfo()%></td>
+                <td><%= abono.getInfo()%></td>
               </tr>
             </tbody>
           </table>
-          <div class="imagen">
-            <div class="imagen-margen">
-              <img src="<%= u.getIcono()%>" alt="<%= u.getUser()%>"/> 
-            </div>
-          </div>
         </div>
         <nav class="botones">
-          <a class="btn btn-borrar" href="controller?cmd=abono-borrado&id=<%= a.getId()%>&op=proceso">Borrar</a>
-          <a class="btn btn-cancelar" href="controller?cmd=abono-consulta&id=<%= a.getId()%>">Cancelar</a>
+          <a class="btn btn-borrar" href="controller?cmd=abono-borrado&id=<%= abono.getId()%>&op=proceso">Borrar</a>
+          <a class="btn btn-cancelar" href="controller?cmd=abono-consulta&id=<%= abono.getId()%>">Cancelar</a>
         </nav>
       </main>
 

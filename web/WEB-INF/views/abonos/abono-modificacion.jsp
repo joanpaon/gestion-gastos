@@ -10,10 +10,10 @@
 <html lang="es">
 
   <%
-      // Datos Inyectados
-      Abono a = (Abono) request.getAttribute("abono");
-      List<Proyecto> listaPro = (ArrayList<Proyecto>) request.getAttribute("lista-proyectos");
-      List<Usuario> listaUsr = (ArrayList<Usuario>) request.getAttribute("lista-usuarios");
+    // Datos Inyectados
+    Abono abono = (Abono) request.getAttribute("abono");
+    List<Proyecto> proyectos = (ArrayList<Proyecto>) request.getAttribute("proyecto-lista");
+    List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuario-lista");
   %>
 
   <head>
@@ -49,14 +49,14 @@
           <h2>Modificación de Abonos</h2>
           <a class="btn btn-listar" href="controller?cmd=abono-listado">Listado</a>
         </header> 
-        
+
         <form method="post" accept-charset="Windows-1252"
-              action="controller?cmd=abono-modificacion&id=<%= a.getId()%>&op=proceso">
+              action="controller?cmd=abono-modificacion&id=<%= abono.getId()%>&op=proceso">
           <div class="fieldset">
             <label for="proyecto">Proyecto</label>
             <select id="proyecto" name="proyecto">
-              <% for (Proyecto p : listaPro) { %>
-              <% if (p.getId() == a.getProyecto()) {%>
+              <% for (Proyecto p : proyectos) { %>
+              <% if (p.getId() == abono.getProyectoID()) {%>
               <option value="<%= p.getId()%>" selected><%= p.getNombre()%></option>
               <% } else {%>
               <option value="<%= p.getId()%>"><%= p.getNombre()%></option>
@@ -67,8 +67,8 @@
           <div class="fieldset">
             <label for="usuario">Usuario</label>
             <select id="usuario" name="usuario">
-              <% for (Usuario u : listaUsr) { %>
-              <% if (u.getId() == a.getUsuario()) {%>
+              <% for (Usuario u : usuarios) { %>
+              <% if (u.getId() == abono.getUsuarioID()) {%>
               <option value="<%= u.getId()%>" selected><%= u.getUser()%></option>
               <% } else {%>
               <option value="<%= u.getId()%>"><%= u.getUser()%></option>
@@ -78,7 +78,7 @@
           </div>
           <div class="fieldset">
             <label for="info">Información</label>
-            <input id="info" type="text" name="info" value="<%= a.getInfo()%>" required />
+            <input id="info" type="text" name="info" value="<%= abono.getInfo()%>" required />
           </div>
           <div class="botones">
             <button class="btn btn-submit" type="submit">Enviar</button>
@@ -89,7 +89,7 @@
 
       <jsp:include page="../../partials/footer.jsp" />
     </div>
-          
+
     <!-- Scripts -->
     <script src="public/js/abonos/abono-modificacion.js"></script>
   </body>
