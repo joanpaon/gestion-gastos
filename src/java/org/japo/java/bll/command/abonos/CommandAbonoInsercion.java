@@ -18,18 +18,15 @@ package org.japo.java.bll.command.abonos;
 import org.japo.java.bll.command.Command;
 import javax.servlet.ServletException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.AbonoDAL;
 import org.japo.java.dal.ProyectoDAL;
 import org.japo.java.dal.UsuarioDAL;
-import org.japo.java.entities.EntityAbono;
-import org.japo.java.entities.EntityPerfil;
-import org.japo.java.entities.EntityProyecto;
-import org.japo.java.entities.EntityUsuario;
+import org.japo.java.entities.Abono;
+import org.japo.java.entities.Proyecto;
+import org.japo.java.entities.Usuario;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -41,90 +38,112 @@ public final class CommandAbonoInsercion extends Command {
   @Override
   @SuppressWarnings("ConvertToStringSwitch")
   public void process() throws ServletException, IOException {
-    // Nombre JSP
-    String page;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    AbonoDAL abonoDAL = new AbonoDAL();
-    ProyectoDAL proyectoDAL = new ProyectoDAL();
-    UsuarioDAL usuarioDAL = new UsuarioDAL();
+    // JSP
+    String page = "messages/message";
 
     try {
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // Obtener Operación
-        String op = request.getParameter("op");
+        // Parámetros
+        String titulo = "Sesión Caducada";
+        String mensaje = "Identificación requerida para continuar";
+        String imagen = "public/img/expired.jpg";
+        String destino = "controller?cmd=login";
 
-        // Formulario Captura Datos
-        if (op == null || op.equals("captura")) {
-          // BD > Lista de Proyectos
-          List<EntityProyecto> proyectos = proyectoDAL.obtenerProyectos();
-
-          // BD > Lista de Usuarios
-          List<EntityUsuario> usuarios;
-
-          // Sesión > EntityUsuario
-          EntityUsuario usuario = (EntityUsuario) sesion.getAttribute("usuario");
-
-          // EntityUsuario > EntityPerfil
-          int perfil = usuario.getPerfilID();
-
-          // Discriminar EntityUsuario
-          switch (perfil) {
-            case EntityPerfil.BASIC:
-              // Lista de Usuarios - Vacía
-              usuarios = new ArrayList<>(Arrays.asList(usuario));
-              break;
-            case EntityPerfil.ADMIN:
-            case EntityPerfil.DEVEL:
-              // Lista de Usuarios - Todos
-              usuarios = usuarioDAL.obtenerUsuarios();
-              break;
-            default:
-              // Lista de Usuarios - Vacía
-              usuarios = new ArrayList<>();
-          }
-
-          // Inyecta Datos > JSP
-          request.setAttribute("proyectos", proyectos);
-          request.setAttribute("usuarios", usuarios);
-
-          // Nombre JSP
-          page = "abonos/abono-insercion";
-        } else if (op.equals("proceso")) {
-          // Request > Parámetros
-          int proyecto = Integer.parseInt(request.getParameter("proyecto").trim());
-          int usuario = Integer.parseInt(request.getParameter("usuario").trim());
-          String info = request.getParameter("info").trim();
-
-          // Parámetros > Entidad
-          EntityAbono abono = new EntityAbono(0, proyecto, usuario, info, 0, null, null, null);
-
-          // Entidad > Inserción BD - true | false
-          boolean operacionOK = abonoDAL.insertarAbono(abono);
-
-          // Validar Inserción BD
-          page = operacionOK ? "success/operacion-realizada" : "errors/operacion-cancelada";
-        } else {
-          // Recurso NO Disponible
-          page = "errors/page404";
-        }
+        // Inyeccion de Parámetros
+        parametrizarMensaje(titulo, mensaje, imagen, destino);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        AbonoDAL abonoDAL = new AbonoDAL(sesion);
+        ProyectoDAL proyectoDAL = new ProyectoDAL(sesion);
+        UsuarioDAL usuarioDAL = new UsuarioDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // Obtener Operación
+          String op = request.getParameter("op");
+
+          // Formulario Captura Datos
+          if (op == null || op.equals("captura")) {
+            // BD > Lista de Proyectos
+            List<Proyecto> proyectos = proyectoDAL.obtenerProyectos();
+
+            // BD > Lista de Usuarios
+            List<Usuario> usuarios = usuarioDAL.obtenerUsuarios();
+
+            // Inyección Datos
+            request.setAttribute("proyectos", proyectos);
+            request.setAttribute("usuarios", usuarios);
+
+            // JSP
+            page = "abonos/abono-insercion";
+          } else if (op.equals("proceso")) {
+            // Request > Parámetros
+            int proyecto = Integer.parseInt(request.getParameter("proyecto").trim());
+            int usuario = Integer.parseInt(request.getParameter("usuario").trim());
+            String info = request.getParameter("info").trim();
+
+            // Parámetros > Entidad
+            Abono abono = new Abono(proyecto, usuario, info);
+
+            // Entidad > Inserción BD - true | false
+            boolean checkOK = abonoDAL.insertarAbono(abono);
+
+            // Validar Operación
+            if (checkOK) {
+              // Parámetros
+              String titulo = "Operación Realizada con Éxito";
+              String mensaje = "Se han modificado correctamente los datos del usuario";
+              String imagen = "public/img/tarea.png";
+              String destino = "controller?cmd=abono-listado";
+
+              // Inyeccion de Parámetros
+              parametrizarMensaje(titulo, mensaje, imagen, destino);
+            } else {
+              // Parámetros
+              String titulo = "Operación Cancelada";
+              String mensaje = "No se han modificado los datos del usuario";
+              String imagen = "public/img/cancelar.png";
+              String destino = "javascript:window.history.back();";
+
+              // Inyeccion de Parámetros
+              parametrizarMensaje(titulo, mensaje, imagen, destino);
+            }
+          } else {
+            // Parámetros
+            String titulo = "Operación Cancelada";
+            String mensaje = "Intento de acceso a un recurso NO disponible";
+            String imagen = "public/img/cancelar.png";
+            String destino = "javascript:window.history.back();";
+
+            // Inyeccion de Parámetros
+            parametrizarMensaje(titulo, mensaje, imagen, destino);
+          }
+        } else {
+          // Parámetros
+          String titulo = "Acceso NO Autorizado";
+          String mensaje = "Nivel de Acceso Insuficiente para ese Recurso";
+          String imagen = "public/img/cancelar.png";
+          String destino = "javascript:window.history.back();";
+
+          // Inyeccion de Parámetros
+          parametrizarMensaje(titulo, mensaje, imagen, destino);
+        }
       }
     } catch (NumberFormatException | NullPointerException e) {
-      // Recurso NO disponible
-      page = "errors/page404";
+      // Parámetros
+      String titulo = "Operación Cancelada";
+      String mensaje = "Intento de acceso a un recurso NO disponible";
+      String imagen = "public/img/cancelar.png";
+      String destino = "javascript:window.history.back();";
+
+      // Inyeccion de Parámetros
+      parametrizarMensaje(titulo, mensaje, imagen, destino);
     }
 
     // Command > JSP

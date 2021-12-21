@@ -21,7 +21,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.CuotaDAL;
-import org.japo.java.entities.EntityCuota;
+import org.japo.java.entities.Cuota;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -34,78 +34,81 @@ public final class CommandCuotaModificacion extends Command {
   @SuppressWarnings("ConvertToStringSwitch")
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
-
-    // Entidad
-    EntityCuota cuotaIni;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    CuotaDAL cuotaDAL = new CuotaDAL();
+    String page = "messages/message";
 
     try {
+      // Entidad
+      Cuota cuotaIni;
+
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // request > ID Entidad
-        int id = Integer.parseInt(request.getParameter("id"));
+        seleccionarMensaje(MSG_SESION_INVALIDA);
+      } else {
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
 
-        // request > Operación
-        String op = request.getParameter("op");
+        // Capas de Datos
+        CuotaDAL cuotaDAL = new CuotaDAL(sesion);
 
-        // Entidad > JSP
-        if (op == null || op.equals("captura")) {
-          // ID Entidad > Registro BD > Entidad
-          cuotaIni = cuotaDAL.obtenerCuota(id);
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // request > ID Entidad
+          int id = Integer.parseInt(request.getParameter("id"));
 
-          // Validar Operación
-          if (cuotaIni == null) {
-            // Recurso NO Disponible
-            page = "errors/page404";
-          } else {
-            // Inyección de Datos
+          // request > ID Operación
+          String op = request.getParameter("op");
+
+          // Captura de Datos
+          if (op == null || op.equals("captura")) {
+            // ID Entidad > Registro BD > Entidad
+            cuotaIni = cuotaDAL.obtenerCuota(id);
+
+            // Inyectar Datos > JSP
             request.setAttribute("cuota", cuotaIni);
 
             // JSP
             page = "cuotas/cuota-modificacion";
+            // JSP > BD Actualizada
+          } else if (op.equals("proceso")) {
+            // ID Entidad > Registro BD > Entidad
+            cuotaIni = cuotaDAL.obtenerCuota(id);
+
+            // Request > Parámetros
+            String nombre = request.getParameter("nombre").trim();
+            String info = request.getParameter("info").trim();
+
+            // Parámetros > Entidad
+            Cuota cuotaFin = new Cuota(id, nombre, info,
+                    cuotaIni.getStatus(), cuotaIni.getData(),
+                    cuotaIni.getCreatedAt(), cuotaIni.getUpdatedAt());
+
+            // Ejecutar Operación
+            boolean checkOK = cuotaDAL.modificarCuota(cuotaFin);
+
+            // Validar Operación
+            if (checkOK) {
+              // Parámetros
+              String titulo = "Operación Realizada con Éxito";
+              String mensaje = "Se han modificado correctamente los datos del usuario";
+              String imagen = "public/img/tarea.png";
+              String destino = "controller?cmd=usuario-listado";
+
+              // Inyeccion de Parámetros
+              parametrizarMensaje(titulo, mensaje, imagen, destino);
+            } else {
+              seleccionarMensaje(MSG_OPERACION_CANCELADA);
+            }
+          } else {
+            seleccionarMensaje(MSG_ERROR404);
           }
-          // JSP > BD Actualizada
-        } else if (op.equals("proceso")) {
-          // ID Entidad > Registro BD > Entidad
-          cuotaIni = cuotaDAL.obtenerCuota(id);
-
-          // Request > Parámetros
-          String nombre = request.getParameter("nombre").trim();
-          String info = request.getParameter("info").trim();
-
-          // Parámetros > Entidad
-          EntityCuota cuotaFin = new EntityCuota(id, nombre, info,
-                  cuotaIni.getStatus(), cuotaIni.getData(),
-                  cuotaIni.getCreatedAt(), cuotaIni.getUpdatedAt());
-
-          // Ejecutar Operación
-          boolean procesoOK = cuotaDAL.modificarCuota(cuotaFin);
-
-          // Validar Operación
-          page = procesoOK ? "success/operacion-realizada" : "errors/operacion-cancelada";
         } else {
-          // Recurso NO Disponible
-          page = "errors/page404";
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
         }
-      } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
       }
     } catch (NumberFormatException | NullPointerException e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

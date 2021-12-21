@@ -21,7 +21,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.ProyectoDAL;
-import org.japo.java.entities.EntityProyecto;
+import org.japo.java.entities.Proyecto;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -32,42 +32,41 @@ public final class CommandProyectoConsulta extends Command {
 
   @Override
   public void process() throws ServletException, IOException {
-    // Nombre JSP
-    String page;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    ProyectoDAL proyectoDAL = new ProyectoDAL();
+    // JSP
+    String page = "messages/message";
 
     try {
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // Request > ID Entidad
-        int id = Integer.parseInt(request.getParameter("id"));
-
-        // ID Entidad > Entidad
-        EntityProyecto proyecto = proyectoDAL.obtenerProyecto(id);
-
-        // Inyecta Datos > JSP
-        request.setAttribute("proyecto", proyecto);
-
-        // Nombre JSP
-        page = "proyectos/proyecto-consulta";
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        ProyectoDAL proyectoDAL = new ProyectoDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // Request > ID Entidad
+          int id = Integer.parseInt(request.getParameter("id"));
+
+          // ID Entidad > Entidad
+          Proyecto proyecto = proyectoDAL.obtenerProyecto(id);
+
+          // Inyecta Datos > JSP
+          request.setAttribute("proyecto", proyecto);
+
+          // Nombre JSP
+          page = "proyectos/proyecto-consulta";
+        } else {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+        }
       }
     } catch (NumberFormatException | NullPointerException e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección

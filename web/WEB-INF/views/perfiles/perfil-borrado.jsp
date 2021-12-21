@@ -2,13 +2,13 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Perfil perfil = (Perfil) request.getAttribute("perfil");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-      // Datos Inyectados
-      Perfil g = (Perfil) request.getAttribute("perfil");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -52,27 +52,27 @@
             <tbody>
               <tr>
                 <td>ID</td>
-                <td><%= g.getId()%></td>
+                <td><%= perfil.getId()%></td>
               </tr>
               <tr>
                 <td>Nombre</td>
-                <td><%= g.getNombre()%></td>
+                <td><%= perfil.getNombre()%></td>
               </tr>
               <tr>
                 <td>Info</td>
-                <td><%= g.getInfo()%></td>
+                <td><%= perfil.getInfo()%></td>
               </tr>
             </tbody>
           </table>
           <div class="imagen">
             <div class="imagen-margen">
-              <img src="<%= g.getIcono()%>" alt="<%= g.getNombre()%>"/> 
+              <img src="<%= perfil.getIcono()%>" alt="<%= perfil.getNombre()%>"/> 
             </div>
           </div>
         </div>
         <nav class="botones">
-          <a class="btn btn-borrar" href="controller?cmd=perfil-borrado&id=<%= g.getId()%>&op=proceso">Borrar</a>
-          <a class="btn btn-cancelar" href="controller?cmd=perfil-consulta&id=<%= g.getId()%>">Cancelar</a>
+          <a class="btn btn-borrar" href="controller?cmd=perfil-borrado&id=<%= perfil.getId()%>&op=proceso">Borrar</a>
+          <a class="btn btn-cancelar" href="controller?cmd=perfil-consulta&id=<%= perfil.getId()%>">Cancelar</a>
         </nav>
       </main>
 

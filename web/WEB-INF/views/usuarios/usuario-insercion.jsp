@@ -1,16 +1,16 @@
-<%@page import="org.japo.java.entities.EntityPerfil"%>
+<%@page import="org.japo.java.entities.Perfil"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  List<Perfil> perfiles = (ArrayList<Perfil>) request.getAttribute("perfiles");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-    // Datos Inyectados
-    List<EntityPerfil> perfiles = (ArrayList<EntityPerfil>) request.getAttribute("perfiles");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -42,8 +42,8 @@
       <main>
         <header>
           <h2>Incorporación de Usuarios</h2>
-          <a class="btn btn-perfilesr" accept-charset="Windows-1252"
-             href="controller?cmd=usuario-perfilesdo">Listado</a>
+          <a class="btn btn-perfiles" accept-charset="Windows-1252"
+             href="controller?cmd=usuario-listado">Listado</a>
         </header> 
         <form method="post" accept-charset="Windows-1252"
               action="controller?cmd=usuario-insercion&op=proceso">
@@ -62,15 +62,15 @@
             <input id="email" type="email" name="email" required />
           </div>
           <div class="fieldset">
-            <label for="avatar">Avatar</label>
-            <textarea id="avatar" name="avatar" rows="6"></textarea>
+            <label for="icono">Avatar</label>
+            <textarea id="icono" name="icono" rows="6"></textarea>
           </div>
           <div class="fieldset">
             <label for="perfil">Perfil</label>
             <select id="perfil" name="perfil">
               <option disabled selected value></option>
-              <% for (EntityPerfil p : perfiles) {%>
-              <option value="<%= p.getId()%>"><%= p.getNombre()%></option>
+              <% for (Perfil perfil : perfiles) {%>
+              <option value="<%= perfil.getId()%>"><%= perfil.getNombre()%></option>
               <% }%>
             </select>
           </div>

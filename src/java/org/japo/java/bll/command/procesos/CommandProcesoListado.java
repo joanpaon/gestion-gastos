@@ -22,8 +22,9 @@ import java.util.List;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.ProcesoDAL;
-import org.japo.java.entities.EntityProceso;
+import org.japo.java.entities.Proceso;
 import org.japo.java.entities.ParametrosListado;
+import org.japo.java.entities.Usuario;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -32,67 +33,66 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class CommandProcesoListado extends Command {
 
-  // Nombre de la tabla
-  public static final String TABLE_NAME = "procesos";
-
   @Override
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    ProcesoDAL procesoDAL = new ProcesoDAL();
+    String page = "messages/message";
 
     try {
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // Parámetros Listado
-        ParametrosListado pl = UtilesGastos.iniciarParametrosListado(TABLE_NAME, request);
-
-        // Filtro > Parámetros Listado
-        UtilesGastos.definirFiltradoListado(pl, request);
-
-        // Ordenación > Parámetros Listado
-        UtilesGastos.definirOrdenacionListado(pl, request);
-
-        // Total de Filas > Parámetros Listado
-        pl.setRowCount(procesoDAL.contarProcesos(pl));
-
-        // Navegación > Parámetros Listado
-        UtilesGastos.definirNavegacionListado(pl, request);
-
-        // BD > Lista de Procesos
-        List<EntityProceso> procesos = procesoDAL.obtenerProcesos(pl);
-
-        // Inyecta Datos Listado > JSP
-        request.setAttribute("procesos", procesos);
-
-        // Inyecta Parámetros Listado > JSP
-        request.setAttribute("filter-exp", pl.getFilterValue());
-        request.setAttribute("sort-fld", pl.getOrderField());
-        request.setAttribute("sort-dir", pl.getOrderProgress());
-        request.setAttribute("row-count", pl.getRowCount());
-        request.setAttribute("row-index", pl.getRowIndex());
-        request.setAttribute("rows-page", pl.getRowsPage());
-
-        // JSP
-        page = "procesos/proceso-listado";
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        ProcesoDAL procesoDAL = new ProcesoDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // Sesión > Usuario
+          Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+
+          // Parámetros Listado
+          ParametrosListado pl = new ParametrosListado("gestion_gastos", "procesos", usuario);
+
+          // Filtro > Parámetros Listado
+          UtilesGastos.definirFiltradoListado(pl, request);
+
+          // Ordenación > Parámetros Listado
+          UtilesGastos.definirOrdenacionListado(pl, request);
+
+          // Total de Filas > Parámetros Listado
+          pl.setRowCount(procesoDAL.contarProcesos(pl));
+
+          // Navegación > Parámetros Listado
+          UtilesGastos.definirNavegacionListado(pl, request);
+
+          // BD > Lista de Procesos
+          List<Proceso> procesos = procesoDAL.obtenerProcesos(pl);
+
+          // Inyecta Datos Listado > JSP
+          request.setAttribute("procesos", procesos);
+
+          // Inyecta Parámetros Listado > JSP
+          request.setAttribute("filter-exp", pl.getFilterValue());
+          request.setAttribute("sort-fld", pl.getOrderField());
+          request.setAttribute("sort-dir", pl.getOrderProgress());
+          request.setAttribute("row-count", pl.getRowCount());
+          request.setAttribute("row-index", pl.getRowIndex());
+          request.setAttribute("rows-page", pl.getRowsPage());
+
+          // JSP
+          page = "procesos/proceso-listado";
+        } else {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+        }
       }
     } catch (NumberFormatException | NullPointerException e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

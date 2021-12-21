@@ -2,13 +2,13 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Proceso proceso = (Proceso) request.getAttribute("proceso");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-      // Datos Inyectados
-      Proceso p = (Proceso) request.getAttribute("proceso");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -45,14 +45,14 @@
         </header> 
 
         <form method="post" accept-charset="Windows-1252"
-              action="controller?cmd=proceso-modificacion&id=<%= p.getId()%>&op=proceso">
+              action="controller?cmd=proceso-modificacion&id=<%= proceso.getId()%>&op=proceso">
           <div class="fieldset">
             <label for="nombre">Nombre</label>
-            <input id="nombre" type="text" name="nombre" value="<%= p.getNombre()%>"/>
+            <input id="nombre" type="text" name="nombre" value="<%= proceso.getNombre()%>"/>
           </div>
           <div class="fieldset">
             <label for="info">Información</label>
-            <input id="info" type="text" name="info" value="<%= p.getInfo()%>"/>
+            <input id="info" type="text" name="info" value="<%= proceso.getInfo()%>"/>
           </div>
           <div class="botones">
             <button class="btn btn-submit" type="submit">Enviar</button>

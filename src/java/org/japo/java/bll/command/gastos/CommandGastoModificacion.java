@@ -20,7 +20,6 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.servlet.http.HttpSession;
@@ -28,11 +27,9 @@ import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.AbonoDAL;
 import org.japo.java.dal.GastoDAL;
 import org.japo.java.dal.PartidaDAL;
-import org.japo.java.entities.EntityAbono;
-import org.japo.java.entities.EntityPerfil;
-import org.japo.java.entities.EntityGasto;
-import org.japo.java.entities.EntityPartida;
-import org.japo.java.entities.EntityUsuario;
+import org.japo.java.entities.Abono;
+import org.japo.java.entities.Gasto;
+import org.japo.java.entities.Partida;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -44,111 +41,100 @@ public final class CommandGastoModificacion extends Command {
   @Override
   @SuppressWarnings("ConvertToStringSwitch")
   public void process() throws ServletException, IOException {
-    // Nombre JSP
-    String page;
-
-    // Entidad
-    EntityGasto gastoIni;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    GastoDAL gastoDAL = new GastoDAL();
-    PartidaDAL partidaDAL = new PartidaDAL();
-    AbonoDAL abonoDAL = new AbonoDAL();
+    // JSP
+    String page = "messages/message";
 
     try {
-      // Validar Sesión
+      // Entidad
+      Gasto gastoIni;
+
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // request > ID Entidad
-        int id = Integer.parseInt(request.getParameter("id"));
-
-        // request > Operación
-        String op = request.getParameter("op");
-
-        // ID Entidad + BD > JSP Modificación
-        if (op == null || op.equals("captura")) {
-          // ID Entidad > Registro BD > Entidad
-          gastoIni = gastoDAL.obtenerGasto(id);
-
-          // Session > EntityUsuario
-          EntityUsuario usuario = (EntityUsuario) sesion.getAttribute("usuario");
-
-          // BD > Lista de Abonos
-          List<EntityAbono> abonos;
-
-          // Discriminar EntityPerfil
-          switch (usuario.getPerfilID()) {
-            case EntityPerfil.BASIC:
-              // Lista de Abonos - SÓLO Usuario Actual
-              abonos = abonoDAL.obtenerAbonos(usuario.getId());
-              break;
-            case EntityPerfil.ADMIN:
-            case EntityPerfil.DEVEL:
-              // Lista de Abonos - TODOS los Usuarios
-              abonos = abonoDAL.obtenerAbonos();
-              break;
-            default:
-              // Lista de Abonos - Vacía
-              abonos = new ArrayList<>();
-          }
-
-          // BD > Lista de Partidas
-          List<EntityPartida> partidas = partidaDAL.obtenerPartidas();
-
-          // Inyecta Datos > JSP
-          request.setAttribute("gasto", gastoIni);
-          request.setAttribute("abonos", abonos);
-          request.setAttribute("partidas", partidas);
-
-          // Nombre JSP
-          page = "gastos/gasto-modificacion";
-        } else if (op.equals("proceso")) {
-          // ID Entidad > Registro BD > Entidad
-          gastoIni = gastoDAL.obtenerGasto(id);
-
-          // Request > Parámetros
-          int abono = Integer.parseInt(request.getParameter("abono").trim());
-          double importe = Double.parseDouble(request.getParameter("importe").trim());
-          String info = request.getParameter("info").trim();
-          int partida = Integer.parseInt(request.getParameter("partida").trim());
-          String recibo = request.getParameter("recibo").trim();
-          Date fecha;
-          try {
-            fecha = new SimpleDateFormat("yyyy-MM-dd").parse(request.getParameter("fecha").trim());
-          } catch (ParseException e) {
-            fecha = new Date();
-          }
-
-          // Parámetros > Entidad
-          EntityGasto gastoFin = new EntityGasto(id, abono, importe, info,
-                  partida, recibo,
-                  gastoIni.getStatus(), gastoIni.getData(),
-                  fecha, gastoIni.getUpdatedAt());
-
-          // Ejecutar Operación
-          boolean procesoOK = gastoDAL.modificarGasto(gastoFin);
-
-          // Validar Operación
-          page = procesoOK ? "success/operacion-realizada" : "errors/operacion-cancelada";
-        } else {
-          // Recurso NO Disponible
-          page = "errors/page404";
-        }
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        GastoDAL gastoDAL = new GastoDAL(sesion);
+        PartidaDAL partidaDAL = new PartidaDAL(sesion);
+        AbonoDAL abonoDAL = new AbonoDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // request > ID Entidad
+          int id = Integer.parseInt(request.getParameter("id"));
+
+          // request > Operación
+          String op = request.getParameter("op");
+
+          // ID Entidad + BD > JSP Modificación
+          if (op == null || op.equals("captura")) {
+            // ID Entidad > Registro BD > Entidad
+            gastoIni = gastoDAL.obtenerGasto(id);
+
+            // BD > Lista de Abonos
+            List<Abono> abonos = abonoDAL.obtenerAbonos();
+
+            // BD > Lista de Partidas
+            List<Partida> partidas = partidaDAL.obtenerPartidas();
+
+            // Inyecta Datos > JSP
+            request.setAttribute("gasto", gastoIni);
+            request.setAttribute("abonos", abonos);
+            request.setAttribute("partidas", partidas);
+
+            // JSP
+            page = "gastos/gasto-modificacion";
+          } else if (op.equals("proceso")) {
+            // ID Entidad > Registro BD > Entidad
+            gastoIni = gastoDAL.obtenerGasto(id);
+
+            // Request > Parámetros
+            int abono = Integer.parseInt(request.getParameter("abono").trim());
+            double importe = Double.parseDouble(request.getParameter("importe").trim());
+            String info = request.getParameter("info").trim();
+            int partida = Integer.parseInt(request.getParameter("partida").trim());
+            String recibo = request.getParameter("recibo").trim();
+            Date fecha;
+            try {
+              fecha = new SimpleDateFormat("yyyy-MM-dd").parse(request.getParameter("fecha").trim());
+            } catch (ParseException e) {
+              fecha = new Date();
+            }
+
+            // Parámetros > Entidad
+            Gasto gastoFin = new Gasto(id, abono, importe, info,
+                    partida, recibo,
+                    gastoIni.getStatus(), gastoIni.getData(),
+                    fecha, gastoIni.getUpdatedAt());
+
+            // Ejecutar Operación
+            boolean checkOK = gastoDAL.modificarGasto(gastoFin);
+
+            // Validar Operación
+            if (checkOK) {
+              // Parámetros
+              String titulo = "Operación Realizada con Éxito";
+              String mensaje = "Se han modificado correctamente los datos del usuario";
+              String imagen = "public/img/tarea.png";
+              String destino = "controller?cmd=usuario-listado";
+
+              // Inyeccion de Parámetros
+              parametrizarMensaje(titulo, mensaje, imagen, destino);
+            } else {
+              seleccionarMensaje(MSG_OPERACION_CANCELADA);
+            }
+          } else {
+            seleccionarMensaje(MSG_ERROR404);
+          }
+        } else {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+        }
       }
     } catch (NumberFormatException | NullPointerException e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

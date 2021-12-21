@@ -2,13 +2,13 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Cuota cuota = (Cuota) request.getAttribute("cuota");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-      // Datos Inyectados
-      Cuota c = (Cuota) request.getAttribute("cuota");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -52,22 +52,22 @@
             <tbody>
               <tr>
                 <td>ID</td>
-                <td><%= c.getId()%></td>
+                <td><%= cuota.getId()%></td>
               </tr>
               <tr>
                 <td>Nombre</td>
-                <td><%= c.getNombre()%></td>
+                <td><%= cuota.getNombre()%></td>
               </tr>
               <tr>
                 <td>Info</td>
-                <td><%= c.getInfo()%></td>
+                <td><%= cuota.getInfo()%></td>
               </tr>
             </tbody>
           </table>
         </div>
         <nav class="botones">
-          <a class="btn btn-borrar" href="controller?cmd=cuota-borrado&id=<%= c.getId()%>">Borrar</a>
-          <a class="btn btn-modificar" href="controller?cmd=cuota-modificacion&id=<%= c.getId()%>&op=captura">Modificar</a>
+          <a class="btn btn-borrar" href="controller?cmd=cuota-borrado&id=<%= cuota.getId()%>">Borrar</a>
+          <a class="btn btn-modificar" href="controller?cmd=cuota-modificacion&id=<%= cuota.getId()%>&op=captura">Modificar</a>
         </nav>
       </main>
 

@@ -5,14 +5,14 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  List<Proyecto> proyectos = (ArrayList<Proyecto>) request.getAttribute("proyectos");
+  List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuarios");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-      // Datos Inyectados
-      List<Proyecto> proyectos = (ArrayList<Proyecto>) request.getAttribute("proyecto-lista");
-      List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuario-lista");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -53,8 +53,8 @@
             <label for="usuario">Usuario</label>
             <select id="usuario" name="usuario">
               <option disabled selected value></option>
-              <% for (Usuario u : usuarios) {%>
-              <option value="<%= u.getId()%>"><%= u.getUser()%></option>
+              <% for (Usuario usuario : usuarios) {%>
+              <option value="<%= usuario.getId()%>"><%= usuario.getUser()%></option>
               <% }%>
             </select>
           </div>
@@ -62,8 +62,8 @@
             <label for="proyecto">Proyecto</label>
             <select id="proyecto" name="proyecto">
               <option disabled selected value></option>
-              <% for (Proyecto p : proyectos) {%>
-              <option value="<%= p.getId()%>"><%= p.getNombre()%></option>
+              <% for (Proyecto proyecto : proyectos) {%>
+              <option value="<%= proyecto.getId()%>"><%= proyecto.getNombre()%></option>
               <% }%>
             </select>
           </div>

@@ -23,9 +23,8 @@ import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.PerfilDAL;
 import org.japo.java.dal.UsuarioDAL;
-import org.japo.java.entities.EntityPerfil;
-import org.japo.java.entities.EntityUsuario;
-import org.japo.java.entities.ParametrosListado;
+import org.japo.java.entities.Perfil;
+import org.japo.java.entities.Usuario;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -37,73 +36,75 @@ public final class CommandUsuarioInsercion extends Command {
   @Override
   @SuppressWarnings("ConvertToStringSwitch")
   public void process() throws ServletException, IOException {
-    // Nombre JSP
-    String page;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    PerfilDAL perfilDAL = new PerfilDAL();
-    UsuarioDAL usuarioDAL = new UsuarioDAL();
+    // JSP
+    String page = "messages/message";
 
     try {
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // Usuario Actual
-        EntityUsuario usuario = (EntityUsuario) sesion.getAttribute("usuario");
-
-        // Obtener Operación
-        String op = request.getParameter("op");
-
-        // Invoca Formulario de Captura de Datos
-        if (op == null || op.equals("captura")) {
-          // Parámetros Listado
-          ParametrosListado pl = new ParametrosListado();
-          pl.setUser(usuario);
-
-          // Obtener Perfiles de Usuario
-          List<EntityPerfil> perfiles = perfilDAL.obtenerPerfiles(pl);
-
-          // Inyección Datos
-          request.setAttribute("perfiles", perfiles);
-
-          // Nombre JSP
-          page = "usuarios/usuario-insercion";
-        } else if (op.equals("proceso")) {
-          // Request > Parámetros
-          String user = request.getParameter("user").trim();
-          String pass = request.getParameter("pass").trim();
-          String email = request.getParameter("email").trim();
-          String icono = request.getParameter("icono").trim();
-          int perfilID = Integer.parseInt(request.getParameter("perfil").trim());
-          String info = request.getParameter("info").trim();
-
-          // Parámetros > Entidad
-          usuario = new EntityUsuario(user, pass, email, icono, perfilID, info);
-
-          // Entidad > Inserción BD - true | false
-          boolean operacionOK = usuarioDAL.insertarUsuario(usuario);
-
-          // Validar Inserción BD
-          page = operacionOK ? "success/operacion-realizada" : "errors/operacion-cancelada";
-        } else {
-          // Recurso NO disponible
-          page = "errors/page404";
-        }
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        PerfilDAL perfilDAL = new PerfilDAL(sesion);
+        UsuarioDAL usuarioDAL = new UsuarioDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // Obtener Operación
+          String op = request.getParameter("op");
+
+          // Formulario Captura Datos
+          if (op == null || op.equals("captura")) {
+            // BD > Lista de Perfiles
+            List<Perfil> perfiles = perfilDAL.obtenerPerfiles();
+
+            // Inyección Datos
+            request.setAttribute("perfiles", perfiles);
+
+            // JSP
+            page = "usuarios/usuario-insercion";
+          } else if (op.equals("proceso")) {
+            // Request > Parámetros
+            String user = request.getParameter("user").trim();
+            String pass = request.getParameter("pass").trim();
+            String email = request.getParameter("email").trim();
+            String icono = request.getParameter("icono").trim();
+            int perfilID = Integer.parseInt(request.getParameter("perfil").trim());
+            String info = request.getParameter("info").trim();
+
+            // Parámetros > Entidad
+            Usuario usuario = new Usuario(user, pass, email, icono, perfilID, info);
+
+            // Entidad > Inserción BD - true | false
+            boolean checkOK = usuarioDAL.insertarUsuario(usuario);
+
+            // Validar Operación
+            if (checkOK) {
+              // Parámetros
+              String titulo = "Operación Realizada con Éxito";
+              String mensaje = "Datos insertados correctamente";
+              String imagen = "public/img/tarea.png";
+              String destino = "controller?cmd=usuario-listado";
+
+              // Inyeccion de Parámetros
+              parametrizarMensaje(titulo, mensaje, imagen, destino);
+            } else {
+              seleccionarMensaje(MSG_OPERACION_CANCELADA);
+            }
+          } else {
+            seleccionarMensaje(MSG_ERROR404);
+          }
+        } else {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+        }
       }
     } catch (NumberFormatException | NullPointerException e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

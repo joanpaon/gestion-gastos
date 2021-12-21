@@ -5,14 +5,14 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuarios");
+  List<Cuota> cuotas = (ArrayList<Cuota>) request.getAttribute("cuotas");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-      // Datos Inyectados
-      List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuario-lista");
-      List<Cuota> cuotas = (ArrayList<Cuota>) request.getAttribute("cuota-lista");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -57,8 +57,8 @@
             <label for="propietario">Propietario</label>
             <select id="propietario" name="propietario">
               <option disabled selected value></option>
-              <% for (Usuario u : usuarios) {%>
-              <option value="<%= u.getId()%>"><%= u.getUser()%></option>
+              <% for (Usuario usuario : usuarios) {%>
+              <option value="<%= usuario.getId()%>"><%= usuario.getUser()%></option>
               <% }%>
             </select>
           </div>
@@ -66,8 +66,8 @@
             <label for="cuota">Cuota</label>
             <select id="cuota" name="cuota">
               <option disabled selected value></option>
-              <% for (Cuota c : cuotas) {%>
-              <option value="<%= c.getId()%>"><%= c.getNombre()%></option>
+              <% for (Cuota cuota : cuotas) {%>
+              <option value="<%= cuota.getId()%>"><%= cuota.getNombre()%></option>
               <% }%>
             </select>
           </div>

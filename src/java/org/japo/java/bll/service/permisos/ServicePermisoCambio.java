@@ -19,9 +19,11 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
-import org.japo.java.entities.EntityPermiso;
+import org.japo.java.entities.Permiso;
 import org.japo.java.bll.service.Service;
 import org.japo.java.dal.PermisoDAL;
+import org.japo.java.dal.UsuarioDAL;
+import org.japo.java.libraries.UtilesGastos;
 
 /**
  *
@@ -34,41 +36,47 @@ public final class ServicePermisoCambio extends Service {
     // JSP
     String json;
 
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capa de Datos
-    PermisoDAL dal = new PermisoDAL();
-
     try {
-      // Validar Acceso
-      if (adminBLL.validarAccesoServicio(sesion, getClass().getSimpleName())) {
-        // Request > Id Proceso
-        int proceso = Integer.parseInt(request.getParameter("process"));
+      // Sesión
+      HttpSession sesion = request.getSession(false);
 
-        // Request > Id Grupo
-        int grupo = Integer.parseInt(request.getParameter("group"));
-
-        // Proceso + Grupo > Nuevo EntityPermiso de Perfil
-        EntityPermiso pp = new EntityPermiso(0, proceso, grupo, null, 0, null, null, null);
-
-        // Request > Estado
-        boolean estado = Boolean.parseBoolean(request.getParameter("state"));
-
-        // EntityPermiso de Perfil + Estado > Gestion Permisos Perfil
-        boolean procesoOK = estado ? dal.insertarPermiso(pp) : dal.borrarPermiso(pp);
-
-        // Resultado > JSON
-        if (procesoOK) {
-          json = "{\"ok\":true, \"msg\":\"Permiso SI Cambiado\"}";
-        } else {
-          json = "{\"ok\":false, \"msg\":\"Permiso NO Cambiado\"}";
-        }
+      // Validar Sesión
+      if (!UtilesGastos.validarSesion(sesion)) {
+        // Recurso NO Disponible
+        json = "{\"response\": \"Sesión Caducada\"}";
       } else {
-        json = "{\"ok\":false, \"msg\":\"Acceso NO Autorizado\"}";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        PermisoDAL permisoDAL = new PermisoDAL(sesion);
+
+        // Validar Acceso
+        if (adminBLL.validarAccesoServicio(getClass().getSimpleName())) {
+          // Request > Id Proceso
+          int proceso = Integer.parseInt(request.getParameter("process"));
+
+          // Request > Id Grupo
+          int grupo = Integer.parseInt(request.getParameter("group"));
+
+          // Proceso + Grupo > Nuevo Permiso de Perfil
+          Permiso pp = new Permiso(0, proceso, grupo, null, 0, null, null, null);
+
+          // Request > Estado
+          boolean estado = Boolean.parseBoolean(request.getParameter("state"));
+
+          // Permiso de Perfil + Estado > Gestion Permisos Perfil
+          boolean procesoOK = estado ? permisoDAL.insertarPermiso(pp) : permisoDAL.borrarPermiso(pp);
+
+          // Resultado > JSON
+          if (procesoOK) {
+            json = "{\"ok\":true, \"msg\":\"Permiso SI Cambiado\"}";
+          } else {
+            json = "{\"ok\":false, \"msg\":\"Permiso NO Cambiado\"}";
+          }
+        } else {
+          json = "{\"ok\":false, \"msg\":\"Acceso NO Autorizado\"}";
+        }
       }
     } catch (NumberFormatException | NullPointerException e) {
       // Recurso NO Disponible

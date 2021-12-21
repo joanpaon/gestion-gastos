@@ -2,13 +2,13 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Proceso proceso = (Proceso) request.getAttribute("proceso");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-      // Datos Inyectados
-      Proceso p = (Proceso) request.getAttribute("proceso");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -52,22 +52,22 @@
             <tbody>
               <tr>
                 <td>ID</td>
-                <td><%= p.getId()%></td>
+                <td><%= proceso.getId()%></td>
               </tr>
               <tr>
                 <td>Nombre</td>
-                <td><%= p.getNombre()%></td>
+                <td><%= proceso.getNombre()%></td>
               </tr>
               <tr>
                 <td>Info</td>
-                <td><%= p.getInfo()%></td>
+                <td><%= proceso.getInfo()%></td>
               </tr>
             </tbody>
           </table>
         </div>
         <nav class="botones">
-          <a class="btn btn-borrar" href="controller?cmd=proceso-borrado&id=<%= p.getId()%>">Borrar</a>
-          <a class="btn btn-modificar" href="controller?cmd=proceso-modificacion&id=<%= p.getId()%>&op=captura">Modificar</a>
+          <a class="btn btn-borrar" href="controller?cmd=proceso-borrado&id=<%= proceso.getId()%>">Borrar</a>
+          <a class="btn btn-modificar" href="controller?cmd=proceso-modificacion&id=<%= proceso.getId()%>&op=captura">Modificar</a>
         </nav>
       </main>
 

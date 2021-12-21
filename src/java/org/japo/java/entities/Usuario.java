@@ -13,7 +13,7 @@ import org.japo.java.libraries.UtilesValidacion;
  *
  * @author JAPO Labs - japolabs@gmail.com
  */
-public final class EntityUsuario implements Serializable {
+public final class Usuario implements Serializable {
 
   // Expresiones regulares
   public static final String ER_USER = "[a-zA-ZáéíóúüÁÉÍÓÚÜñÑ\\-\\. ]{3,20}";
@@ -33,7 +33,7 @@ public final class EntityUsuario implements Serializable {
   private Date createdAt = new Date();
   private Date updatedAt = new Date();
 
-  public EntityUsuario(int id, String user, String pass, String email,
+  public Usuario(int id, String user, String pass, String email,
           String icono, int perfilID, String perfilInfo, String info,
           int status, String data, Date createdAt, Date updatedAt) {
     this.id = id;
@@ -50,7 +50,7 @@ public final class EntityUsuario implements Serializable {
     this.updatedAt = updatedAt;
   }
 
-  public EntityUsuario(String user, String pass, String email,
+  public Usuario(String user, String pass, String email,
           String icono, int perfilID, String info,
           int status, String data, Date createdAt, Date updatedAt) {
     this.user = user;
@@ -65,7 +65,7 @@ public final class EntityUsuario implements Serializable {
     this.updatedAt = updatedAt;
   }
 
-  public EntityUsuario(String user, String pass, String email,
+  public Usuario(String user, String pass, String email,
           String icono, int perfilID, String info) {
     this.user = user;
     this.pass = pass;
@@ -75,7 +75,7 @@ public final class EntityUsuario implements Serializable {
     this.info = info;
   }
 
-  public EntityUsuario(int id, String user, String pass, String email,
+  public Usuario(int id, String user, String pass, String email,
           String icono, int perfilID, String info,
           int status, String data, Date createdAt, Date updatedAt) {
     this.id = id;

@@ -1,5 +1,13 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  String titulo = (String) request.getAttribute("titulo");
+  String mensaje = (String) request.getAttribute("mensaje");
+  String imagen = (String) request.getAttribute("imagen");
+  String destino = (String) request.getAttribute("destino");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -24,7 +32,7 @@
     <link href="public/img/favicon.ico" rel="icon" type="image/x-icon" />
 
     <!-- Style Sheet Links -->
-    <link rel="stylesheet" href="public/css/success/acceso-concedido.css"/>
+    <link rel="stylesheet" href="public/css/messages/message.css"/>
   </head>
 
   <body>
@@ -32,16 +40,16 @@
       <jsp:include page="../../partials/header.jsp" />
 
       <main>
-        <h1>Identificación Correcta</h1>
-        <span>&#128077;</span>
-        <h2>Su credencial ha sido validada satisfactoriamente</h2>
-        <a class="btn btn-listar" href="controller?cmd=main">Continuar</a>
+        <h1><%=titulo%></h1>
+        <img src="<%=imagen%>" alt="Imagen Mensaje"/>
+        <h2><%=mensaje%></h2>
+        <a class="btn" href="<%=destino%>">Continuar</a>
       </main>
 
       <jsp:include page="../../partials/footer.jsp" />
     </div>
 
     <!-- Application Scripts -->
-    <script src="public/js/success/acceso-concedido.js"></script>
+    <script src="public/js/messages/message.js"></script>
   </body>
 </html>

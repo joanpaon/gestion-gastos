@@ -21,7 +21,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.PerfilDAL;
-import org.japo.java.entities.EntityPerfil;
+import org.japo.java.entities.Perfil;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -34,72 +34,81 @@ public final class CommandPerfilModificacion extends Command {
   @SuppressWarnings("ConvertToStringSwitch")
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
-
-    // Entidad
-    EntityPerfil perfilIni;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    PerfilDAL perfilDAL = new PerfilDAL();
+    String page = "messages/message";
 
     try {
+      // Entidad
+      Perfil perfilIni;
+
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // request > ID Entidad
-        int id = Integer.parseInt(request.getParameter("id"));
-
-        // request > Operación
-        String op = request.getParameter("op");
-
-        // Entidad > JSP
-        if (op == null || op.equals("captura")) {
-          // BD > Entidades
-          perfilIni = perfilDAL.obtenerPerfil(id);
-
-          // Inyección de Datos
-          request.setAttribute("perfil", perfilIni);
-
-          // JSP
-          page = "perfiles/perfil-modificacion";
-        } else if (op.equals("proceso")) {
-          // ID Entidad > Registro BD > Entidad
-          perfilIni = perfilDAL.obtenerPerfil(id);
-
-          // Request > Parámetros
-          String nombre = request.getParameter("nombre").trim();
-          String info = request.getParameter("info").trim();
-          String icono = request.getParameter("icono").trim();
-
-          // Parámetros > Entidad
-          EntityPerfil perfilFin = new EntityPerfil(id, nombre, info, icono,
-                  perfilIni.getStatus(), perfilIni.getData(),
-                  perfilIni.getCreatedAt(), perfilIni.getUpdatedAt());
-
-          // Ejecutar Operación
-          boolean procesoOK = perfilDAL.modificarPerfil(perfilFin);
-
-          // Validar Operación
-          page = procesoOK ? "success/operacion-realizada" : "errors/operacion-cancelada";
-        } else {
-          // Recurso NO Disponible
-          page = "errors/page404";
-        }
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        PerfilDAL perfilDAL = new PerfilDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // request > ID Entidad
+          int id = Integer.parseInt(request.getParameter("id"));
+
+          // request > Operación
+          String op = request.getParameter("op");
+
+          // Entidad > JSP
+          if (op == null || op.equals("captura")) {
+            // BD > Entidades
+            perfilIni = perfilDAL.obtenerPerfil(id);
+
+            // Inyectar Datos > JSP
+            request.setAttribute("perfil", perfilIni);
+
+            // JSP
+            page = "perfiles/perfil-modificacion";
+          } else if (op.equals("proceso")) {
+            // ID Entidad > Registro BD > Entidad
+            perfilIni = perfilDAL.obtenerPerfil(id);
+
+            // Request > Parámetros
+            String nombre = request.getParameter("nombre").trim();
+            String info = request.getParameter("info").trim();
+            String icono = request.getParameter("icono").trim();
+
+            // Parámetros > Entidad
+            Perfil perfilFin = new Perfil(id, nombre, info, icono,
+                    perfilIni.getStatus(), perfilIni.getData(),
+                    perfilIni.getCreatedAt(), perfilIni.getUpdatedAt());
+
+            // Ejecutar Operación
+            boolean checkOK = perfilDAL.modificarPerfil(perfilFin);
+
+            // Validar Operación
+            if (checkOK) {
+              // Parámetros
+              String titulo = "Operación Realizada con Éxito";
+              String mensaje = "Datos modificados correctamente";
+              String imagen = "public/img/tarea.png";
+              String destino = "controller?cmd=perfil-listado";
+
+              // Inyeccion de Parámetros
+              parametrizarMensaje(titulo, mensaje, imagen, destino);
+            } else {
+              seleccionarMensaje(MSG_OPERACION_CANCELADA);
+            }
+          } else {
+            seleccionarMensaje(MSG_ERROR404);
+          }
+        } else {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+        }
       }
     } catch (NumberFormatException | NullPointerException e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

@@ -1,24 +1,24 @@
-<%@page import="org.japo.java.entities.EntityPerfil"%>
-<%@page import="org.japo.java.entities.EntityUsuario"%>
-<%@page import="org.japo.java.entities.EntityCuota"%>
+<%@page import="org.japo.java.entities.Perfil"%>
+<%@page import="org.japo.java.entities.Usuario"%>
+<%@page import="org.japo.java.entities.Cuota"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  List<Cuota> cuotas = (ArrayList<Cuota>) request.getAttribute("cuotas");
+  String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
+  String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
+  String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
+  Long rowCount = (Long) request.getAttribute("row-count");
+  Long rowIndex = (Long) request.getAttribute("row-index");
+  Long rowsPage = (Long) request.getAttribute("rows-page");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-    // Datos Inyectados
-    List<EntityCuota> Cuotas = (ArrayList<EntityCuota>) request.getAttribute("cuotas");
-    String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
-    String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
-    String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
-    Long rowCount = (Long) request.getAttribute("row-count");
-    Long rowIndex = (Long) request.getAttribute("row-index");
-    Long rowsPage = (Long) request.getAttribute("rows-page");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -52,11 +52,11 @@
 
       <main>
         <header>
-          <h2>Listado de EntityCuotas</h2>
-          <% EntityUsuario usuario = (EntityUsuario) session.getAttribute("usuario"); %>
-          <% if (usuario.getPerfilID() == EntityPerfil.DEVEL) { %>
+          <h2>Listado de cuotas</h2>
+          <% Usuario usuario = (Usuario) session.getAttribute("usuario"); %>
+          <% if (usuario.getPerfilID() == Perfil.DEVEL) { %>
           <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
-          <% } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) { %>
+          <% } else if (usuario.getPerfilID() == Perfil.ADMIN) { %>
           <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
           <% } else { %>
           <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
@@ -107,7 +107,7 @@
           </div>
         </nav>
 
-        <% if (Cuotas.isEmpty()) { %>
+        <% if (cuotas.isEmpty()) { %>
 
         <h2>No hay cuotas disponibles</h2>
 
@@ -187,16 +187,16 @@
           <th>Acciones</th>
           </thead>
           <tbody>
-            <% for (EntityCuota c : Cuotas) {%>
+            <% for (Cuota cuota : cuotas) {%>
 
             <tr>
-              <td><%= c.getId()%></td>
-              <td><%= c.getNombre()%></td>
-              <td><%= c.getInfo()%></td>
+              <td><%= cuota.getId()%></td>
+              <td><%= cuota.getNombre()%></td>
+              <td><%= cuota.getInfo()%></td>
               <td>
-                <a class="btn btn-consultar" href="controller?cmd=cuota-consulta&id=<%= c.getId()%>" title="Consulta">C</a>
-                <a class="btn btn-modificar" href="controller?cmd=cuota-modificacion&id=<%= c.getId()%>" title="Modificación">M</a>
-                <a class="btn btn-borrar" href="controller?cmd=cuota-borrado&id=<%= c.getId()%>" title="Eliminación">B</a>
+                <a class="btn btn-consultar" href="controller?cmd=cuota-consulta&id=<%= cuota.getId()%>" title="Consulta">C</a>
+                <a class="btn btn-modificar" href="controller?cmd=cuota-modificacion&id=<%= cuota.getId()%>" title="Modificación">M</a>
+                <a class="btn btn-borrar" href="controller?cmd=cuota-borrado&id=<%= cuota.getId()%>" title="Eliminación">B</a>
               </td>
             </tr>
 

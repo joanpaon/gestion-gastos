@@ -20,8 +20,9 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.dal.UsuarioDAL;
-import org.japo.java.entities.EntityPerfil;
-import org.japo.java.entities.EntityUsuario;
+import org.japo.java.entities.Perfil;
+import org.japo.java.entities.Usuario;
+import org.japo.java.libraries.UtilesGastos;
 
 /**
  *
@@ -36,27 +37,32 @@ public final class CommandLogin extends Command {
   @SuppressWarnings("ConvertToStringSwitch")
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
+    String page = "messages/message";
 
     try {
       // Obtener Operación
       String op = request.getParameter("op");
 
-      // Capas de Negocio
-      UsuarioDAL usuarioDAL = new UsuarioDAL();
-
       // Request > Sesión
       HttpSession sesion = request.getSession(false);
 
       // Procesar Operación
-      if (sesion == null) {
-        // Acceso Denegado - Acceso directo por URL
-        page = "error/acceso-denegado";
-      } else if (sesion.getAttribute("usuario") != null) {
-        // Sesión + EntityUsuario Existente - Aceso permitido
-        page = "success/acceso-concedido";
+      if (UtilesGastos.validarSesion(sesion)) {
+        // Sesión > Usuario
+        Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+
+        // Validar Perfil
+        switch (usuario.getPerfilID()) {
+          case Perfil.DEVEL:
+            page = "controller?cmd=main-devel";
+            break;
+          case Perfil.ADMIN:
+            page = "controller?cmd=main-admin";
+            break;
+          default:
+            page = "controller?cmd=main-basic";
+        }
       } else if (op == null || op.equals("captura")) {
-        // Credenciales > Request
         page = "admin/login";
       } else if (op.equals("proceso")) {
         // Request > Credenciales
@@ -64,42 +70,38 @@ public final class CommandLogin extends Command {
         String pass = request.getParameter("pass");
 
         // Validar Credencial
-        if (user == null || !EntityUsuario.validarUsername(user)) {
-          // Credencial Incorrecta - Nombre de EntityUsuario Incorrecto
-          page = "errors/credencial-erronea";
-        } else if (pass == null || !EntityUsuario.validarPassword(pass)) {
-          // Credencial Incorrecta - Contraseña Incorrecta
-          page = "errors/credencial-erronea";
+        if (user == null || !Usuario.validarUsername(user)) {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+        } else if (pass == null || !Usuario.validarPassword(pass)) {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
         } else {
-          // Nombre EntityUsuario + BD > Objeto EntityUsuario
-          EntityUsuario usuario = usuarioDAL.obtenerUsuario(user);
+          // Crear Nueva Sesión
+          sesion = request.getSession(true);
 
-          // Validar Objeto EntityUsuario
+          // Capas de Negocio
+          UsuarioDAL usuarioDAL = new UsuarioDAL(sesion);
+
+          // Nombre Usuario + BD > Objeto Usuario
+          Usuario usuario = usuarioDAL.obtenerUsuario(user);
+
+          // Validar Objeto Usuario
           if (usuario == null) {
-            // Credencial Incorrecta - EntityUsuario NO Registrado
-            page = "errors/credencial-erronea";
+            seleccionarMensaje(MSG_ACCESO_DENEGADO);
           } else if (!pass.equals(usuario.getPass())) {
-            // Credencial Incorrecta - Contraseña NO coincide
-            page = "errors/credencial-erronea";
+            seleccionarMensaje(MSG_ACCESO_DENEGADO);
           } else {
-            // Elimina Sesión Previa
-            sesion.invalidate();
-
-            // Crear Nueva Sesión
-            sesion = request.getSession(true);
-
             // Establecer duracion sesion ( Segundos )
             sesion.setMaxInactiveInterval(DURACION_SESION);
 
-            // EntityUsuario > Sesión
+            // Usuario > Sesión
             sesion.setAttribute("usuario", usuario);
 
             // Discrimina Perfil Usuario
             switch (usuario.getPerfilID()) {
-              case EntityPerfil.DEVEL:
+              case Perfil.DEVEL:
                 page = "controller?cmd=main-devel";
                 break;
-              case EntityPerfil.ADMIN:
+              case Perfil.ADMIN:
                 page = "controller?cmd=main-admin";
                 break;
               default:
@@ -108,12 +110,10 @@ public final class CommandLogin extends Command {
           }
         }
       } else {
-        // Formato de URL incorrecto
-        page = "errors/page404";
+        seleccionarMensaje(MSG_ERROR404);
       }
     } catch (NullPointerException e) {
-      // Recurso NO disponible
-      page = "errors/page404";
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

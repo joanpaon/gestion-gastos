@@ -6,7 +6,7 @@ import java.util.Date;
  *
  * @author JAPO Labs - japolabs@gmail.com
  */
-public final class EntityPerfil {
+public final class Perfil {
   // Constantes
 
   public static final int BASIC = 2;
@@ -18,12 +18,12 @@ public final class EntityPerfil {
   private String nombre;
   private String info;
   private String icono;
-  private int status;
-  private String data;
-  private Date createdAt;
-  private Date updatedAt;
+  private int status = 0;
+  private String data = "{}";
+  private Date createdAt = new Date();
+  private Date updatedAt = new Date();
 
-  public EntityPerfil(int id, String nombre, String info, String icono,
+  public Perfil(int id, String nombre, String info, String icono,
           int status, String data, Date createdAt, Date updatedAt) {
     this.id = id;
     this.nombre = nombre;
@@ -35,7 +35,7 @@ public final class EntityPerfil {
     this.updatedAt = updatedAt;
   }
 
-  public EntityPerfil(String nombre, String info, String icono) {
+  public Perfil(String nombre, String info, String icono) {
     this.nombre = nombre;
     this.info = info;
     this.icono = icono;

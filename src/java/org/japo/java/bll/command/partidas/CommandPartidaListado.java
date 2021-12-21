@@ -23,7 +23,8 @@ import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.PartidaDAL;
 import org.japo.java.entities.ParametrosListado;
-import org.japo.java.entities.EntityPartida;
+import org.japo.java.entities.Partida;
+import org.japo.java.entities.Usuario;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -38,57 +39,61 @@ public final class CommandPartidaListado extends Command {
   @Override
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    PartidaDAL partidaDAL = new PartidaDAL();
+    String page = "messages/message";
 
     try {
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // Parámetros Listado
-        ParametrosListado pl = UtilesGastos.iniciarParametrosListado(TABLE_NAME, request);
-
-        // Filtro > Parámetros Listado
-        UtilesGastos.definirFiltradoListado(pl, request);
-
-        // Ordenación > Parámetros Listado
-        UtilesGastos.definirOrdenacionListado(pl, request);
-
-        // Total de Filas > Parámetros Listado
-        pl.setRowCount(partidaDAL.contarPartidas(pl));
-
-        // Navegación > Parámetros Listado
-        UtilesGastos.definirNavegacionListado(pl, request);
-
-        // BD > Lista de Cuotas
-        List<EntityPartida> partidas = partidaDAL.obtenerPartidas(pl);
-
-        // Inyecta Datos Listado > JSP
-        request.setAttribute("partidas", partidas);
-
-        // Inyecta Parámetros Listado > JSP
-        request.setAttribute("filter-exp", pl.getFilterValue());
-        request.setAttribute("sort-fld", pl.getOrderField());
-        request.setAttribute("sort-dir", pl.getOrderProgress());
-        request.setAttribute("row-count", pl.getRowCount());
-        request.setAttribute("row-index", pl.getRowIndex());
-        request.setAttribute("rows-page", pl.getRowsPage());
-
-        // JSP
-        page = "partidas/partida-listado";
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        PartidaDAL partidaDAL = new PartidaDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // Sesión > Usuario
+          Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+
+          // Parámetros Listado
+          ParametrosListado pl = new ParametrosListado("gestion_gastos", "partidas", usuario);
+
+          // Filtro > Parámetros Listado
+          UtilesGastos.definirFiltradoListado(pl, request);
+
+          // Ordenación > Parámetros Listado
+          UtilesGastos.definirOrdenacionListado(pl, request);
+
+          // Total de Filas > Parámetros Listado
+          pl.setRowCount(partidaDAL.contarRegistros(pl));
+
+          // Navegación > Parámetros Listado
+          UtilesGastos.definirNavegacionListado(pl, request);
+
+          // BD > Lista de Cuotas
+          List<Partida> partidas = partidaDAL.obtenerPartidas(pl);
+
+          // Inyecta Datos Listado > JSP
+          request.setAttribute("partidas", partidas);
+
+          // Inyecta Parámetros Listado > JSP
+          request.setAttribute("filter-exp", pl.getFilterValue());
+          request.setAttribute("sort-fld", pl.getOrderField());
+          request.setAttribute("sort-dir", pl.getOrderProgress());
+          request.setAttribute("row-count", pl.getRowCount());
+          request.setAttribute("row-index", pl.getRowIndex());
+          request.setAttribute("rows-page", pl.getRowsPage());
+
+          // JSP
+          page = "partidas/partida-listado";
+        } else {
+          // Acceso NO Autorizado
+          page = "errors/acceso-denegado";
+        }
       }
     } catch (Exception e) {
       // Recurso NO Disponible

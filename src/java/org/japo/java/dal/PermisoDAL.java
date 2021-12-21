@@ -5,88 +5,86 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
-import org.japo.java.entities.EntityPerfil;
 import org.japo.java.entities.ParametrosListado;
-import org.japo.java.entities.EntityPermiso;
-import org.japo.java.entities.EntityUsuario;
+import org.japo.java.entities.Permiso;
+import org.japo.java.entities.Usuario;
 
 /**
  *
  * @author José A. Pacheco Ondoño - japolabs@gmail.com
  */
-public final class PermisoDAL {
+public final class PermisoDAL extends AbstractDAL {
 
-  public List<EntityPermiso> obtenerPermisos() {
-    return obtenerPermisos(new ParametrosListado());
+  // Constantes
+  private final String TABLA = "permisos";
+
+  // Parámetros de Listado
+  private final ParametrosListado PL;
+
+  // Campos
+  private final HttpSession sesion;
+
+  public PermisoDAL(HttpSession sesion) {
+    this.sesion = sesion;
+
+    // Sesión > Usuario
+    Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+
+    // BD + TABLA + usuario > Parámetros de Listado
+    PL = new ParametrosListado(BD, TABLA, usuario);
   }
 
-  public EntityPermiso obtenerPermiso(int id) {
-    // Parámetros de Listado - POR DEFECTO
-    ParametrosListado pl = new ParametrosListado();
-    pl.setFilterField("id");
-    pl.setFilterValue(id + "");
-    pl.setFilterStrict(true);
+  public List<Permiso> obtenerPermisos() {
+    return obtenerPermisos(PL);
+  }
+
+  public Permiso obtenerPermiso(int id) {
+    // Parámetros de Listado
+    PL.setFilterFields(Arrays.asList("id"));
+    PL.setFilterValue(id + "");
+    PL.setFilterStrict(true);
 
     // Lista de Permisos
-    List<EntityPermiso> permisos = obtenerPermisos(pl);
+    List<Permiso> permisos = obtenerPermisos(PL);
 
     // Referencia de Entidad
     return permisos.isEmpty() ? null : permisos.get(0);
   }
 
-  public List<EntityPermiso> obtenerPermisos(int perfil) {
+  public List<Permiso> obtenerPermisos(int perfil) {
     // Parámetros de Listado
-    ParametrosListado pl = new ParametrosListado();
-    pl.setFilterField("perfil");
-    pl.setFilterValue(perfil + "");
-    pl.setFilterStrict(true);
+    PL.setFilterField("perfil");
+    PL.setFilterValue(perfil + "");
+    PL.setFilterStrict(true);
 
     // Retorno: Lista de Permisos
-    return obtenerPermisos(pl);
+    return obtenerPermisos(PL);
   }
 
-  public boolean insertarPermiso(EntityPermiso permiso) {
+  public boolean insertarPermiso(Permiso permiso) {
     // SQL
-    final String SQL
-            = "INSERT INTO "
-            + "permisos "
-            + "("
-            + "proceso, perfil, info, "
-            + "status, data, created_at, updated_at"
-            + ") "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+    final String SQL = generarSQLInsert();
 
     // Número de registros afectados
     int numReg = 0;
 
     // Obtención del Contexto
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(SQL)) {
+               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
-        ps.setInt(1, permiso.getProcesoId());
-        ps.setInt(2, permiso.getPerfilId());
-        ps.setString(3, permiso.getInfo());
-        ps.setInt(4, permiso.getStatus());
-        ps.setString(5, permiso.getData());
-        ps.setDate(6, new java.sql.Date(permiso.getCreatedAt().getTime()));
-        ps.setDate(7, new java.sql.Date(permiso.getUpdatedAt().getTime()));
+        parametrizarInsert(ps, permiso);
 
         // Ejecutar Sentencia
         numReg = ps.executeUpdate();
@@ -101,24 +99,17 @@ public final class PermisoDAL {
 
   public boolean borrarPermiso(int id) {
     // SQL
-    final String SQL = "DELETE FROM permisos WHERE id=?";
+    final String SQL = generarSQLDelete();
 
-    // Número de Registros Afectados
+    // Número de registros afectados
     int numReg = 0;
 
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(SQL)) {
+               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
         ps.setInt(1, id);
 
@@ -133,7 +124,7 @@ public final class PermisoDAL {
     return numReg == 1;
   }
 
-  public boolean borrarPermiso(EntityPermiso permiso) {
+  public boolean borrarPermiso(Permiso permiso) {
     // SQL
     final String SQL
             = "DELETE FROM "
@@ -155,8 +146,7 @@ public final class PermisoDAL {
       DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
 
       try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(SQL)) {
+               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
         ps.setInt(1, permiso.getProcesoId());
         ps.setInt(2, permiso.getPerfilId());
@@ -172,41 +162,21 @@ public final class PermisoDAL {
     return numReg == 1;
   }
 
-  public boolean modificarPermiso(EntityPermiso permiso) {
+  public boolean modificarPermiso(Permiso permiso) {
     // SQL
-    final String SQL
-            = "UPDATE "
-            + "permisos "
-            + "SET "
-            + "proceso=?, perfil=?, info=?, "
-            + "status=?, data=?, created_at=?, updated_at=?"
-            + "WHERE id=?";
+    final String SQL = generarSQLUpdate();
 
     // Número de Registros Afectados
     int numReg = 0;
 
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(SQL)) {
+               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
-        ps.setInt(1, permiso.getProcesoId());
-        ps.setInt(2, permiso.getPerfilId());
-        ps.setString(3, permiso.getInfo());
-        ps.setInt(4, permiso.getStatus());
-        ps.setString(5, permiso.getData());
-        ps.setDate(6, new java.sql.Date(permiso.getCreatedAt().getTime()));
-        ps.setDate(7, new java.sql.Date(permiso.getUpdatedAt().getTime()));
-        ps.setInt(8, permiso.getId());
+        parametrizarUpdate(ps, permiso);
 
         // Ejecutar Sentencia
         numReg = ps.executeUpdate();
@@ -220,93 +190,20 @@ public final class PermisoDAL {
   }
 
   public Long contarPermisos(ParametrosListado pl) {
-    // SELECT
-    String sqlSelect
-            = "SELECT "
-            + "COUNT(*) "
-            + "FROM "
-            + "permisos "
-            + "INNER JOIN "
-            + "procesos ON procesos.id = permisos.proceso "
-            + "INNER JOIN "
-            + "perfiles ON perfiles.id = permisos.perfil";
-
     // Número de Filas
     long filas = 0;
 
-    // WHERE - USER
-    String sqlUser;
-    EntityUsuario usuario = pl.getUser();
-    if (usuario == null) {
-      sqlUser = "";
-    } else if (usuario.getPerfilID() == EntityPerfil.DEVEL) {
-      sqlUser = "";
-    } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) {
-      sqlUser = "permisos.perfil != " + EntityPerfil.DEVEL;
-    } else {
-      sqlUser = "permisos.perfil = " + usuario.getPerfilID();
-    }
+    // SQL
+    String sql = generarSQLComputo(pl);
 
-    // WHERE - FILTER
-    String sqlFilter;
-    if (pl.getFilterField() == null || pl.getFilterField().isEmpty()) {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else {
-        sqlFilter
-                = String.format("permisos.id LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("procesos.nombre LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("perfiles.nombre LIKE '%%%s%%' ", pl.getFilterValue());
-      }
-    } else {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else if (pl.isFilterStrict()) {
-        sqlFilter = String.format("permisos.%s = '%s'",
-                pl.getFilterField(), pl.getFilterValue());
-      } else {
-        sqlFilter = String.format("permisos.%s LIKE '%%%s%%'",
-                pl.getFilterField(), pl.getFilterValue());
-      }
-    }
-
-    // WHERE - USER + FILTER
-    String sqlWhere;
-    if (sqlUser.isBlank()) {
-      if (sqlFilter.isBlank()) {
-        sqlWhere = "";
-      } else {
-        sqlWhere = String.format(" WHERE %s", sqlFilter);
-      }
-    } else {
-      if (sqlFilter.isBlank()) {
-        sqlWhere = String.format(" WHERE %s", sqlUser);
-      } else {
-        sqlWhere = String.format(" WHERE %s AND %s", sqlUser, sqlFilter);
-      }
-    }
-
-    // SQL Completo: SELECT + WHERE
-    String sql = String.format("%s%s", sqlSelect, sqlWhere);
-
-    // Obtención del Contexto
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(sql)) {
-        // BD > Lista de Entidades
-        try (ResultSet rs = ps.executeQuery()) {
+               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( ResultSet rs = ps.executeQuery()) {
           if (rs.next()) {
-            // Número de Filas
             filas = rs.getLong(1);
           }
         }
@@ -315,14 +212,74 @@ public final class PermisoDAL {
       System.out.println("ERROR: " + ex.getMessage());
     }
 
-    // Retorno Filas
+    // Retorno: Filas Contadas
     return filas;
   }
 
-  public List<EntityPermiso> obtenerPermisos(ParametrosListado pl) {
-    // SELECT
-    String sqlSelect
-            = "SELECT "
+  public List<Permiso> obtenerPermisos(ParametrosListado pl) {
+    // SQL
+    String sql = generarSQLListado(pl);
+
+    // Lista Vacía
+    List<Permiso> permisos = new ArrayList<>();
+
+    try {
+      // Contexto Inicial > DataSource
+      DataSource ds = obtenerDataSource(PL);
+
+      try (
+               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        permisos = exportarListaPermisos(ps);
+      }
+    } catch (NamingException | SQLException ex) {
+      System.out.println("ERROR: " + ex.getMessage());
+    }
+
+    // Retorno Lista
+    return permisos;
+  }
+
+  private List<Permiso> exportarListaPermisos(PreparedStatement ps) throws SQLException {
+    // Lista 
+    List<Permiso> permisos = new ArrayList<>();
+
+    // BD > Lista de Entidades
+    try ( ResultSet rs = ps.executeQuery()) {
+      while (rs.next()) {
+        // Campos > Entidad
+        Permiso permiso = exportarPermiso(rs);
+
+        // Entidad > Lista
+        permisos.add(permiso);
+      }
+    }
+
+    // Retorno: Lista de Permisos
+    return permisos;
+  }
+
+  private Permiso exportarPermiso(ResultSet rs) throws SQLException {
+    // Fila Actual > Campos 
+    int id = rs.getInt("id");
+    int procesoID = rs.getInt("proceso_id");
+    String procesoInfo = rs.getString("proceso_info");
+    int perfilID = rs.getInt("perfil_id");
+    String perfilInfo = rs.getString("perfil_info");
+    String info = rs.getString("info");
+    int status = rs.getInt("status");
+    String data = rs.getString("data");
+    Date createdAt = rs.getDate("created_at");
+    Date updatedAt = rs.getDate("updated_at");
+
+    // Campos > Entidad
+    return new Permiso(id,
+            procesoID, procesoInfo, perfilID, perfilInfo, info,
+            status, data, createdAt, updatedAt);
+  }
+
+  public String generarSQLSelect() {
+    return ""
+            + "SELECT "
             + "permisos.id AS id, "
             + "permisos.proceso AS proceso_id, "
             + "procesos.nombre AS proceso_info, "
@@ -339,129 +296,86 @@ public final class PermisoDAL {
             + "procesos ON procesos.id = permisos.proceso "
             + "INNER JOIN "
             + "perfiles ON perfiles.id = permisos.perfil";
+  }
 
-    // WHERE - USER
-    String sqlUser;
-    EntityUsuario usuario = pl.getUser();
-    if (usuario == null) {
-      sqlUser = "";
-    } else if (usuario.getPerfilID() == EntityPerfil.DEVEL) {
-      sqlUser = "";
-    } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) {
-      sqlUser = "permisos.perfil != " + EntityPerfil.DEVEL;
-    } else {
-      sqlUser = "permisos.perfil = " + usuario.getPerfilID();
-    }
+  public String generarSQLSelectComputo() {
+    return ""
+            + "SELECT "
+            + "COUNT(*) "
+            + "FROM "
+            + "permisos "
+            + "INNER JOIN "
+            + "procesos ON procesos.id = permisos.proceso "
+            + "INNER JOIN "
+            + "perfiles ON perfiles.id = permisos.perfil";
+  }
 
-    // WHERE - FILTER
-    String sqlFilter;
-    if (pl.getFilterField() == null || pl.getFilterField().isEmpty()) {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else {
-        sqlFilter
-                = String.format("permisos.id LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("procesos.nombre LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("perfiles.nombre LIKE '%%%s%%' ", pl.getFilterValue());
-      }
-    } else {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else if (pl.isFilterStrict()) {
-        sqlFilter = String.format("permisos.%s = '%s'",
-                pl.getFilterField(), pl.getFilterValue());
-      } else {
-        sqlFilter = String.format("permisos.%s LIKE '%%%s%%'",
-                pl.getFilterField(), pl.getFilterValue());
-      }
-    }
+  public String generarSQLInsert() {
+    return ""
+            + "INSERT INTO "
+            + "permisos "
+            + "("
+            + "proceso, perfil, info, "
+            + "status, data, created_at, updated_at"
+            + ") "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+  }
 
-    // WHERE - USER + FILTER
-    String sqlWhere;
-    if (sqlUser.isBlank()) {
-      if (sqlFilter.isBlank()) {
-        sqlWhere = "";
-      } else {
-        sqlWhere = String.format(" WHERE %s", sqlFilter);
-      }
-    } else {
-      if (sqlFilter.isBlank()) {
-        sqlWhere = String.format(" WHERE %s", sqlUser);
-      } else {
-        sqlWhere = String.format(" WHERE %s AND %s", sqlUser, sqlFilter);
-      }
-    }
+  public String generarSQLUpdate() {
+    return ""
+            + "UPDATE "
+            + "permisos "
+            + "SET "
+            + "proceso=?, perfil=?, info=?, "
+            + "status=?, data=?, created_at=?, updated_at=?"
+            + "WHERE id=?";
+  }
 
-    // ORDER BY
-    String sqlOrder;
-    if (pl.getOrderProgress() == null || pl.getOrderProgress().isEmpty()) {
-      sqlOrder = "";
-    } else if (pl.getOrderField() == null || pl.getOrderField().isEmpty()) {
-      sqlOrder = "";
-    } else if (pl.getOrderProgress().equalsIgnoreCase("asc") || pl.getOrderProgress().equalsIgnoreCase("desc")) {
-      sqlOrder = String.format(" ORDER BY %s %s", pl.getOrderField(), pl.getOrderProgress());
-    } else {
-      sqlOrder = "";
-    }
+  public String generarSQLDelete() {
+    return ""
+            + "DELETE FROM "
+            + "permisos "
+            + "WHERE id=?";
+  }
 
-    // LIMIT A,B
-    String sqlLimit;
-    if (pl.getRowIndex() == null || pl.getRowsPage() == null) {
-      sqlLimit = "";
-    } else {
-      sqlLimit = String.format(" LIMIT %d,%d", pl.getRowIndex(), pl.getRowsPage());
-    }
+  private String generarSQLListado(ParametrosListado pl) {
+    // SQL Parciales
+    String select = generarSQLSelect();
+    String where = generarSQLWhere(pl);
+    String order = generarSQLOrder(pl);
+    String limit = generarSQLLimit(pl);
 
-    // SELECT + WHERE + ORDER + LIMIT
-    String sql = String.format("%s%s%s%s", sqlSelect, sqlWhere, sqlOrder, sqlLimit);
+    // SQL Completo: SELECT + WHERE + ORDER + LIMIT
+    return String.format("%s%s%s%s", select, where, order, limit);
+  }
 
-    // Lista Vacía
-    List<EntityPermiso> permisos = new ArrayList<>();
+  protected String generarSQLComputo(ParametrosListado pl) {
+    // SQL Parciales
+    String select = generarSQLSelectComputo();
+    String where = generarSQLWhere(pl);
 
-    // Obtención del Contexto
-    try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
+    // SQL Completo: SELECT + WHERE
+    return String.format("%s%s", select, where);
+  }
 
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
+  private void parametrizarInsert(PreparedStatement ps, Permiso permiso) throws SQLException {
+    ps.setInt(1, permiso.getProcesoId());
+    ps.setInt(2, permiso.getPerfilId());
+    ps.setString(3, permiso.getInfo());
+    ps.setInt(4, permiso.getStatus());
+    ps.setString(5, permiso.getData());
+    ps.setDate(6, new java.sql.Date(permiso.getCreatedAt().getTime()));
+    ps.setDate(7, new java.sql.Date(permiso.getUpdatedAt().getTime()));
+  }
 
-      // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
-
-      try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(sql)) {
-        // BD > Lista de Entidades
-        try (ResultSet rs = ps.executeQuery()) {
-          while (rs.next()) {
-            // Fila Actual > Campos 
-            int id = rs.getInt("id");
-            int procesoID = rs.getInt("proceso_id");
-            String procesoInfo = rs.getString("proceso_info");
-            int perfilID = rs.getInt("perfil_id");
-            String perfilInfo = rs.getString("perfil_info");
-            String info = rs.getString("info");
-            int status = rs.getInt("status");
-            String data = rs.getString("data");
-            Date createdAt = rs.getDate("created_at");
-            Date updatedAt = rs.getDate("updated_at");
-
-            // Campos > Entidad
-            EntityPermiso permiso = new EntityPermiso(id, 
-                    procesoID, procesoInfo, perfilID, perfilInfo, info, 
-                    status, data, createdAt, updatedAt);
-
-            // Entidad > Lista
-            permisos.add(permiso);
-          }
-        }
-      }
-    } catch (NamingException | SQLException ex) {
-      System.out.println("ERROR: " + ex.getMessage());
-    }
-
-    // Retorno Lista
-    return permisos;
+  private void parametrizarUpdate(PreparedStatement ps, Permiso permiso) throws SQLException {
+    ps.setInt(1, permiso.getProcesoId());
+    ps.setInt(2, permiso.getPerfilId());
+    ps.setString(3, permiso.getInfo());
+    ps.setInt(4, permiso.getStatus());
+    ps.setString(5, permiso.getData());
+    ps.setDate(6, new java.sql.Date(permiso.getCreatedAt().getTime()));
+    ps.setDate(7, new java.sql.Date(permiso.getUpdatedAt().getTime()));
+    ps.setInt(8, permiso.getId());
   }
 }

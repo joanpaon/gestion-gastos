@@ -20,9 +20,10 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
-import org.japo.java.entities.EntityUsuario;
+import org.japo.java.entities.Usuario;
 import org.japo.java.bll.service.Service;
 import org.japo.java.dal.UsuarioDAL;
+import org.japo.java.libraries.UtilesGastos;
 
 /**
  *
@@ -35,29 +36,35 @@ public final class ServiceUsuarioConsulta extends Service {
     // JSP
     String json;
 
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    UsuarioDAL usuarioDAL = new UsuarioDAL();
-
     try {
-      // Validar Acceso
-      if (adminBLL.validarAccesoServicio(sesion, getClass().getSimpleName())) {
-        // Request > ID Entidad
-        int id = Integer.parseInt(request.getParameter("id"));
+      // Sesión
+      HttpSession sesion = request.getSession(false);
 
-        // ID Entidad > Entidad
-        EntityUsuario u = usuarioDAL.obtenerUsuario(id);
-
-        // List > JSON
-        json = new Gson().toJson(u);
+      // Validar Sesión
+      if (!UtilesGastos.validarSesion(sesion)) {
+        // Recurso NO Disponible
+        json = "{\"response\": \"Sesión Caducada\"}";
       } else {
-        // Acceso NO Autorizado
-        json = "{\"response\": \"Acceso NO Autorizado\"}";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        UsuarioDAL usuarioDAL = new UsuarioDAL(sesion);
+
+        // Validar Acceso
+        if (adminBLL.validarAccesoServicio(getClass().getSimpleName())) {
+          // Request > ID Entidad
+          int id = Integer.parseInt(request.getParameter("id"));
+
+          // ID Entidad > Entidad
+          Usuario u = usuarioDAL.obtenerUsuario(id);
+
+          // List > JSON
+          json = new Gson().toJson(u);
+        } else {
+          // Acceso NO Autorizado
+          json = "{\"response\": \"Acceso NO Autorizado\"}";
+        }
       }
     } catch (NumberFormatException | NullPointerException e) {
       // Recurso NO Disponible

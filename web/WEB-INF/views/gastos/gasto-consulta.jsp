@@ -1,19 +1,15 @@
 <%@page import="java.util.Locale"%>
-<%@page import="org.japo.java.entities.Partida"%>
-<%@page import="org.japo.java.entities.Abono"%>
 <%@page import="org.japo.java.entities.Gasto"%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Gasto gasto = (Gasto) request.getAttribute("gasto");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-      // Datos Inyectados
-      Gasto g = (Gasto) request.getAttribute("gasto");
-      Abono a = (Abono) request.getAttribute("abono");
-      Partida pda = (Partida) request.getAttribute("partida");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -57,35 +53,35 @@
             <tbody>
               <tr>
                 <td>ID</td>
-                <td><%= g.getId()%></td>
+                <td><%= gasto.getId()%></td>
               </tr>
               <tr>
                 <td>Abono</td>
-                <td><%= a.getInfo()%></td>
+                <td><%= gasto.getAbonoInfo()%></td>
               </tr>
               <tr>
                 <td>Partida</td>
-                <td><%= pda.getNombre()%></td>
+                <td><%= gasto.getPartidaInfo()%></td>
               </tr>
               <tr>
                 <td>Importe</td>
-                <td><%= String.format(Locale.ENGLISH, "%.2f", g.getImporte())%> €</td>
+                <td><%= String.format(Locale.ENGLISH, "%.2f", gasto.getImporte())%> €</td>
               </tr>
               <tr>
                 <td>Información</td>
-                <td><%= g.getInfo()%></td>
+                <td><%= gasto.getInfo()%></td>
               </tr>
             </tbody>
           </table>
           <div class="imagen">
             <div class="imagen-margen">
-              <img src="<%= g.getRecibo()%>" alt="Recibo del Gasto"/> 
+              <img src="<%= gasto.getRecibo()%>" alt="Recibo del Gasto"/> 
             </div>
           </div>
         </div>
         <nav class="botones">
-          <a class="btn btn-borrar" href="controller?cmd=gasto-borrado&id=<%= g.getId()%>">Borrar</a>
-          <a class="btn btn-modificar" href="controller?cmd=gasto-modificacion&id=<%= g.getId()%>&op=captura">Modificar</a>
+          <a class="btn btn-borrar" href="controller?cmd=gasto-borrado&id=<%= gasto.getId()%>">Borrar</a>
+          <a class="btn btn-modificar" href="controller?cmd=gasto-modificacion&id=<%= gasto.getId()%>&op=captura">Modificar</a>
         </nav>
       </main>
 

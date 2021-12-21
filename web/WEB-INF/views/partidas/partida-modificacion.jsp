@@ -2,15 +2,15 @@
 
 <%@page import="org.japo.java.entities.Partida"%>
 
+<%
+  // Datos Inyectados
+  Partida partida = (Partida) request.getAttribute("partida");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
 
-  <%
-      // Datos Inyectados
-      Partida p = (Partida) request.getAttribute("partida");
-  %>
-
- <head>
+  <head>
     <!-- These lines go in the first 1024 bytes -->
     <meta charset="utf-8" />
     <meta http-equiv="x-ua-compatible" content="ie=edge" />
@@ -45,18 +45,18 @@
         </header> 
 
         <form method="post" accept-charset="Windows-1252"
-              action="controller?cmd=partida-modificacion&id=<%= p.getId()%>&op=proceso">
+              action="controller?cmd=partida-modificacion&id=<%= partida.getId()%>&op=proceso">
           <div class="fieldset">
             <label for="nombre">Nombre</label>
-            <input id="nombre" type="text" name="nombre" value="<%= p.getNombre()%>"/>
+            <input id="nombre" type="text" name="nombre" value="<%= partida.getNombre()%>"/>
           </div>
           <div class="fieldset">
             <label for="info">Información</label>
-            <input id="info" type="text" name="info" value="<%= p.getInfo()%>"/>
+            <input id="info" type="text" name="info" value="<%= partida.getInfo()%>"/>
           </div>
           <div class="fieldset">
             <label for="icono">Icono</label>
-            <textarea id="icono" name="icono" rows="6"/><%= p.getIcono()%></textarea>
+            <textarea id="icono" name="icono" rows="6"/><%= partida.getIcono()%></textarea>
           </div>
           <div class="botones">
             <button class="btn btn-submit" type="submit">Enviar</button>

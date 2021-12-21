@@ -35,7 +35,7 @@
         <h1>Operación Cancelada</h1>
         <span>&#128078;</span>
         <h2>La operación NO ha podido ser realizada</h2>
-        <a class="btn btn-listar" href="controller?cmd=main">Principal</a>
+        <a class="btn btn-listar" href="javascript:window.history.back();">Volver</a>
       </main>
 
       <jsp:include page="../../partials/footer.jsp" />

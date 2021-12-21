@@ -19,8 +19,8 @@ import org.japo.java.bll.command.Command;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import javax.servlet.http.HttpSession;
-import org.japo.java.entities.EntityPerfil;
-import org.japo.java.entities.EntityUsuario;
+import org.japo.java.entities.Perfil;
+import org.japo.java.entities.Usuario;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -42,17 +42,17 @@ public final class CommandMain extends Command {
       if (!UtilesGastos.validarSesion(sesion)) {
         page = "errors/sesion-caducada";
       } else {
-        // Sesión > EntityUsuario
-        EntityUsuario u = (EntityUsuario) sesion.getAttribute("usuario");
+        // Sesión > Usuario
+        Usuario u = (Usuario) sesion.getAttribute("usuario");
 
-        // Validar EntityUsuario > Acceso
+        // Validar Usuario > Acceso
         if (u == null) {
           page = "errors/acceso-denegado";
-        } else if (u.getPerfilID() == EntityPerfil.BASIC) {
+        } else if (u.getPerfilID() == Perfil.BASIC) {
           page = "main/main-basico";
-        } else if (u.getPerfilID() == EntityPerfil.ADMIN) {
+        } else if (u.getPerfilID() == Perfil.ADMIN) {
           page = "main/main-admin";
-        } else if (u.getPerfilID() == EntityPerfil.DEVEL) {
+        } else if (u.getPerfilID() == Perfil.DEVEL) {
           page = "main/main-dev";
         } else {
           page = "errors/acceso-denegado";

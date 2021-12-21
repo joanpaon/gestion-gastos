@@ -7,15 +7,15 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Permiso permiso = (Permiso) request.getAttribute("permiso");
+  List<Proceso> procesos = (ArrayList<Proceso>) request.getAttribute("procesos");
+  List<Perfil> perfiles = (ArrayList<Perfil>) request.getAttribute("perfiles");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-      // Datos Inyectados
-      Permiso permiso = (Permiso) request.getAttribute("permiso");
-      List<Proceso> procesos = (ArrayList<Proceso>) request.getAttribute("proceso-lista");
-      List<Perfil> perfiles = (ArrayList<Perfil>) request.getAttribute("perfil-lista");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -55,11 +55,11 @@
           <div class="fieldset">
             <label for="proceso">Proceso</label>
             <select id="proceso" name="proceso">
-              <% for (Proceso p : procesos) { %>
-              <% if (p.getId() == permiso.getProceso()) {%>
-              <option value="<%= p.getId()%>" selected><%= p.getInfo()%></option>
+              <% for (Proceso proceso : procesos) { %>
+              <% if (proceso.getId() == permiso.getProcesoId()) {%>
+              <option value="<%= proceso.getId()%>" selected><%= proceso.getInfo()%></option>
               <% } else {%>
-              <option value="<%= p.getId()%>"><%= p.getInfo()%></option>
+              <option value="<%= proceso.getId()%>"><%= proceso.getInfo()%></option>
               <% }%>
               <% }%>
             </select>
@@ -67,11 +67,11 @@
           <div class="fieldset">
             <label for="perfil">Perfil</label>
             <select id="perfil" name="perfil">
-              <% for (Perfil g : perfiles) { %>
-              <% if (g.getId() == permiso.getPerfil()) {%>
-              <option value="<%= g.getId()%>" selected><%= g.getNombre()%></option>
+              <% for (Perfil perfil : perfiles) { %>
+              <% if (perfil.getId() == permiso.getPerfilId()) {%>
+              <option value="<%= perfil.getId()%>" selected><%= perfil.getNombre()%></option>
               <% } else {%>
-              <option value="<%= g.getId()%>"><%= g.getNombre()%></option>
+              <option value="<%= perfil.getId()%>"><%= perfil.getNombre()%></option>
               <% }%>
               <% }%>
             </select>

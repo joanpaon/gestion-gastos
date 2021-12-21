@@ -1,18 +1,18 @@
-<%@page import="org.japo.java.entities.EntityUsuario"%>
-<%@page import="org.japo.java.entities.EntityPerfil"%>
+<%@page import="org.japo.java.entities.Usuario"%>
+<%@page import="org.japo.java.entities.Perfil"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Usuario usuario = (Usuario) request.getAttribute("usuario");
+  List<Perfil> perfiles = (ArrayList<Perfil>) request.getAttribute("perfiles");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-    // Datos Inyectados
-    EntityUsuario usuario = (EntityUsuario) request.getAttribute("usuario");
-    List<EntityPerfil> perfiles = (ArrayList<EntityPerfil>) request.getAttribute("perfiles");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -67,17 +67,17 @@
                    value="<%= usuario.getEmail()%>"/>
           </div>
           <div class="fieldset">
-            <label for="avatar">Avatar</label>
-            <textarea id="avatar" name="avatar" rows="6"/><%= usuario.getIcono()%></textarea>
+            <label for="icono">Icono</label>
+            <textarea id="avatar" name="icono" rows="6"/><%= usuario.getIcono()%></textarea>
           </div>
           <div class="fieldset">
-            <label for="perfiles">Perfil</label>
-            <select id="perfiles" name="perfiles">
-              <% for (EntityPerfil p : perfiles) { %>
-              <% if (p.getId() == usuario.getPerfilID()) {%>
-              <option value="<%= p.getId()%>" selected><%= p.getNombre()%></option>
+            <label for="perfil">Perfil</label>
+            <select id="perfil" name="perfil">
+              <% for (Perfil perfil : perfiles) { %>
+              <% if (perfil.getId() == usuario.getPerfilID()) {%>
+              <option value="<%= perfil.getId()%>" selected><%= perfil.getNombre()%></option>
               <% } else {%>
-              <option value="<%= p.getId()%>"><%= p.getNombre()%></option>
+              <option value="<%= perfil.getId()%>"><%= perfil.getNombre()%></option>
               <% }%>
               <% }%>
             </select>

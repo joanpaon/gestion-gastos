@@ -5,8 +5,8 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
-import org.japo.java.entities.EntityPerfil;
-import org.japo.java.entities.EntityUsuario;
+import org.japo.java.entities.Perfil;
+import org.japo.java.entities.Usuario;
 import org.japo.java.entities.ParametrosListado;
 
 /**
@@ -14,22 +14,10 @@ import org.japo.java.entities.ParametrosListado;
  * @author José A. Pacheco Ondoño - japolabs@gmail.com
  */
 public abstract class AbstractDAL {
-
-  protected EntityUsuario usuario;
-
+  // Constantes
+  protected final String BD = "gestion_gastos";
+  
   public AbstractDAL() {
-  }
-
-  public AbstractDAL(EntityUsuario usuario) {
-    this.usuario = usuario;
-  }
-
-  public EntityUsuario getUsuario() {
-    return usuario;
-  }
-
-  public void setUsuario(EntityUsuario usuario) {
-    this.usuario = usuario;
   }
 
   protected String generarSQLWhere(ParametrosListado pl) {
@@ -64,31 +52,36 @@ public abstract class AbstractDAL {
     String sql;
 
     // Parámetros Usuario
-    int perfilID = usuario.getPerfilID();
-    String tabla = pl.getTable();
-    String campo = pl.getUserField();
+    Usuario usuario = pl.getUser();
 
     // Discriminar Usuario
-    if (pl.getUser() == null) {
+    if (usuario == null) {
       // Cuando NO se especifica usuario en los parámetros 
       // de listado, se seleccionan TODOS los abonos
       sql = "";
-    } else if (perfilID == EntityPerfil.DEVEL) {
-      // Cuando se especifica un usuario DESARROLLADOR en los 
-      // parámetros de listado, se seleccionan TODOS los abonos
-      sql = "";
-    } else if (perfilID == EntityPerfil.ADMIN) {
-      // Cuando se especifica un usuario ADMINISTRADOR en los 
-      // parámetros de listado, se seleccionan TODOS los abonos
-      sql = "";
-    } else if (campo == null) {
-      // Cuando NO se especifica un campo de usuario 
-      // se seleccionan TODOS los abonos
-      sql = "";
     } else {
-      // Cuando se especifica un usuario BASICO en los parámetros 
-      // de listado, se seleccionan SÓLO los abonos de ese usuario
-      sql = String.format("%s.%s=%d", tabla, campo, usuario.getId());
+      // Usuario > Pefil
+      int perfilID = usuario.getPerfilID();
+      String tabla = pl.getTable();
+      String campo = pl.getUserField();
+
+      if (perfilID == Perfil.DEVEL) {
+        // Cuando se especifica un usuario DESARROLLADOR en los 
+        // parámetros de listado, se seleccionan TODOS los abonos
+        sql = "";
+      } else if (perfilID == Perfil.ADMIN) {
+        // Cuando se especifica un usuario ADMINISTRADOR en los 
+        // parámetros de listado, se seleccionan TODOS los abonos
+        sql = "";
+      } else if (campo == null) {
+        // Cuando NO se especifica un campo de usuario 
+        // se seleccionan TODOS los abonos
+        sql = "";
+      } else {
+        // Cuando se especifica un usuario BASICO en los parámetros 
+        // de listado, se seleccionan SÓLO los abonos de ese usuario
+        sql = String.format("%s.%s=%d", tabla, campo, usuario.getId());
+      }
     }
 
     // Retorno: SQL
@@ -110,7 +103,7 @@ public abstract class AbstractDAL {
     // Genera + Concatena Expresiones de Filtro por Campo
     if (pl.isFilterStrict()) {
       for (int i = 0; i < campos.size(); i++) {
-        buffer.append(String.format("%s.%s='%%%s%%'",
+        buffer.append(String.format("%s.%s='%s'",
                 pl.getTable(), campos.get(i), pl.getFilterValue()));
         if (i < campos.size() - 1) {
           buffer.append(" AND ");

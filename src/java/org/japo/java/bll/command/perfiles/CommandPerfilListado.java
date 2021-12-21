@@ -22,8 +22,9 @@ import java.util.List;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.PerfilDAL;
-import org.japo.java.entities.EntityPerfil;
+import org.japo.java.entities.Perfil;
 import org.japo.java.entities.ParametrosListado;
+import org.japo.java.entities.Usuario;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -32,67 +33,67 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class CommandPerfilListado extends Command {
 
-  // Nombre de la tabla
-  public static final String TABLE_NAME = "perfiles";
-
   @Override
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    PerfilDAL perfilDAL = new PerfilDAL();
+    String page = "messages/message";
 
     try {
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // Parámetros Listado
-        ParametrosListado pl = UtilesGastos.iniciarParametrosListado(TABLE_NAME, request);
-
-        // Filtro > Parámetros Listado
-        UtilesGastos.definirFiltradoListado(pl, request);
-
-        // Ordenación > Parámetros Listado
-        UtilesGastos.definirOrdenacionListado(pl, request);
-
-        // Total de Filas > Parámetros Listado
-        pl.setRowCount(perfilDAL.contarPerfiles(pl));
-
-        // Navegación > Parámetros Listado
-        UtilesGastos.definirNavegacionListado(pl, request);
-
-        // BD > Lista de Cuotas
-        List<EntityPerfil> perfiles = perfilDAL.obtenerPerfiles(pl);
-
-        // Inyecta Datos Listado > JSP
-        request.setAttribute("perfiles", perfiles);
-
-        // Inyecta Parámetros Listado > JSP
-        request.setAttribute("filter-exp", pl.getFilterValue());
-        request.setAttribute("sort-fld", pl.getOrderField());
-        request.setAttribute("sort-dir", pl.getOrderProgress());
-        request.setAttribute("row-count", pl.getRowCount());
-        request.setAttribute("row-index", pl.getRowIndex());
-        request.setAttribute("rows-page", pl.getRowsPage());
-
-        // JSP
-        page = "perfiles/perfil-listado";
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        PerfilDAL perfilDAL = new PerfilDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // Sesión > Usuario
+          Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+
+          // Parámetros Listado
+          ParametrosListado pl = new ParametrosListado("gestion_gastos", "listados", usuario);
+
+          // Filtro > Parámetros Listado
+          UtilesGastos.definirFiltradoListado(pl, request);
+
+          // Ordenación > Parámetros Listado
+          UtilesGastos.definirOrdenacionListado(pl, request);
+
+          // Total de Filas > Parámetros Listado
+          pl.setRowCount(perfilDAL.contarPerfiles(pl));
+
+          // Navegación > Parámetros Listado
+          UtilesGastos.definirNavegacionListado(pl, request);
+
+          // BD > Lista de Cuotas
+          List<Perfil> perfiles = perfilDAL.obtenerPerfiles(pl);
+
+          // Inyecta Datos Listado > JSP
+          request.setAttribute("perfiles", perfiles);
+
+          // Inyecta Parámetros Listado > JSP
+          request.setAttribute("filter-fld", pl.getFilterField());
+          request.setAttribute("filter-exp", pl.getFilterValue());
+          request.setAttribute("sort-fld", pl.getOrderField());
+          request.setAttribute("sort-dir", pl.getOrderProgress());
+          request.setAttribute("row-count", pl.getRowCount());
+          request.setAttribute("row-index", pl.getRowIndex());
+          request.setAttribute("rows-page", pl.getRowsPage());
+
+          // JSP
+          page = "perfiles/perfil-listado";
+        } else {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+        }
       }
-    } catch (Exception e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+    } catch (NumberFormatException | NullPointerException e) {
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

@@ -2,13 +2,13 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Perfil perfil = (Perfil) request.getAttribute("perfil");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-      // Datos Inyectados
-      Perfil g = (Perfil) request.getAttribute("perfil");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -45,18 +45,18 @@
         </header> 
 
         <form method="post" accept-charset="Windows-1252"
-              action="controller?cmd=perfil-modificacion&id=<%= g.getId()%>&op=proceso">
+              action="controller?cmd=perfil-modificacion&id=<%= perfil.getId()%>&op=proceso">
           <div class="fieldset">
             <label for="nombre">Nombre</label>
-            <input id="nombre" type="text" name="nombre" value="<%= g.getNombre()%>"/>
+            <input id="nombre" type="text" name="nombre" value="<%= perfil.getNombre()%>"/>
           </div>
           <div class="fieldset">
             <label for="info">Información</label>
-            <input id="info" type="text" name="info" value="<%= g.getInfo()%>"/>
+            <input id="info" type="text" name="info" value="<%= perfil.getInfo()%>"/>
           </div>
           <div class="fieldset">
             <label for="icono">Icono</label>
-            <textarea id="icono" name="icono" rows="6"/><%= g.getIcono()%></textarea>
+            <textarea id="icono" name="icono" rows="6"/><%= perfil.getIcono()%></textarea>
           </div>
           <div class="botones">
             <button class="btn btn-submit" type="submit">Enviar</button>

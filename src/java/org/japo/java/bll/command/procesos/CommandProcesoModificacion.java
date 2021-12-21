@@ -21,7 +21,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.ProcesoDAL;
-import org.japo.java.entities.EntityProceso;
+import org.japo.java.entities.Proceso;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -34,71 +34,80 @@ public final class CommandProcesoModificacion extends Command {
   @SuppressWarnings("ConvertToStringSwitch")
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
-
-    // Entidad
-    EntityProceso procesoIni;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    ProcesoDAL procesoDAL = new ProcesoDAL();
+    String page = "messages/message";
 
     try {
+      // Entidad
+      Proceso procesoIni;
+
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // request > ID Entidad
-        int id = Integer.parseInt(request.getParameter("id"));
-
-        // request > Operación
-        String op = request.getParameter("op");
-
-        // Entidad > JSP
-        if (op == null || op.equals("captura")) {
-          // ID Entidad > Registro BD > Entidad
-          procesoIni = procesoDAL.obtenerProceso(id);
-
-          // Inyección de Datos
-          request.setAttribute("proceso", procesoIni);
-
-          // JSP
-          page = "procesos/proceso-modificacion";
-        } else if (op.equals("proceso")) {
-          // ID Entidad > Registro BD > Entidad
-          procesoIni = procesoDAL.obtenerProceso(id);
-
-          // Request > Parámetros
-          String nombre = request.getParameter("nombre").trim();
-          String info = request.getParameter("info").trim();
-
-          // Parámetros > Entidad
-          EntityProceso procesoFin = new EntityProceso(id, nombre, info,
-                  procesoIni.getStatus(), procesoIni.getData(),
-                  procesoIni.getCreatedAt(), procesoIni.getUpdatedAt());
-
-          // Ejecutar Operación
-          boolean procesoOK = procesoDAL.modificarProceso(procesoFin);
-
-          // Validar Operación
-          page = procesoOK ? "success/operacion-realizada" : "errors/operacion-cancelada";
-        } else {
-          // Recurso NO Disponible
-          page = "errors/page404";
-        }
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        ProcesoDAL procesoDAL = new ProcesoDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // request > ID Entidad
+          int id = Integer.parseInt(request.getParameter("id"));
+
+          // request > Operación
+          String op = request.getParameter("op");
+
+          // Entidad > JSP
+          if (op == null || op.equals("captura")) {
+            // ID Entidad > Registro BD > Entidad
+            procesoIni = procesoDAL.obtenerProceso(id);
+
+            // Inyección de Datos
+            request.setAttribute("proceso", procesoIni);
+
+            // JSP
+            page = "procesos/proceso-modificacion";
+          } else if (op.equals("proceso")) {
+            // ID Entidad > Registro BD > Entidad
+            procesoIni = procesoDAL.obtenerProceso(id);
+
+            // Request > Parámetros
+            String nombre = request.getParameter("nombre").trim();
+            String info = request.getParameter("info").trim();
+
+            // Parámetros > Entidad
+            Proceso procesoFin = new Proceso(id, nombre, info,
+                    procesoIni.getStatus(), procesoIni.getData(),
+                    procesoIni.getCreatedAt(), procesoIni.getUpdatedAt());
+
+            // Ejecutar Operación
+            boolean checkOK = procesoDAL.modificarProceso(procesoFin);
+
+            // Validar Operación
+            if (checkOK) {
+              // Parámetros
+              String titulo = "Operación Realizada con Éxito";
+              String mensaje = "Datos modificados correctamente";
+              String imagen = "public/img/tarea.png";
+              String destino = "controller?cmd=proceso-listado";
+
+              // Inyeccion de Parámetros
+              parametrizarMensaje(titulo, mensaje, imagen, destino);
+            } else {
+              seleccionarMensaje(MSG_OPERACION_CANCELADA);
+            }
+          } else {
+            seleccionarMensaje(MSG_ERROR404);
+          }
+        } else {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+        }
       }
     } catch (NumberFormatException | NullPointerException e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

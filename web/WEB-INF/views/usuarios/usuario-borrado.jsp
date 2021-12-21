@@ -1,14 +1,14 @@
-<%@page import="org.japo.java.entities.EntityUsuario"%>
+<%@page import="org.japo.java.entities.Usuario"%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Usuario usuario = (Usuario) request.getAttribute("usuario");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-    // Datos Inyectados
-    EntityUsuario usuario = (EntityUsuario) request.getAttribute("usuario");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->

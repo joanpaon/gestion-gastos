@@ -31,7 +31,7 @@
     <!-- Web Content-->
     <div id="container">
       <jsp:include page="../../partials/header.jsp" />
-      
+
       <main>
         <form action="controller?cmd=login&op=proceso" 
               method="post" accept-charset="Windows-1252">
@@ -69,7 +69,7 @@
           </div>
         </form>
       </main>
-      
+
       <jsp:include page="../../partials/footer.jsp" />
     </div>
 

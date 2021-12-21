@@ -21,7 +21,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.CuotaDAL;
-import org.japo.java.entities.EntityCuota;
+import org.japo.java.entities.Cuota;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -34,56 +34,100 @@ public final class CommandCuotaBorrado extends Command {
   @SuppressWarnings("ConvertToStringSwitch")
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    CuotaDAL cuotaDAL = new CuotaDAL();
+    String page = "messages/message";
 
     try {
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // URL > ID Objeto
-        int id = Integer.parseInt(request.getParameter("id"));
+        // Parámetros
+        String titulo = "Sesión Caducada";
+        String mensaje = "Identificación requerida para continuar";
+        String imagen = "public/img/expired.jpg";
+        String destino = "controller?cmd=login";
 
-        // request > ID Operación
-        String op = request.getParameter("op");
-
-        // ID Entidad + BD > JSP Modificación
-        if (op == null || op.equals("captura")) {
-          // ID Entidad + BD > Entidad
-          EntityCuota cuota = cuotaDAL.obtenerCuota(id);
-
-          // Enlaza Datos > JSP
-          request.setAttribute("cuota", cuota);
-
-          // Confirmar Borrado
-          page = "cuotas/cuota-borrado";
-        } else if (op.equals("proceso")) {
-          // ID > Registro Borrado - true | false
-          boolean operacionOK = cuotaDAL.borrarCuota(id);
-
-          // Validar Operación
-          page = operacionOK ? "success/operacion-realizada" : "errors/operacion-cancelada";
-        } else {
-          // Recurso NO Disponible
-          page = "errors/page404";
-        }
+        // Inyeccion de Parámetros
+        parametrizarMensaje(titulo, mensaje, imagen, destino);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        CuotaDAL cuotaDAL = new CuotaDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // URL > ID Objeto
+          int id = Integer.parseInt(request.getParameter("id"));
+
+          // request > ID Operación
+          String op = request.getParameter("op");
+
+          // ID Entidad + BD > JSP Modificación
+          if (op == null || op.equals("captura")) {
+            // ID Entidad + BD > Entidad
+            Cuota cuota = cuotaDAL.obtenerCuota(id);
+
+            // Enlaza Datos > JSP
+            request.setAttribute("cuota", cuota);
+
+            // Confirmar Borrado
+            page = "cuotas/cuota-borrado";
+          } else if (op.equals("proceso")) {
+            // ID > Registro Borrado - true | false
+            boolean checkOK = cuotaDAL.borrarCuota(id);
+
+            // Validar Operación
+            if (checkOK) {
+              // Parámetros
+              String titulo = "Operación Realizada con Éxito";
+              String mensaje = "Se han borrado correctamente los datos seleccionados";
+              String imagen = "public/img/tarea.png";
+              String destino = "controller?cmd=usuario-listado";
+
+              // Inyeccion de Parámetros
+              parametrizarMensaje(titulo, mensaje, imagen, destino);
+            } else {
+              // Parámetros
+              String titulo = "Operación Cancelada";
+              String mensaje = "No se han borrado los datos seleccionados";
+              String imagen = "public/img/cancelar.png";
+              String destino = "javascript:window.history.back();";
+
+              // Inyeccion de Parámetros
+              parametrizarMensaje(titulo, mensaje, imagen, destino);
+            }
+          } else {
+            // Parámetros
+            String titulo = "Operación Cancelada";
+            String mensaje = "Intento de acceso a un recurso NO disponible";
+            String imagen = "public/img/cancelar.png";
+            String destino = "javascript:window.history.back();";
+
+            // Inyeccion de Parámetros
+            parametrizarMensaje(titulo, mensaje, imagen, destino);
+          }
+        } else {
+          // Parámetros
+          String titulo = "Acceso NO Autorizado";
+          String mensaje = "Nivel de Acceso Insuficiente para ese Recurso";
+          String imagen = "public/img/cancelar.png";
+          String destino = "javascript:window.history.back();";
+
+          // Inyeccion de Parámetros
+          parametrizarMensaje(titulo, mensaje, imagen, destino);
+        }
       }
     } catch (NumberFormatException | NullPointerException e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+      // Parámetros
+      String titulo = "Operación Cancelada";
+      String mensaje = "Intento de acceso a un recurso NO disponible";
+      String imagen = "public/img/cancelar.png";
+      String destino = "javascript:window.history.back();";
+
+      // Inyeccion de Parámetros
+      parametrizarMensaje(titulo, mensaje, imagen, destino);
     }
 
     // Redirección JSP

@@ -1,10 +1,10 @@
 ﻿<%@page import="org.japo.java.libraries.UtilesGastos"%>
-<%@page import="org.japo.java.entities.EntityUsuario"%> 
+<%@page import="org.japo.java.entities.Usuario"%> 
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
-  EntityUsuario usuario = session == null ? null : (EntityUsuario) (session.getAttribute("usuario"));
+  Usuario usuario = session == null ? null : (Usuario) (session.getAttribute("usuario"));
 %>
 
 <header>
@@ -26,7 +26,7 @@
     <span>0</span>
     <img src="public/img/cart.png" alt="Carrito" />
   </a>
-  <% if (usuario instanceof EntityUsuario) {%>
+  <% if (usuario instanceof Usuario) {%>
   <a class="user" href="controller?cmd=profile&op=captura&id=<%= usuario.getId()%>" >
     <% if (UtilesGastos.validarImagenBase64(usuario.getIcono())) {%>
     <img src="<%= usuario.getIcono()%>" alt="User" />

@@ -6,7 +6,7 @@ import java.util.Date;
  *
  * @author JAPO Labs - japolabs@gmail.com
  */
-public final class EntityPartida {
+public final class Partida {
 
   private int id;
   private String nombre;
@@ -19,7 +19,7 @@ public final class EntityPartida {
   private Date createdAt = new Date();
   private Date updatedAt = new Date();
 
-  public EntityPartida(int id, String nombre, String info, String icono,
+  public Partida(int id, String nombre, String info, String icono,
           int proyectoID, String proyectoInfo,
           int status, String data, Date createdAt, Date updatedAt) {
     this.id = id;
@@ -34,8 +34,7 @@ public final class EntityPartida {
     this.updatedAt = updatedAt;
   }
 
-  public EntityPartida(int id, String nombre, String info, String icono,
-          int proyectoID,
+  public Partida(int id, String nombre, String info, String icono, int proyectoID,
           int status, String data, Date createdAt, Date updatedAt) {
     this.id = id;
     this.nombre = nombre;
@@ -48,7 +47,7 @@ public final class EntityPartida {
     this.updatedAt = updatedAt;
   }
 
-  public EntityPartida(String nombre, String info, String icono, int proyectoID) {
+  public Partida(String nombre, String info, String icono, int proyectoID) {
     this.nombre = nombre;
     this.info = info;
     this.icono = icono;

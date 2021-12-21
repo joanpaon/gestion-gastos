@@ -1,24 +1,24 @@
-<%@page import="org.japo.java.entities.EntityPerfil"%>
-<%@page import="org.japo.java.entities.EntityUsuario"%>
-<%@page import="org.japo.java.entities.EntityPermiso"%>
+<%@page import="org.japo.java.entities.Perfil"%>
+<%@page import="org.japo.java.entities.Usuario"%>
+<%@page import="org.japo.java.entities.Permiso"%>
 <%@page import="java.util.List"%>
 <%@page import="java.util.ArrayList"%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  List<Permiso> permisos = (ArrayList<Permiso>) request.getAttribute("permisos");
+  String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
+  String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
+  String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
+  Long rowCount = (Long) request.getAttribute("row-count");
+  Long rowIndex = (Long) request.getAttribute("row-index");
+  Long rowsPage = (Long) request.getAttribute("rows-page");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-    // Datos Inyectados
-    List<EntityPermiso> permisos = (ArrayList<EntityPermiso>) request.getAttribute("permisos");
-    String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
-    String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
-    String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
-    Long rowCount = (Long) request.getAttribute("row-count");
-    Long rowIndex = (Long) request.getAttribute("row-index");
-    Long rowsPage = (Long) request.getAttribute("rows-page");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -52,16 +52,15 @@
 
       <main>
         <header>
-          <h2>Listado de Permisos de Perfil</h2>
-          <h2>Listado de Usuarios</h2>
-          <% EntityUsuario usuario = (EntityUsuario) session.getAttribute("usuario"); %>
-          <% if (usuario.getPerfilID() == EntityPerfil.DEVEL) { %>
+          <h2>Listado de Permisos</h2>
+          <% Usuario usuario = (Usuario) session.getAttribute("usuario"); %>
+          <% if (usuario.getPerfilID() == Perfil.DEVEL) { %>
           <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
-          <% } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) { %>
+          <% } else if (usuario.getPerfilID() == Perfil.ADMIN) { %>
           <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
           <% } else { %>
           <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
-          <% } %>
+          <% }%>
           <a class="btn btn-insertar" href="controller?cmd=permiso-insercion&op=captura" title="Nuevo">N</a>
         </header>
 
@@ -189,7 +188,7 @@
           <th>Acciones</th>
           </thead>
           <tbody>
-            <% for (EntityPermiso permiso : permisos) {%>
+            <% for (Permiso permiso : permisos) {%>
 
             <tr>
               <td><%= permiso.getId()%></td>

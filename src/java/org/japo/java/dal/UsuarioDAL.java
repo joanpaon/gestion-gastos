@@ -1,3 +1,18 @@
+/* 
+ * Copyright 2021 José A. Pacheco Ondoño - japolabs@gmail.com.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.japo.java.dal;
 
 import java.sql.Connection;
@@ -5,79 +20,85 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
-import org.japo.java.entities.EntityPerfil;
 import org.japo.java.entities.ParametrosListado;
-import org.japo.java.entities.EntityUsuario;
+import org.japo.java.entities.Usuario;
 
 /**
  *
  * @author José A. Pacheco Ondoño - japolabs@gmail.com
  */
-public final class UsuarioDAL {
+public final class UsuarioDAL extends AbstractDAL {
 
-  public List<EntityUsuario> obtenerUsuarios() {
-    return obtenerUsuarios(new ParametrosListado());
+  // Constantes
+  private final String TABLA = "usuarios";
+
+  // Parámetros de Listado
+  private final ParametrosListado PL;
+
+  // Sesión
+  private final HttpSession sesion;
+
+  public UsuarioDAL(HttpSession sesion) {
+    this.sesion = sesion;
+
+    // Sesión > Usuario
+    Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+
+    // BD + TABLA + usuario > Parámetros de Listado
+    PL = new ParametrosListado(BD, TABLA, usuario);
   }
 
-  public EntityUsuario obtenerUsuario(int id) {
-    // Parámetros de Listado - POR DEFECTO
-    ParametrosListado pl = new ParametrosListado();
-    pl.setFilterField("id");
-    pl.setFilterValue(id + "");
-    pl.setFilterStrict(true);
+  public List<Usuario> obtenerUsuarios() {
+    return obtenerUsuarios(PL);
+  }
+
+  public Usuario obtenerUsuario(int id) {
+    // Parámetros de Listado
+    PL.setFilterFields(Arrays.asList("id"));
+    PL.setFilterValue(id + "");
+    PL.setFilterStrict(true);
 
     // Lista de Usuarios
-    List<EntityUsuario> usuarios = obtenerUsuarios(pl);
+    List<Usuario> usuarios = obtenerUsuarios(PL);
 
     // Referencia de Entidad
     return usuarios.isEmpty() ? null : usuarios.get(0);
   }
 
-  public boolean insertarUsuario(EntityUsuario usuario) {
+  public Usuario obtenerUsuario(String user) {
+    PL.setFilterFields(Arrays.asList("user"));
+    PL.setFilterValue(user);
+    PL.setFilterStrict(true);
+
+    // Lista de Usuarios
+    List<Usuario> usuarios = obtenerUsuarios(PL);
+
+    // Referencia de Entidad
+    return usuarios.isEmpty() ? null : usuarios.get(0);
+  }
+
+  public boolean insertarUsuario(Usuario usuario) {
     // SQL
-    final String SQL
-            = "INSERT INTO "
-            + "usuarios "
-            + "("
-            + "user, pass, email, icono, perfil, info, "
-            + "status, data, created_at, updated_at"
-            + ") "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    final String SQL = generarSQLInsert();
 
     // Número de registros afectados
     int numReg = 0;
 
     // Obtención del Contexto
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(SQL)) {
+              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
-        ps.setString(1, usuario.getUser());
-        ps.setString(2, usuario.getPass());
-        ps.setString(3, usuario.getEmail());
-        ps.setString(4, usuario.getIcono());
-        ps.setInt(5, usuario.getPerfilID());
-        ps.setString(6, usuario.getInfo());
-        ps.setInt(7, usuario.getStatus());
-        ps.setString(8, usuario.getData());
-        ps.setDate(9, new java.sql.Date(usuario.getCreatedAt().getTime()));
-        ps.setDate(10, new java.sql.Date(usuario.getUpdatedAt().getTime()));
+        parametrizarInsert(ps, usuario);
 
         // Ejecutar Sentencia
         numReg = ps.executeUpdate();
@@ -92,25 +113,17 @@ public final class UsuarioDAL {
 
   public boolean borrarUsuario(int id) {
     // SQL
-    final String SQL = "DELETE FROM usuarios WHERE id=?";
+    final String SQL = generarSQLDelete();
 
     // Número de registros afectados
     int numReg = 0;
 
-    // Obtención del Contexto
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(SQL)) {
+              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
         ps.setInt(1, id);
 
@@ -125,45 +138,21 @@ public final class UsuarioDAL {
     return numReg == 1;
   }
 
-  public boolean modificarUsuario(EntityUsuario usuario) {
+  public boolean modificarUsuario(Usuario usuario) {
     // SQL
-    final String SQL
-            = "UPDATE "
-            + "usuarios "
-            + "SET "
-            + "user=?, pass=?, email=?, icono=?, perfil=?, info=?, "
-            + "status=?, data=?, created_at=?, updated_at=? "
-            + "WHERE id=?";
+    final String SQL = generarSQLUpdate();
 
-    // Número de registros afectados
+    // Número de Registros Afectados
     int numReg = 0;
 
-    // Obtención del Contexto
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(SQL)) {
+              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
-        ps.setString(1, usuario.getUser());
-        ps.setString(2, usuario.getPass());
-        ps.setString(3, usuario.getEmail());
-        ps.setString(4, usuario.getIcono());
-        ps.setInt(5, usuario.getPerfilID());
-        ps.setString(6, usuario.getInfo());
-        ps.setInt(7, usuario.getStatus());
-        ps.setString(8, usuario.getData());
-        ps.setDate(9, new java.sql.Date(usuario.getCreatedAt().getTime()));
-        ps.setDate(10, new java.sql.Date(usuario.getUpdatedAt().getTime()));
-        ps.setInt(11, usuario.getId());
+        parametrizarUpdate(ps, usuario);
 
         // Ejecutar Sentencia
         numReg = ps.executeUpdate();
@@ -176,96 +165,21 @@ public final class UsuarioDAL {
     return numReg == 1;
   }
 
-  public EntityUsuario obtenerUsuario(String user) {
-    // Parámetros de Listado - POR DEFECTO
-    ParametrosListado pl = new ParametrosListado();
-    pl.setFilterField("user");
-    pl.setFilterValue(user);
-    pl.setFilterStrict(true);
-
-    // Lista de Usuarios
-    List<EntityUsuario> usuarios = obtenerUsuarios(pl);
-
-    // Referencia de Entidad
-    return usuarios.isEmpty() ? null : usuarios.get(0);
-  }
-
   public Long contarUsuarios(ParametrosListado pl) {
-    // SELECT
-    String sqlSelect
-            = "SELECT "
-            + "COUNT(*) "
-            + "FROM "
-            + "usuarios "
-            + "INNER JOIN "
-            + "perfiles ON perfiles.id = usuarios.perfil";
-
     // Número de Filas
     long filas = 0;
 
-    // WHERE - USER
-    String sqlUser = "";
+    // SQL
+    String sql = generarSQLComputo(pl);
 
-    // WHERE - FILTER
-    String sqlFilter;
-    if (pl.getFilterField() == null || pl.getFilterField().isEmpty()) {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else {
-        sqlFilter
-                = String.format("usuarios.id LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("usuarios.user LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("perfiles.nombre LIKE '%%%s%%'", pl.getFilterValue());
-      }
-    } else {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else if (pl.isFilterStrict()) {
-        sqlFilter = String.format("usuarios.%s = '%s'",
-                pl.getFilterField(), pl.getFilterValue());
-      } else {
-        sqlFilter = String.format("usuarios.%s LIKE '%%%s%%'",
-                pl.getFilterField(), pl.getFilterValue());
-      }
-    }
-
-    // WHERE - USER + FILTER
-    String sqlWhere;
-    if (sqlUser.isBlank()) {
-      if (sqlFilter.isBlank()) {
-        sqlWhere = "";
-      } else {
-        sqlWhere = String.format(" WHERE %s", sqlFilter);
-      }
-    } else {
-      if (sqlFilter.isBlank()) {
-        sqlWhere = String.format(" WHERE %s", sqlUser);
-      } else {
-        sqlWhere = String.format(" WHERE %s AND %s", sqlUser, sqlFilter);
-      }
-    }
-
-    // SQL Completo: SELECT + WHERE
-    String sql = String.format("%s%s", sqlSelect, sqlWhere);
-
-    // Obtención del Contexto
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(sql)) {
-        // BD > Lista de Entidades
+              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
         try (ResultSet rs = ps.executeQuery()) {
           if (rs.next()) {
-            // Número de Filas
             filas = rs.getLong(1);
           }
         }
@@ -274,13 +188,77 @@ public final class UsuarioDAL {
       System.out.println("ERROR: " + ex.getMessage());
     }
 
-    // Retorno Filas
+    // Retorno: Filas Contadas
     return filas;
   }
 
-  public List<EntityUsuario> obtenerUsuarios(ParametrosListado pl) {
-    String sqlSelec
-            = "SELECT "
+  public List<Usuario> obtenerUsuarios(ParametrosListado pl) {
+    // SQL
+    String sql = generarSQLListado(pl);
+
+    // Lista Vacía
+    List<Usuario> usuarios = new ArrayList<>();
+
+    try {
+      // Contexto Inicial > DataSource
+      DataSource ds = obtenerDataSource(PL);
+
+      try (
+              Connection conn = ds.getConnection();
+              PreparedStatement ps = conn.prepareStatement(sql)) {
+        usuarios = exportarListaUsuarios(ps);
+      }
+    } catch (NamingException | SQLException ex) {
+      System.out.println("ERROR: " + ex.getMessage());
+    }
+
+    // Retorno Lista
+    return usuarios;
+  }
+
+  private List<Usuario> exportarListaUsuarios(PreparedStatement ps) throws SQLException {
+    // Lista 
+    List<Usuario> usuarios = new ArrayList<>();
+
+    // BD > Lista de Entidades
+    try (ResultSet rs = ps.executeQuery()) {
+      while (rs.next()) {
+        // Campos > Entidad
+        Usuario usuario = exportarUsuario(rs);
+
+        // Entidad > Lista
+        usuarios.add(usuario);
+      }
+    }
+
+    // Retorno: Lista de Usuarios
+    return usuarios;
+  }
+
+  private Usuario exportarUsuario(ResultSet rs) throws SQLException {
+    // Fila Actual > Campos 
+    int id = rs.getInt("id");
+    String user = rs.getString("user");
+    String pass = rs.getString("pass");
+    String email = rs.getString("email");
+    String icono = rs.getString("icono");
+    int perfilId = rs.getInt("perfil_id");
+    String perfilInfo = rs.getString("perfil_info");
+    String info = rs.getString("info");
+    int status = rs.getInt("status");
+    String data = rs.getString("data");
+    Date createdAt = rs.getDate("created_at");
+    Date updatedAt = rs.getDate("updated_at");
+
+    // Campos > Entidad
+    return new Usuario(id, user, pass,
+            email, icono, perfilId, perfilInfo, info,
+            status, data, createdAt, updatedAt);
+  }
+
+  public String generarSQLSelect() {
+    return ""
+            + "SELECT "
             + "usuarios.id AS id, "
             + "usuarios.user AS user, "
             + "usuarios.pass AS pass, "
@@ -297,129 +275,90 @@ public final class UsuarioDAL {
             + "usuarios "
             + "INNER JOIN "
             + "perfiles ON perfiles.id = usuarios.perfil";
+  }
 
-    // WHERE - USER
-    String sqlUser;
-    EntityUsuario u = pl.getUser();
-    if (u == null) {
-      sqlUser = "";
-    } else if (u.getPerfilID() == EntityPerfil.DEVEL) {
-      sqlUser = "";
-    } else if (u.getPerfilID() == EntityPerfil.ADMIN) {
-      sqlUser = "usuarios.perfil != " + EntityPerfil.DEVEL;
-    } else {
-      sqlUser = "usuarios.id = " + u.getPerfilID();
-    }
+  public String generarSQLSelectComputo() {
+    return ""
+            + "SELECT "
+            + "COUNT(*) "
+            + "FROM "
+            + "usuarios "
+            + "INNER JOIN "
+            + "perfiles ON perfiles.id = usuarios.perfil";
+  }
 
-    // WHERE - FILTER
-    String sqlFilter;
-    if (pl.getFilterField() == null || pl.getFilterField().isEmpty()) {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else {
-        sqlFilter
-                = String.format("usuarios.id LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("usuarios.user LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("perfiles.nombre LIKE '%%%s%%'", pl.getFilterValue());
-      }
-    } else {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else if (pl.isFilterStrict()) {
-        sqlFilter = String.format("usuarios.%s = '%s'", pl.getFilterField(), pl.getFilterValue());
-      } else {
-        sqlFilter = String.format("usuarios.%s LIKE '%%%s%%'", pl.getFilterField(), pl.getFilterValue());
-      }
-    }
+  public String generarSQLInsert() {
+    return ""
+            + "INSERT INTO "
+            + "usuarios "
+            + "("
+            + "user, pass, email, icono, perfil, info, "
+            + "status, data, created_at, updated_at"
+            + ") "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+  }
 
-    // WHERE - USER + FILTER
-    String sqlWhere;
-    if (sqlUser.isEmpty()) {
-      if (sqlFilter.isEmpty()) {
-        sqlWhere = "";
-      } else {
-        sqlWhere = String.format(" WHERE %s", sqlFilter);
-      }
-    } else {
-      if (sqlFilter.isEmpty()) {
-        sqlWhere = String.format(" WHERE %s", sqlUser);
-      } else {
-        sqlWhere = String.format(" WHERE %s AND (%s)", sqlUser, sqlFilter);
-      }
-    }
+  public String generarSQLUpdate() {
+    return ""
+            + "UPDATE "
+            + "usuarios "
+            + "SET "
+            + "user=?, pass=?, email=?, icono=?, perfil=?, info=?, "
+            + "status=?, data=?, created_at=?, updated_at=? "
+            + "WHERE id=?";
+  }
 
-    // ORDER BY
-    String sqlOrder;
-    if (pl.getOrderProgress() == null || pl.getOrderProgress().isEmpty()) {
-      sqlOrder = "";
-    } else if (pl.getOrderField() == null || pl.getOrderField().isEmpty()) {
-      sqlOrder = "";
-    } else if (pl.getOrderProgress().equalsIgnoreCase("asc") || pl.getOrderProgress().equalsIgnoreCase("desc")) {
-      sqlOrder = String.format(" ORDER BY %s %s", pl.getOrderField(), pl.getOrderProgress());
-    } else {
-      sqlOrder = "";
-    }
+  public String generarSQLDelete() {
+    return ""
+            + "DELETE FROM "
+            + "usuarios "
+            + "WHERE id=?";
+  }
 
-    // LIMIT A,B
-    String sqlLimit;
-    if (pl.getRowIndex() == null || pl.getRowsPage() == null) {
-      sqlLimit = "";
-    } else {
-      sqlLimit = String.format(" LIMIT %d,%d", pl.getRowIndex(), pl.getRowsPage());
-    }
+  private String generarSQLListado(ParametrosListado pl) {
+    // SQL Parciales
+    String select = generarSQLSelect();
+    String where = generarSQLWhere(pl);
+    String order = generarSQLOrder(pl);
+    String limit = generarSQLLimit(pl);
 
-    // SELECT + WHERE + ORDER + LIMIT
-    String sql = String.format("%s%s%s%s", sqlSelec, sqlWhere, sqlOrder, sqlLimit);
+    // SQL Completo: SELECT + WHERE + ORDER + LIMIT
+    return String.format("%s%s%s%s", select, where, order, limit);
+  }
 
-    // Lista Vacía
-    List<EntityUsuario> usuarios = new ArrayList<>();
+  protected String generarSQLComputo(ParametrosListado pl) {
+    // SQL Parciales
+    String select = generarSQLSelectComputo();
+    String where = generarSQLWhere(pl);
 
-    // Obtención del Contexto
-    try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
+    // SQL Completo: SELECT + WHERE
+    return String.format("%s%s", select, where);
+  }
 
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
+  private void parametrizarInsert(PreparedStatement ps, Usuario usuario) throws SQLException {
+    ps.setString(1, usuario.getUser());
+    ps.setString(2, usuario.getPass());
+    ps.setString(3, usuario.getEmail());
+    ps.setString(4, usuario.getIcono());
+    ps.setInt(5, usuario.getPerfilID());
+    ps.setString(6, usuario.getInfo());
+    ps.setInt(7, usuario.getStatus());
+    ps.setString(8, usuario.getData());
+    ps.setDate(9, new java.sql.Date(usuario.getCreatedAt().getTime()));
+    ps.setDate(10, new java.sql.Date(usuario.getUpdatedAt().getTime()));
+  }
 
-      // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
-
-      try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(sql)) {
-        // BD > Lista de Entidades
-        try (ResultSet rs = ps.executeQuery()) {
-          while (rs.next()) {
-            // Fila Actual > Campos 
-            int id = rs.getInt("id");
-            String user = rs.getString("user");
-            String pass = rs.getString("pass");
-            String email = rs.getString("email");
-            String icono = rs.getString("icono");
-            int perfilId = rs.getInt("perfil_id");
-            String perfilInfo = rs.getString("perfil_info");
-            String info = rs.getString("info");
-            int status = rs.getInt("status");
-            String data = rs.getString("data");
-            Date createdAt = rs.getDate("created_at");
-            Date updatedAt = rs.getDate("updated_at");
-
-            // Campos > Entidad
-            EntityUsuario usuario = new EntityUsuario(id, user, pass,
-                    email, icono, perfilId, perfilInfo, info,
-                    status, data, createdAt, updatedAt);
-
-            // Entidad > Lista
-            usuarios.add(usuario);
-          }
-        }
-      }
-    } catch (NamingException | SQLException ex) {
-      System.out.println("ERROR: " + ex.getMessage());
-    }
-
-    // Retorno Lista
-    return usuarios;
+  private void parametrizarUpdate(PreparedStatement ps, Usuario usuario) throws SQLException {
+    ps.setString(1, usuario.getUser());
+    ps.setString(2, usuario.getPass());
+    ps.setString(3, usuario.getEmail());
+    ps.setString(4, usuario.getIcono());
+    ps.setInt(5, usuario.getPerfilID());
+    ps.setString(6, usuario.getInfo());
+    ps.setInt(7, usuario.getStatus());
+    ps.setString(8, usuario.getData());
+    ps.setDate(9, new java.sql.Date(usuario.getCreatedAt().getTime()));
+    ps.setDate(10, new java.sql.Date(usuario.getUpdatedAt().getTime()));
+    ps.setInt(11, usuario.getId());
   }
 }

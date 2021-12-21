@@ -1,13 +1,28 @@
+/* 
+ * Copyright 2021 José A. Pacheco Ondoño - japolabs@gmail.com.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.japo.java.bll;
 
 import java.util.List;
 import javax.servlet.http.HttpSession;
 import org.japo.java.dal.PermisoDAL;
 import org.japo.java.dal.ProcesoDAL;
-import org.japo.java.entities.EntityPerfil;
-import org.japo.java.entities.EntityPermiso;
-import org.japo.java.entities.EntityProceso;
-import org.japo.java.entities.EntityUsuario;
+import org.japo.java.entities.Perfil;
+import org.japo.java.entities.Permiso;
+import org.japo.java.entities.Proceso;
+import org.japo.java.entities.Usuario;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -16,46 +31,56 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class AdminBLL {
 
-    // Capas de Datos
-    private final PermisoDAL perfilPermisoDAL = new PermisoDAL();
-    private final ProcesoDAL procesoDAL = new ProcesoDAL();
+  // Sesión
+  HttpSession sesion;
 
-    public boolean validarAccesoComando(HttpSession sesion, String comando) {
-        // Semáforo
-        boolean checkOK;
+  // Capas de Datos
+  private final PermisoDAL permisoDAL;
+  private final ProcesoDAL procesoDAL;
 
-        try {
-            // Sesion > Usuario
-            EntityUsuario usuario = (EntityUsuario) sesion.getAttribute("usuario");
+  public AdminBLL(HttpSession sesion) {
+    this.sesion = sesion;
 
-            // EntityUsuario > Perfil
-            int perfil = usuario.getPerfilID();
+    permisoDAL = new PermisoDAL(sesion);
+    procesoDAL = new ProcesoDAL(sesion);
+  }
 
-            // Validar Perfil Desarrollador
-            if (perfil == EntityPerfil.DEVEL) {
-              checkOK = true;
-            } else {
-              // Perfil + BD > Lista de Comandos
-              List<EntityPermiso> permisos = perfilPermisoDAL.obtenerPermisos(perfil);
+  public boolean validarAccesoComando(String comando) {
+    // Semáforo
+    boolean checkOK;
 
-              // Nombre Comando > Entidad Comando
-              EntityProceso proceso = procesoDAL.obtenerProceso(comando);
+    try {
+      // Sesion > Usuario
+      Usuario usuario = (Usuario) sesion.getAttribute("usuario");
 
-              // Valida Acceso Comando
-              int posicion = UtilesGastos.buscarProcesoLista(proceso, permisos);
+      // Usuario > Perfil
+      int perfil = usuario.getPerfilID();
 
-              // Semaforo: true | false
-              checkOK = posicion > -1;
-            }
-        } catch (Exception e) {
-            checkOK = false;
-        }
+      // Validar Perfil Desarrollador
+      if (perfil == Perfil.DEVEL) {
+        checkOK = true;
+      } else {
+        // Perfil + BD > Lista de Comandos
+        List<Permiso> permisos = permisoDAL.obtenerPermisos(perfil);
 
-        // Retorno: true | false
-        return checkOK;
+        // Nombre Comando > Entidad Comando
+        Proceso proceso = procesoDAL.obtenerProceso(comando);
+
+        // Valida Acceso Comando
+        int posicion = UtilesGastos.buscarProcesoLista(proceso, permisos);
+
+        // Semaforo: true | false
+        checkOK = posicion > -1;
+      }
+    } catch (Exception e) {
+      checkOK = false;
     }
 
-    public boolean validarAccesoServicio(HttpSession session, String servicio) {
-        return true;
-    }
+    // Retorno: true | false
+    return checkOK;
+  }
+
+  public boolean validarAccesoServicio(String servicio) {
+    return true;
+  }
 }

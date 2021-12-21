@@ -1,18 +1,14 @@
-<%@page import="org.japo.java.entities.Usuario"%>
 <%@page import="org.japo.java.entities.Proyecto"%>
-<%@page import="org.japo.java.entities.Cuota"%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Proyecto proyecto = (Proyecto) request.getAttribute("proyecto");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-    // Datos Inyectados
-    Proyecto proyecto = (Proyecto) request.getAttribute("proyecto");
-    Usuario propietario = (Usuario) request.getAttribute("propietario");
-    Cuota cuota = (Cuota) request.getAttribute("cuota");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -64,11 +60,11 @@
               </tr>
               <tr>
                 <td>Propietario</td>
-                <td><%= propietario.getUser()%></td>
+                <td><%= proyecto.getPropietarioInfo()%></td>
               </tr>
               <tr>
                 <td>Cuota</td>
-                <td><%= cuota.getNombre()%></td>
+                <td><%= proyecto.getCuotaInfo()%></td>
               </tr>
               <tr>
                 <td>Info</td>

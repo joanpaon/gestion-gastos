@@ -1,3 +1,18 @@
+/* 
+ * Copyright 2021 José A. Pacheco Ondoño - japolabs@gmail.com.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.japo.java.dal;
 
 import java.sql.Connection;
@@ -5,377 +20,314 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
-import org.japo.java.entities.EntityCuota;
+import org.japo.java.entities.Cuota;
+import org.japo.java.entities.Usuario;
 import org.japo.java.entities.ParametrosListado;
 
 /**
  *
  * @author José A. Pacheco Ondoño - japolabs@gmail.com
  */
-public final class CuotaDAL {
+public final class CuotaDAL extends AbstractDAL {
 
-    public List<EntityCuota> obtenerCuotas() {
-        // SQL
-        final String SQL = "SELECT * FROM cuotas";
+  // Constantes
+  private final String TABLA = "usuarios";
 
-        // Lista Vacía
-        List<EntityCuota> lista = new ArrayList<>();
+  // Parámetros de Listado
+  private final ParametrosListado PL;
 
-        // Obtención del Contexto
-        try {
-            // Contexto Inicial Nombrado JNDI
-            Context iniCtx = new InitialContext();
+  // Campos
+  private final HttpSession sesion;
 
-            // Situar Contexto Inicial
-            Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
+  public CuotaDAL(HttpSession sesion) {
+    this.sesion = sesion;
 
-            // Contexto Inicial > DataSource
-            DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+    // Sesión > Usuario
+    Usuario usuario = (Usuario) sesion.getAttribute("usuario");
 
-            try (
-                    Connection conn = ds.getConnection();
-                    PreparedStatement ps = conn.prepareStatement(SQL)) {
-                // BD > Lista de Entidades
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        // Registro Actual > Campos
-                        int id = rs.getInt("id");
-                        String nombre = rs.getString("nombre");
-                        String info = rs.getString("info");
-                        int status = rs.getInt("status");
-                        String data = rs.getString("data");
-                        Date createdAt = rs.getDate("created_at");
-                        Date updatedAt = rs.getDate("updated_at");
+    // BD + TABLA + usuario > Parámetros de Listado
+    PL = new ParametrosListado(BD, TABLA, usuario);
+  }
 
-                        // Campos > Entidad
-                        EntityCuota u = new EntityCuota(id, nombre, info,
-                                status, data, createdAt, updatedAt);
+  public List<Cuota> obtenerCuotas() {
+    return obtenerCuotas(PL);
+  }
 
-                        // Producto > Lista
-                        lista.add(u);
-                    }
-                }
-            }
-        } catch (NamingException | SQLException ex) {
-            System.out.println("ERROR: " + ex.getMessage());
-        }
+  public Cuota obtenerCuota(int id) {
+    // Parámetros de Listado
+    PL.setFilterFields(Arrays.asList("id"));
+    PL.setFilterValue(id + "");
+    PL.setFilterStrict(true);
 
-        // Retorno Lista
-        return lista;
+    // Lista de Cuotas
+    List<Cuota> cuotas = obtenerCuotas(PL);
+
+    // Referencia de Entidad
+    return cuotas.isEmpty() ? null : cuotas.get(0);
+  }
+
+  public boolean insertarCuota(Cuota usuario) {
+    // SQL
+    final String SQL = generarSQLInsert();
+
+    // Número de registros afectados
+    int numReg = 0;
+
+    // Obtención del Contexto
+    try {
+      // Contexto Inicial > DataSource
+      DataSource ds = obtenerDataSource(PL);
+
+      try (
+              Connection conn = ds.getConnection();
+              PreparedStatement ps = conn.prepareStatement(SQL)) {
+        // Parametrizar Sentencia
+        parametrizarInsert(ps, usuario);
+
+        // Ejecutar Sentencia
+        numReg = ps.executeUpdate();
+      }
+    } catch (NamingException | SQLException ex) {
+      System.out.println("ERROR: " + ex.getMessage());
     }
 
-    public EntityCuota obtenerCuota(int _id) {
-        // SQL
-        final String SQL = "SELECT * FROM cuotas WHERE id=?";
+    // Retorno: true | false
+    return numReg == 1;
+  }
 
-        // Referencia de Entidad
-        EntityCuota c = null;
+  public boolean borrarCuota(int id) {
+    // SQL
+    final String SQL = "DELETE FROM cuotas WHERE id=?";
 
-        // Contexto
-        try {
-            // Contexto Inicial Nombrado JNDI
-            Context iniCtx = new InitialContext();
+    // Número de registros afectados
+    int numReg = 0;
 
-            // Situar Contexto Inicial
-            Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
+    try {
+      // Contexto Inicial Nombrado JNDI
+      Context iniCtx = new InitialContext();
 
-            // Contexto Inicial > DataSource
-            DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      // Situar Contexto Inicial
+      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
 
-            try (
-                    Connection conn = ds.getConnection();
-                    PreparedStatement ps = conn.prepareStatement(SQL)) {
-                // Parametrizar Sentencia
-                ps.setInt(1, _id);
+      // Contexto Inicial > DataSource
+      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
 
-                // BD > Entidad
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        // Registro Actual > Campos
-                        int id = rs.getInt("id");
-                        String nombre = rs.getString("nombre");
-                        String info = rs.getString("info");
-                        int status = rs.getInt("status");
-                        String data = rs.getString("data");
-                        Date createdAt = rs.getDate("created_at");
-                        Date updatedAt = rs.getDate("updated_at");
+      try (
+              Connection conn = ds.getConnection();
+              PreparedStatement ps = conn.prepareStatement(SQL)) {
+        // Parametrizar Sentencia
+        ps.setInt(1, id);
 
-                        // Campos > Entidad
-                        c = new EntityCuota(id, nombre, info,
-                                status, data, createdAt, updatedAt);
-                    }
-                }
-            }
-        } catch (NamingException | SQLException ex) {
-            System.out.println("ERROR: " + ex.getMessage());
-        }
-
-        // Retorno Entidad
-        return c;
+        // Ejecutar Sentencia
+        numReg = ps.executeUpdate();
+      }
+    } catch (NamingException | SQLException ex) {
+      System.out.println("ERROR: " + ex.getMessage());
     }
 
-    public boolean insertarCuota(EntityCuota c) {
-        // SQL
-        final String SQL = "INSERT INTO cuotas "
-                + "(nombre, info) "
-                + "VALUES (?, ?)";
+    // Retorno: true | false
+    return numReg == 1;
+  }
 
-        // Número de registros afectados
-        int numReg = 0;
+  public boolean modificarCuota(Cuota cuota) {
+    // SQL
+    final String SQL = generarSQLUpdate();
 
-        // Obtención del Contexto
-        try {
-            // Contexto Inicial Nombrado JNDI
-            Context iniCtx = new InitialContext();
+    // Número de Registros Afectados
+    int numReg = 0;
 
-            // Situar Contexto Inicial
-            Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
+    try {
+      // Contexto Inicial > DataSource
+      DataSource ds = obtenerDataSource(PL);
 
-            // Contexto Inicial > DataSource
-            DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      try (
+              Connection conn = ds.getConnection();
+              PreparedStatement ps = conn.prepareStatement(SQL)) {
+        // Parametrizar Sentencia
+        parametrizarUpdate(ps, cuota);
 
-            try (
-                    Connection conn = ds.getConnection();
-                    PreparedStatement ps = conn.prepareStatement(SQL)) {
-                // Parametrizar Sentencia
-                ps.setString(1, c.getNombre());
-                ps.setString(2, c.getInfo());
-
-                // Ejecutar Sentencia
-                numReg = ps.executeUpdate();
-            }
-        } catch (NamingException | SQLException ex) {
-            System.out.println("ERROR: " + ex.getMessage());
-        }
-
-        // Retorno: true | false
-        return numReg == 1;
+        // Ejecutar Sentencia
+        numReg = ps.executeUpdate();
+      }
+    } catch (NamingException | SQLException ex) {
+      System.out.println("ERROR: " + ex.getMessage());
     }
 
-    public boolean borrarCuota(int _id) {
-        // SQL
-        final String SQL = "DELETE FROM cuotas WHERE id=?";
+    // Retorno: true | false
+    return numReg == 1;
+  }
 
-        // Número de registros afectados
-        int numReg = 0;
+  public Long contarCuotas(ParametrosListado pl) {
+    // Número de Filas
+    long filas = 0;
 
-        try {
-            // Contexto Inicial Nombrado JNDI
-            Context iniCtx = new InitialContext();
+    // SQL
+    String sql = generarSQLComputo(pl);
 
-            // Situar Contexto Inicial
-            Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
+    try {
+      // Contexto Inicial > DataSource
+      DataSource ds = obtenerDataSource(PL);
 
-            // Contexto Inicial > DataSource
-            DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
-
-            try (
-                    Connection conn = ds.getConnection();
-                    PreparedStatement ps = conn.prepareStatement(SQL)) {
-                // Parametrizar Sentencia
-                ps.setInt(1, _id);
-
-                // Ejecutar Sentencia
-                numReg = ps.executeUpdate();
-            }
-        } catch (NamingException | SQLException ex) {
-            System.out.println("ERROR: " + ex.getMessage());
+      try (
+              Connection conn = ds.getConnection();
+              PreparedStatement ps = conn.prepareStatement(sql)) {
+        // BD > Lista de Entidades
+        try (ResultSet rs = ps.executeQuery()) {
+          if (rs.next()) {
+            filas = rs.getLong(1);
+          }
         }
-
-        // Retorno: true | false
-        return numReg == 1;
+      }
+    } catch (NamingException | SQLException ex) {
+      System.out.println("ERROR: " + ex.getMessage());
     }
 
-    public boolean modificarCuota(EntityCuota c) {
-        // SQL
-        final String SQL = "UPDATE cuotas "
-                + "SET nombre=?, info=? "
-                + "WHERE id=?";
+    // Retorno Filas
+    return filas;
+  }
 
-        // Número de Registros Afectados
-        int numReg = 0;
+  public List<Cuota> obtenerCuotas(ParametrosListado pl) {
+    // SQL
+    String sql = generarSQLListado(pl);
 
-        try {
-            // Contexto Inicial Nombrado JNDI
-            Context iniCtx = new InitialContext();
+    // Lista Vacía
+    List<Cuota> cuotas = new ArrayList<>();
 
-            // Situar Contexto Inicial
-            Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
+    try {
+      // Contexto Inicial > DataSource
+      DataSource ds = obtenerDataSource(PL);
 
-            // Contexto Inicial > DataSource
-            DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
-
-            try (
-                    Connection conn = ds.getConnection();
-                    PreparedStatement ps = conn.prepareStatement(SQL)) {
-                // Parametrizar Sentencia
-                ps.setString(1, c.getNombre());
-                ps.setString(2, c.getInfo());
-                ps.setInt(3, c.getId());
-
-                // Ejecutar Sentencia
-                numReg = ps.executeUpdate();
-            }
-        } catch (NamingException | SQLException ex) {
-            System.out.println("ERROR: " + ex.getMessage());
-        }
-
-        // Retorno: true | false
-        return numReg == 1;
+      try (
+              Connection conn = ds.getConnection();
+              PreparedStatement ps = conn.prepareStatement(sql)) {
+        cuotas = exportarListaCuotas(ps);
+      }
+    } catch (NamingException | SQLException ex) {
+      System.out.println("ERROR: " + ex.getMessage());
     }
 
-    public Long contarCuotas(ParametrosListado pl) {
-        // SELECT
-        String sqlSelec = "SELECT COUNT(*) FROM cuotas";
+    // Retorno Lista
+    return cuotas;
+  }
 
-        // Número de Filas
-        long filas = 0;
+  private List<Cuota> exportarListaCuotas(PreparedStatement ps)
+          throws SQLException {
+    // Lista 
+    List<Cuota> lista = new ArrayList<>();
 
-        // WHERE - Filtro: campo LIKE %expresion%
-        String sqlWhere;
-        if (pl.getFilterField() == null || pl.getFilterField().isEmpty()) {
-            if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-                sqlWhere = "";
-            } else {
-                sqlWhere = " WHERE "
-                        + String.format("id LIKE '%%%s%%' OR ", pl.getFilterValue())
-                        + String.format("nombre LIKE '%%%s%%' OR ", pl.getFilterValue())
-                        + String.format("info LIKE '%%%s%%'", pl.getFilterValue());
-            }
-        } else {
-            if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-                sqlWhere = "";
-            } else {
-                sqlWhere = " WHERE "
-                        + String.format("%s LIKE '%%%s%%'", pl.getFilterField(), pl.getFilterValue());
-            }
-        }
+    // BD > Lista de Entidades
+    try (ResultSet rs = ps.executeQuery()) {
+      while (rs.next()) {
+        // Campos > Entidad
+        Cuota data = exportarCuota(rs);
 
-        // SQL Completo: SELECT + WHERE
-        String sql = String.format("%s%s", sqlSelec, sqlWhere);
-
-        // Obtención del Contexto
-        try {
-            // Contexto Inicial Nombrado JNDI
-            Context iniCtx = new InitialContext();
-
-            // Situar Contexto Inicial
-            Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
-            // Contexto Inicial > DataSource
-            DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
-
-            try (
-                    Connection conn = ds.getConnection();
-                    PreparedStatement ps = conn.prepareStatement(sql)) {
-                // BD > Lista de Entidades
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        // Número de Filas
-                        filas = rs.getLong(1);
-                    }
-                }
-            }
-        } catch (NamingException | SQLException ex) {
-            System.out.println("ERROR: " + ex.getMessage());
-        }
-
-        // Retorno Filas
-        return filas;
+        // Entidad > Lista
+        lista.add(data);
+      }
     }
 
-    public List<EntityCuota> obtenerCuotas(ParametrosListado pl) {
-        // SELECT
-        String sqlSelec = "SELECT * FROM cuotas";
+    // Retorno: Lista de Cuotas
+    return lista;
+  }
 
-        // WHERE - Filtro: campo LIKE %expresion%
-        String sqlWhere;
-        if (pl.getFilterField() == null || pl.getFilterField().isEmpty()) {
-            if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-                sqlWhere = "";
-            } else {
-                sqlWhere = " WHERE "
-                        + String.format("id LIKE '%%%s%%' OR ", pl.getFilterValue())
-                        + String.format("nombre LIKE '%%%s%%' OR ", pl.getFilterValue())
-                        + String.format("info LIKE '%%%s%%'", pl.getFilterValue());
-            }
-        } else {
-            if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-                sqlWhere = "";
-            } else {
-                sqlWhere = " WHERE "
-                        + String.format("%s LIKE '%%%s%%'", pl.getFilterField(), pl.getFilterValue());
-            }
-        }
+  private Cuota exportarCuota(ResultSet rs)
+          throws SQLException {
+    // Fila Actual > Campos 
+    int id = rs.getInt("id");
+    String nombre = rs.getString("nombre");
+    String info = rs.getString("info");
+    int status = rs.getInt("status");
+    String data = rs.getString("data");
+    Date createdAt = rs.getDate("created_at");
+    Date updatedAt = rs.getDate("updated_at");
 
-        // ORDER BY
-        String sqlSort;
-        if (pl.getOrderProgress() == null || pl.getOrderProgress().isEmpty()) {
-            sqlSort = "";
-        } else if (pl.getOrderField() == null || pl.getOrderField().isEmpty()) {
-            sqlSort = "";
-        } else if (pl.getOrderProgress().equalsIgnoreCase("asc") || pl.getOrderProgress().equalsIgnoreCase("desc")) {
-            sqlSort = String.format(" ORDER BY %s %s", pl.getOrderField(), pl.getOrderProgress());
-        } else {
-            sqlSort = "";
-        }
+    // Campos > Entidad
+    return new Cuota(id, nombre, info,
+            status, data, createdAt, updatedAt);
+  }
 
-        // LIMIT A,B
-        String sqlLimit = String.format(" LIMIT %d,%d", pl.getRowIndex(), pl.getRowsPage());
+  public String generarSQLSelect() {
+    return ""
+            + "SELECT "
+            + "* "
+            + "FROM "
+            + "cuotas";
+  }
 
-        // SQL Completo: SELECT + WHERE + ORDER + LIMIT
-        String sql = String.format("%s%s%s%s", sqlSelec, sqlWhere, sqlSort, sqlLimit);
+  public String generarSQLSelectComputo() {
+    return ""
+            + "SELECT "
+            + "COUNT(*) "
+            + "FROM "
+            + "cuotas";
+  }
 
-        // Lista Vacía
-        List<EntityCuota> lista = new ArrayList<>();
+  public String generarSQLInsert() {
+    return ""
+            + "INSERT INTO "
+            + "cuotas "
+            + "("
+            + "nombre, info, "
+            + "status, data, created_at, updated_at"
+            + ") "
+            + "VALUES (?, ?)";
+  }
 
-        // Obtención del Contexto
-        try {
-            // Contexto Inicial Nombrado JNDI
-            Context iniCtx = new InitialContext();
+  public String generarSQLUpdate() {
+    return ""
+            + "UPDATE "
+            + "cuotas "
+            + "SET nombre=?, info=?, "
+            + "status=?, data=?, created_at=?, updated_at=? "
+            + "WHERE id=?";
+  }
 
-            // Situar Contexto Inicial
-            Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
+  private String generarSQLListado(ParametrosListado pl) {
+    // SQL Parciales
+    String select = generarSQLSelect();
+    String where = generarSQLWhere(pl);
+    String order = generarSQLOrder(pl);
+    String limit = generarSQLLimit(pl);
 
-            // Contexto Inicial > DataSource
-            DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+    // SQL Completo: SELECT + WHERE + ORDER + LIMIT
+    return String.format("%s%s%s%s", select, where, order, limit);
+  }
 
-            try (
-                    Connection conn = ds.getConnection();
-                    PreparedStatement ps = conn.prepareStatement(sql)) {
-                // BD > Lista de Entidades
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        // Fila Actual > Campos 
-                        int id = rs.getInt("id");
-                        String nombre = rs.getString("nombre");
-                        String info = rs.getString("info");
-                        int status = rs.getInt("status");
-                        String data = rs.getString("data");
-                        Date createdAt = rs.getDate("created_at");
-                        Date updatedAt = rs.getDate("updated_at");
+  protected String generarSQLComputo(ParametrosListado pl) {
+    // SQL Parciales
+    String select = generarSQLSelectComputo();
+    String where = generarSQLWhere(pl);
 
-                        // Campos > Entidad
-                        EntityCuota c = new EntityCuota(id, nombre, info,
-                                status, data, createdAt, updatedAt);
+    // SQL Completo: SELECT + WHERE
+    return String.format("%s%s", select, where);
+  }
 
-                        // Entidad > Lista
-                        lista.add(c);
-                    }
-                }
-            }
-        } catch (NamingException | SQLException ex) {
-            System.out.println("ERROR: " + ex.getMessage());
-        }
+  private void parametrizarInsert(PreparedStatement ps, Cuota cuota)
+          throws SQLException {
+    ps.setString(1, cuota.getNombre());
+    ps.setString(2, cuota.getInfo());
+    ps.setInt(3, cuota.getStatus());
+    ps.setString(4, cuota.getData());
+    ps.setDate(5, new java.sql.Date(cuota.getCreatedAt().getTime()));
+    ps.setDate(6, new java.sql.Date(cuota.getUpdatedAt().getTime()));
+  }
 
-        // Retorno Lista
-        return lista;
-    }
-
+  private void parametrizarUpdate(PreparedStatement ps, Cuota cuota)
+          throws SQLException {
+    ps.setString(1, cuota.getNombre());
+    ps.setString(2, cuota.getInfo());
+    ps.setInt(3, cuota.getStatus());
+    ps.setString(4, cuota.getData());
+    ps.setDate(5, new java.sql.Date(cuota.getCreatedAt().getTime()));
+    ps.setDate(6, new java.sql.Date(cuota.getUpdatedAt().getTime()));
+    ps.setInt(7, cuota.getId());
+  }
 }

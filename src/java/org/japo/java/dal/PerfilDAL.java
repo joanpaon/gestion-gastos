@@ -5,76 +5,75 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
-import org.japo.java.entities.EntityPerfil;
-import org.japo.java.entities.EntityUsuario;
+import org.japo.java.entities.Perfil;
+import org.japo.java.entities.Usuario;
 import org.japo.java.entities.ParametrosListado;
 
 /**
  *
  * @author José A. Pacheco Ondoño - japolabs@gmail.com
  */
-public final class PerfilDAL {
+public final class PerfilDAL extends AbstractDAL {
 
-  public List<EntityPerfil> obtenerPerfiles() {
-    return obtenerPerfiles(new ParametrosListado());
+  // Constantes
+  private final String TABLA = "perfiles";
+
+  // Parámetros de Listado
+  private final ParametrosListado PL;
+
+  // Campos
+  private final HttpSession sesion;
+
+  public PerfilDAL(HttpSession sesion) {
+    this.sesion = sesion;
+
+    // Sesión > Usuario
+    Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+
+    // BD + TABLA + usuario > Parámetros de Listado
+    PL = new ParametrosListado(BD, TABLA, usuario);
   }
 
-  public EntityPerfil obtenerPerfil(int id) {
+  public List<Perfil> obtenerPerfiles() {
+    return obtenerPerfiles(PL);
+  }
+
+  public Perfil obtenerPerfil(int id) {
     // Parámetros de Listado
-    ParametrosListado pl = new ParametrosListado();
-    pl.setFilterField("id");
-    pl.setFilterValue(id + "");
-    pl.setFilterStrict(true);
+    PL.setFilterFields(Arrays.asList("id"));
+    PL.setFilterValue(id + "");
+    PL.setFilterStrict(true);
 
     // Lista de Proyectos
-    List<EntityPerfil> perfiles = obtenerPerfiles(pl);
+    List<Perfil> perfiles = obtenerPerfiles(PL);
 
     // Referencia de Entidad
     return perfiles.isEmpty() ? null : perfiles.get(0);
   }
 
-  public boolean insertarPerfil(EntityPerfil perfil) {
+  public boolean insertarPerfil(Perfil perfil) {
     // SQL
-    final String SQL
-            = "INSERT INTO "
-            + "perfiles "
-            + "("
-            + "nombre, info, icono"
-            + "status, data, created_at, updated_at"
-            + ") "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+    final String SQL = generarSQLInsert();
 
     // Número de registros afectados
     int numReg = 0;
 
     // Obtención del Contexto
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
               Connection conn = ds.getConnection();
               PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
-        ps.setString(1, perfil.getNombre());
-        ps.setString(2, perfil.getInfo());
-        ps.setString(3, perfil.getIcono());
-        ps.setInt(6, perfil.getStatus());
-        ps.setString(7, perfil.getData());
-        ps.setDate(8, new java.sql.Date(perfil.getCreatedAt().getTime()));
-        ps.setDate(9, new java.sql.Date(perfil.getUpdatedAt().getTime()));
+        parametrizarInsert(ps, perfil);
 
         // Ejecutar Sentencia
         numReg = ps.executeUpdate();
@@ -95,14 +94,8 @@ public final class PerfilDAL {
     int numReg = 0;
 
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
               Connection conn = ds.getConnection();
@@ -121,41 +114,22 @@ public final class PerfilDAL {
     return numReg == 1;
   }
 
-  public boolean modificarPerfil(EntityPerfil perfil) {
+  public boolean modificarPerfil(Perfil perfil) {
     // SQL
-    final String SQL
-            = "UPDATE "
-            + "perfiles "
-            + "SET "
-            + "nombre=?, info=?, icono=? "
-            + "status=?, data=?, created_at=?, updated_at=?"
-            + "WHERE id=?";
+    final String SQL = generarSQLUpdate();
 
     // Número de Registros Afectados
     int numReg = 0;
 
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
               Connection conn = ds.getConnection();
               PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
-        ps.setString(1, perfil.getNombre());
-        ps.setString(2, perfil.getInfo());
-        ps.setString(3, perfil.getIcono());
-        ps.setInt(4, perfil.getStatus());
-        ps.setString(5, perfil.getData());
-        ps.setDate(6, new java.sql.Date(perfil.getCreatedAt().getTime()));
-        ps.setDate(7, new java.sql.Date(perfil.getUpdatedAt().getTime()));
-        ps.setInt(8, perfil.getId());
+        parametrizarUpdate(ps, perfil);
 
         // Ejecutar Sentencia
         numReg = ps.executeUpdate();
@@ -169,81 +143,16 @@ public final class PerfilDAL {
   }
 
   public Long contarPerfiles(ParametrosListado pl) {
-    // SELECT
-    String sqlSelect
-            = "SELECT "
-            + "COUNT(*) "
-            + "FROM "
-            + "perfiles";
-
     // Número de Filas
     long filas = 0;
 
-    // WHERE - USER
-    String sqlUser;
-    EntityUsuario usuario = pl.getUser();
-    if (usuario == null) {
-      sqlUser = "";
-    } else if (usuario.getPerfilID() == EntityPerfil.DEVEL) {
-      sqlUser = "";
-    } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) {
-      sqlUser = "perfiles.id != " + EntityPerfil.DEVEL;
-    } else {
-      sqlUser = "perfiles.id = " + EntityPerfil.BASIC;
-    }
-
-    // WHERE - FILTER
-    String sqlFilter;
-    if (pl.getFilterField() == null || pl.getFilterField().isEmpty()) {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else {
-        sqlFilter
-                = String.format("id LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("nombre LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("info LIKE '%%%s%%'", pl.getFilterValue());
-      }
-    } else {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else if (pl.isFilterStrict()) {
-        sqlFilter = String.format("perfiles.%s = '%s'",
-                pl.getFilterField(), pl.getFilterValue());
-      } else {
-        sqlFilter = String.format("perfiles.%s LIKE '%%%s%%'",
-                pl.getFilterField(), pl.getFilterValue());
-      }
-    }
-
-    // WHERE - USER + FILTER
-    String sqlWhere;
-    if (sqlUser.isBlank()) {
-      if (sqlFilter.isBlank()) {
-        sqlWhere = "";
-      } else {
-        sqlWhere = String.format(" WHERE %s", sqlFilter);
-      }
-    } else {
-      if (sqlFilter.isBlank()) {
-        sqlWhere = String.format(" WHERE %s", sqlUser);
-      } else {
-        sqlWhere = String.format(" WHERE %s AND %s", sqlUser, sqlFilter);
-      }
-    }
-
-    // SQL Completo: SELECT + WHERE
-    String sql = String.format("%s%s", sqlSelect, sqlWhere);
+    // SQL
+    String sql = generarSQLComputo(pl);
 
     // Obtención del Contexto
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
               Connection conn = ds.getConnection();
@@ -251,7 +160,6 @@ public final class PerfilDAL {
         // BD > Lista de Entidades
         try (ResultSet rs = ps.executeQuery()) {
           if (rs.next()) {
-            // Número de Filas
             filas = rs.getLong(1);
           }
         }
@@ -260,106 +168,21 @@ public final class PerfilDAL {
       System.out.println("ERROR: " + ex.getMessage());
     }
 
-    // Retorno Filas
+    // Retorno: Filas Contadas
     return filas;
   }
 
-  public List<EntityPerfil> obtenerPerfiles(ParametrosListado pl) {
-    // SELECT
-    String sqlSelect
-            = "SELECT "
-            + "* "
-            + "FROM "
-            + "perfiles";
-
-    // WHERE - USER
-    String sqlUser;
-    EntityUsuario usuario = pl.getUser();
-    if (usuario == null) {
-      sqlUser = "";
-    } else if (usuario.getPerfilID() == EntityPerfil.DEVEL) {
-      sqlUser = "";
-    } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) {
-      sqlUser = "perfiles.id != " + EntityPerfil.DEVEL;
-    } else {
-      sqlUser = "perfiles.id = " + EntityPerfil.BASIC;
-    }
-
-    // WHERE - FILTER
-    String sqlFilter;
-    if (pl.getFilterField() == null || pl.getFilterField().isEmpty()) {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else {
-        sqlFilter
-                = String.format("id LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("nombre LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("info LIKE '%%%s%%'", pl.getFilterValue());
-      }
-    } else {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else if (pl.isFilterStrict()) {
-        sqlFilter = String.format("perfiles.%s = '%s'",
-                pl.getFilterField(), pl.getFilterValue());
-      } else {
-        sqlFilter = String.format("perfiles.%s LIKE '%%%s%%'",
-                pl.getFilterField(), pl.getFilterValue());
-      }
-    }
-
-    // WHERE - USER + FILTER
-    String sqlWhere;
-    if (sqlUser.isBlank()) {
-      if (sqlFilter.isBlank()) {
-        sqlWhere = "";
-      } else {
-        sqlWhere = String.format(" WHERE %s", sqlFilter);
-      }
-    } else {
-      if (sqlFilter.isBlank()) {
-        sqlWhere = String.format(" WHERE %s", sqlUser);
-      } else {
-        sqlWhere = String.format(" WHERE %s AND %s", sqlUser, sqlFilter);
-      }
-    }
-
-    // ORDER BY
-    String sqlOrder;
-    if (pl.getOrderProgress() == null || pl.getOrderProgress().isEmpty()) {
-      sqlOrder = "";
-    } else if (pl.getOrderField() == null || pl.getOrderField().isEmpty()) {
-      sqlOrder = "";
-    } else if (pl.getOrderProgress().equalsIgnoreCase("asc") || pl.getOrderProgress().equalsIgnoreCase("desc")) {
-      sqlOrder = String.format(" ORDER BY %s %s", pl.getOrderField(), pl.getOrderProgress());
-    } else {
-      sqlOrder = "";
-    }
-
-    // LIMIT A,B
-    String sqlLimit;
-    if (pl.getRowIndex() == null || pl.getRowsPage() == null) {
-      sqlLimit = "";
-    } else {
-      sqlLimit = String.format(" LIMIT %d,%d", pl.getRowIndex(), pl.getRowsPage());
-    }
-
-    // SQL Completo: SELECT + WHERE + ORDER + LIMIT
-    String sql = String.format("%s%s%s%s", sqlSelect, sqlWhere, sqlOrder, sqlLimit);
+  public List<Perfil> obtenerPerfiles(ParametrosListado pl) {
+    // SQL
+    String sql = generarSQLListado(pl);
 
     // Lista Vacía
-    List<EntityPerfil> perfiles = new ArrayList<>();
+    List<Perfil> perfiles = new ArrayList<>();
 
     // Obtención del Contexto
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(new ParametrosListado("gestion_gastos", "perfiles"));
 
       try (
               Connection conn = ds.getConnection();
@@ -367,22 +190,7 @@ public final class PerfilDAL {
         // BD > Lista de Entidades
         try (ResultSet rs = ps.executeQuery()) {
           while (rs.next()) {
-            // Fila Actual > Campos 
-            int id = rs.getInt("id");
-            String nombre = rs.getString("nombre");
-            String info = rs.getString("info");
-            String icono = rs.getString("icono");
-            int status = rs.getInt("status");
-            String data = rs.getString("data");
-            Date createdAt = rs.getDate("created_at");
-            Date updatedAt = rs.getDate("updated_at");
-
-            // Campos > Entidad
-            EntityPerfil perfil = new EntityPerfil(id, nombre, info, icono,
-                    status, data, createdAt, updatedAt);
-
-            // Entidad > Lista
-            perfiles.add(perfil);
+            perfiles = exportarListaPerfiles(ps);
           }
         }
       }
@@ -392,5 +200,120 @@ public final class PerfilDAL {
 
     // Retorno Lista
     return perfiles;
+  }
+
+  private List<Perfil> exportarListaPerfiles(PreparedStatement ps) throws SQLException {
+    // Lista 
+    List<Perfil> lista = new ArrayList<>();
+
+    // BD > Lista de Entidades
+    try (ResultSet rs = ps.executeQuery()) {
+      while (rs.next()) {
+        // Campos > Entidad
+        Perfil data = exportarPerfil(rs);
+
+        // Entidad > Lista
+        lista.add(data);
+      }
+    }
+
+    // Retorno: Lista de Perfiles
+    return lista;
+  }
+
+  private Perfil exportarPerfil(ResultSet rs) throws SQLException {
+    // Fila Actual > Campos 
+    int id = rs.getInt("id");
+    String nombre = rs.getString("nombre");
+    String info = rs.getString("info");
+    String icono = rs.getString("icono");
+    int status = rs.getInt("status");
+    String data = rs.getString("data");
+    Date createdAt = rs.getDate("created_at");
+    Date updatedAt = rs.getDate("updated_at");
+
+    // Campos > Entidad
+    return new Perfil(id, nombre, info, icono,
+            status, data, createdAt, updatedAt);
+  }
+
+  public String generarSQLSelect() {
+    return ""
+            + "SELECT "
+            + "* "
+            + "FROM "
+            + "perfiles";
+  }
+
+  public String generarSQLSelectComputo() {
+    return ""
+            + "SELECT "
+            + "COUNT(*) "
+            + "FROM "
+            + "perfiles";
+  }
+
+  public String generarSQLInsert() {
+    return ""
+            + "INSERT INTO "
+            + "perfiles "
+            + "("
+            + "nombre, info, icono, "
+            + "status, data, created_at, updated_at"
+            + ") "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?)";
+  }
+
+  public String generarSQLUpdate() {
+    return ""
+            + "UPDATE "
+            + "perfiles "
+            + "SET "
+            + "nombre=?, info=?, icono=?, "
+            + "status=?, data=?, created_at=?, updated_at=? "
+            + "WHERE id=?";
+  }
+
+  private String generarSQLListado(ParametrosListado pl) {
+    // SQL Parciales
+    String select = generarSQLSelect();
+    String where = generarSQLWhere(pl);
+    String order = generarSQLOrder(pl);
+    String limit = generarSQLLimit(pl);
+
+    // SQL Completo: SELECT + WHERE + ORDER + LIMIT
+    return String.format("%s%s%s%s", select, where, order, limit);
+  }
+
+  protected String generarSQLComputo(ParametrosListado pl) {
+    // SQL Parciales
+    String select = generarSQLSelectComputo();
+    String where = generarSQLWhere(pl);
+
+    // SQL Completo: SELECT + WHERE
+    return String.format("%s%s", select, where);
+  }
+
+  private void parametrizarInsert(PreparedStatement ps, Perfil perfil)
+          throws SQLException {
+    ps.setString(1, perfil.getNombre());
+    ps.setString(2, perfil.getInfo());
+    ps.setString(3, perfil.getIcono());
+    ps.setInt(4, perfil.getStatus());
+    ps.setString(5, perfil.getData());
+    ps.setDate(6, new java.sql.Date(perfil.getCreatedAt().getTime()));
+    ps.setDate(7, new java.sql.Date(perfil.getUpdatedAt().getTime()));
+  }
+
+  private void parametrizarUpdate(PreparedStatement ps, Perfil perfil)
+          throws SQLException {
+    ps.setString(1, perfil.getNombre());
+    ps.setString(2, perfil.getInfo());
+    ps.setString(3, perfil.getIcono());
+    ps.setInt(4, perfil.getStatus());
+    ps.setString(5, perfil.getData());
+    ps.setDate(6, new java.sql.Date(perfil.getCreatedAt().getTime()));
+    ps.setDate(7, new java.sql.Date(perfil.getUpdatedAt().getTime()));
+    ps.setInt(8, perfil.getId());
   }
 }

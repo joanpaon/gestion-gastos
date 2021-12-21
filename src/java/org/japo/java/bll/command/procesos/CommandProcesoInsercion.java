@@ -21,7 +21,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.ProcesoDAL;
-import org.japo.java.entities.EntityProceso;
+import org.japo.java.entities.Proceso;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -34,54 +34,63 @@ public final class CommandProcesoInsercion extends Command {
   @SuppressWarnings("ConvertToStringSwitch")
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    ProcesoDAL procesoDAL = new ProcesoDAL();
+    String page = "messages/message";
 
     try {
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // Obtener Operación
-        String op = request.getParameter("op");
-
-        // Invoca Formulario de Captura de Datos
-        if (op == null || op.equals("captura")) {
-          // JSP
-          page = "procesos/proceso-insercion";
-        } else if (op.equals("proceso")) {
-          // Request > Parámetros
-          String nombre = request.getParameter("nombre").trim();
-          String info = request.getParameter("info").trim();
-
-          // Parámetros > Entidad
-          EntityProceso proceso = new EntityProceso(nombre, info);
-
-          // Entidad > Inserción BD - true | false
-          boolean procesoOK = procesoDAL.insertarProceso(proceso);
-
-          // Validar EntityProceso
-          page = procesoOK ? "success/operacion-realizada" : "errors/operacion-cancelada";
-        } else {
-          // Recurso NO disponible
-          page = "errors/page404";
-        }
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        ProcesoDAL procesoDAL = new ProcesoDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // Obtener Operación
+          String op = request.getParameter("op");
+
+          // Invoca Formulario de Captura de Datos
+          if (op == null || op.equals("captura")) {
+            // JSP
+            page = "procesos/proceso-insercion";
+          } else if (op.equals("proceso")) {
+            // Request > Parámetros
+            String nombre = request.getParameter("nombre").trim();
+            String info = request.getParameter("info").trim();
+
+            // Parámetros > Entidad
+            Proceso proceso = new Proceso(nombre, info);
+
+            // Entidad > Inserción BD - true | false
+            boolean checkOK = procesoDAL.insertarProceso(proceso);
+
+            // Validar Operación
+            if (checkOK) {
+              // Parámetros
+              String titulo = "Operación Realizada con Éxito";
+              String mensaje = "Datos insertados correctamente";
+              String imagen = "public/img/tarea.png";
+              String destino = "controller?cmd=proceso-listado";
+
+              // Inyeccion de Parámetros
+              parametrizarMensaje(titulo, mensaje, imagen, destino);
+            } else {
+              seleccionarMensaje(MSG_OPERACION_CANCELADA);
+            }
+          } else {
+            seleccionarMensaje(MSG_ERROR404);
+          }
+        } else {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+        }
       }
-    } catch (Exception e) {
-      // Recurso NO disponible
-      page = "errors/page404";
+    } catch (NumberFormatException | NullPointerException e) {
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

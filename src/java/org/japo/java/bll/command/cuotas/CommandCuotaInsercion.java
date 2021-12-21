@@ -21,7 +21,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.CuotaDAL;
-import org.japo.java.entities.EntityCuota;
+import org.japo.java.entities.Cuota;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -34,54 +34,63 @@ public final class CommandCuotaInsercion extends Command {
   @SuppressWarnings("ConvertToStringSwitch")
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    CuotaDAL cuotaDAL = new CuotaDAL();
+    String page = "messages/message";
 
     try {
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // Obtener Operación
-        String op = request.getParameter("op");
-
-        // Invoca Formulario de Captura de Datos
-        if (op == null || op.equals("captura")) {
-          // JSP
-          page = "cuotas/cuota-insercion";
-        } else if (op.equals("proceso")) {
-          // Request > Parámetros
-          String nombre = request.getParameter("nombre").trim();
-          String info = request.getParameter("info").trim();
-
-          // Parámetros > Entidad
-          EntityCuota cuota = new EntityCuota(0, nombre, info, 0, null, null, null);
-
-          // Entidad > Inserción BD - true | false
-          boolean procesoOK = cuotaDAL.insertarCuota(cuota);
-
-          // Validar Proceso
-          page = procesoOK ? "success/operacion-realizada" : "errors/operacion-cancelada";
-        } else {
-          // Recurso NO disponible
-          page = "errors/page404";
-        }
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        CuotaDAL cuotaDAL = new CuotaDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // Obtener Operación
+          String op = request.getParameter("op");
+
+          // Invoca Formulario de Captura de Datos
+          if (op == null || op.equals("captura")) {
+            // JSP
+            page = "cuotas/cuota-insercion";
+          } else if (op.equals("proceso")) {
+            // Request > Parámetros
+            String nombre = request.getParameter("nombre").trim();
+            String info = request.getParameter("info").trim();
+
+            // Parámetros > Entidad
+            Cuota cuota = new Cuota(nombre, info);
+
+            // Entidad > Inserción BD - true | false
+            boolean checkOK = cuotaDAL.insertarCuota(cuota);
+
+            // Validar Operación
+            if (checkOK) {
+              // Parámetros
+              String titulo = "Operación Realizada con Éxito";
+              String mensaje = "Se han modificado correctamente los datos del usuario";
+              String imagen = "public/img/tarea.png";
+              String destino = "controller?cmd=cuota-listado";
+
+              // Inyeccion de Parámetros
+              parametrizarMensaje(titulo, mensaje, imagen, destino);
+            } else {
+              seleccionarMensaje(MSG_OPERACION_CANCELADA);
+            }
+          } else {
+            seleccionarMensaje(MSG_ERROR404);
+          }
+        } else {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+        }
       }
-    } catch (Exception e) {
-      // Recurso NO disponible
-      page = "errors/page404";
+    } catch (NumberFormatException | NullPointerException e) {
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

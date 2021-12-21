@@ -31,7 +31,7 @@
     <!-- Web Content-->
     <div id="container">
       <jsp:include page="../../partials/header.jsp" />
-      
+
       <main>
         <div class="holder">
           <p><a href="controller?cmd=login">Login</a></p>
@@ -39,7 +39,7 @@
                width="600" height="400" alt="Foto" />
         </div>
       </main>
-      
+
       <jsp:include page="../../partials/footer.jsp" />
     </div>
 

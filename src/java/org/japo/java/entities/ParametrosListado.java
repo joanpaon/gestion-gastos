@@ -10,7 +10,7 @@ import java.util.List;
  */
 public final class ParametrosListado implements Serializable {
 
-  private EntityUsuario user;
+  private Usuario user;
   private String userField;
   private String dbName = "gestion_gastos";
   private String table;
@@ -20,16 +20,16 @@ public final class ParametrosListado implements Serializable {
   private boolean filterStrict;
   private String orderField = "";
   private String orderProgress = "";
-  private Long rowCount = 0L;
-  private Long rowsPage = 0L;
-  private Long rowIndex = 0L;
+  private Long rowCount;
+  private Long rowsPage;
+  private Long rowIndex;
 
   public ParametrosListado() {
   }
 
   public ParametrosListado(
           String dbName, String table,
-          EntityUsuario user, String userField,
+          Usuario user, String userField,
           String filterField, String filterValue, boolean filterStrict,
           String orderField, String orderProgress,
           Long rowCount, Long rowsPage, Long rowIndex) {
@@ -52,11 +52,17 @@ public final class ParametrosListado implements Serializable {
     this.table = table;
   }
 
-  public EntityUsuario getUser() {
+  public ParametrosListado(String dbName, String table, Usuario user) {
+    this.dbName = dbName;
+    this.table = table;
+    this.user = user;
+  }
+
+  public Usuario getUser() {
     return user;
   }
 
-  public void setUser(EntityUsuario user) {
+  public void setUser(Usuario user) {
     this.user = user;
   }
 

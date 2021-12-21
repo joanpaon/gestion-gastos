@@ -30,7 +30,7 @@ public final class CommandLogout extends Command {
   @Override
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
+    String page = "messages/message";
 
     // request > Sesión Actual
     HttpSession sesion = request.getSession(false);
@@ -38,17 +38,16 @@ public final class CommandLogout extends Command {
     try {
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
+        seleccionarMensaje(MSG_SESION_CADUCADA);
       } else {
         // Cerrar Sesión Actual
         sesion.invalidate();
 
         // JSP
-        page = "success/sesion-finalizada";
+        page = "controller?cmd=landing";
       }
     } catch (Exception e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

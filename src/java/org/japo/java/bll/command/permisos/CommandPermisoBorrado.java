@@ -21,7 +21,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.PermisoDAL;
-import org.japo.java.entities.EntityPermiso;
+import org.japo.java.entities.Permiso;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -34,56 +34,65 @@ public final class CommandPermisoBorrado extends Command {
   @SuppressWarnings("ConvertToStringSwitch")
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    PermisoDAL permisoDAL = new PermisoDAL();
+    String page = "messages/message";
 
     try {
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // URL > ID Objeto
-        int id = Integer.parseInt(request.getParameter("id"));
-
-        // request > ID Operación
-        String op = request.getParameter("op");
-
-        // ID Entidad + BD > JSP Modificación
-        if (op == null || op.equals("captura")) {
-          // ID Entidad + BD > Entidad
-          EntityPermiso permiso = permisoDAL.obtenerPermiso(id);
-
-          // Enlaza Datos > JSP
-          request.setAttribute("permiso", permiso);
-
-          // Confirmar Borrado
-          page = "permisos/permiso-borrado";
-        } else if (op.equals("proceso")) {
-          // ID > Registro Borrado - true | false
-          boolean operacionOK = permisoDAL.borrarPermiso(id);
-
-          // Validar Operación
-          page = operacionOK ? "success/operacion-realizada" : "errors/operacion-cancelada";
-        } else {
-          // Acceso NO Autorizado
-          page = "errors/acceso-denegado";
-        }
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        PermisoDAL permisoDAL = new PermisoDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // URL > ID Objeto
+          int id = Integer.parseInt(request.getParameter("id"));
+
+          // request > ID Operación
+          String op = request.getParameter("op");
+
+          // ID Entidad + BD > JSP Modificación
+          if (op == null || op.equals("captura")) {
+            // ID Entidad + BD > Entidad
+            Permiso permiso = permisoDAL.obtenerPermiso(id);
+
+            // Enlaza Datos > JSP
+            request.setAttribute("permiso", permiso);
+
+            // Confirmar Borrado
+            page = "permisos/permiso-borrado";
+          } else if (op.equals("proceso")) {
+            // ID > Registro Borrado - true | false
+            boolean checkOK = permisoDAL.borrarPermiso(id);
+
+            // Validar Operación
+            if (checkOK) {
+              // Parámetros
+              String titulo = "Operación Realizada con Éxito";
+              String mensaje = "Datos borrados correctamente";
+              String imagen = "public/img/tarea.png";
+              String destino = "controller?cmd=permiso-listado";
+
+              // Inyeccion de Parámetros
+              parametrizarMensaje(titulo, mensaje, imagen, destino);
+            } else {
+              seleccionarMensaje(MSG_OPERACION_CANCELADA);
+            }
+          } else {
+            seleccionarMensaje(MSG_ERROR404);
+          }
+        } else {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+        }
       }
     } catch (NumberFormatException | NullPointerException e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

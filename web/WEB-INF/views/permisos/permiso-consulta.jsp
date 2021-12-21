@@ -1,18 +1,14 @@
-<%@page import="org.japo.java.entities.Proceso"%>
 <%@page import="org.japo.java.entities.Permiso"%>
-<%@page import="org.japo.java.entities.Perfil"%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Permiso permiso = (Permiso) request.getAttribute("permiso");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-    // Datos Inyectados
-    Permiso permiso = (Permiso) request.getAttribute("permiso");
-    Proceso proceso = (Proceso) request.getAttribute("proceso");
-    Perfil perfil = (Perfil) request.getAttribute("perfil");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -60,11 +56,11 @@
               </tr>
               <tr>
                 <td>Proceso</td>
-                <td><%= proceso.getInfo()%></td>
+                <td><%= permiso.getProcesoInfo()%></td>
               </tr>
               <tr>
                 <td>Perfil</td>
-                <td><%= perfil.getNombre()%></td>
+                <td><%= permiso.getPerfilInfo()%></td>
               </tr>
               <tr>
                 <td>Información</td>
@@ -72,11 +68,6 @@
               </tr>
             </tbody>
           </table>
-          <div class="imagen">
-            <div class="imagen-margen">
-              <img src="<%= perfil.getIcono()%>" alt="<%= perfil.getNombre()%>"/> 
-            </div>
-          </div>
         </div>
         <nav class="botones">
           <a class="btn btn-borrar" href="controller?cmd=permiso-borrado&id=<%= permiso.getId()%>">Borrar</a>

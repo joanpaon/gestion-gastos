@@ -23,10 +23,8 @@ import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.PartidaDAL;
 import org.japo.java.dal.ProyectoDAL;
-import org.japo.java.entities.EntityPartida;
-import org.japo.java.entities.EntityProyecto;
-import org.japo.java.entities.EntityUsuario;
-import org.japo.java.entities.ParametrosListado;
+import org.japo.java.entities.Partida;
+import org.japo.java.entities.Proyecto;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -39,70 +37,72 @@ public final class CommandPartidaInsercion extends Command {
   @SuppressWarnings("ConvertToStringSwitch")
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    PartidaDAL partidaDAL = new PartidaDAL();
-    ProyectoDAL proyectoDAL = new ProyectoDAL();
+    String page = "messages/message";
 
     try {
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // Usuario Actual
-        EntityUsuario usuario = (EntityUsuario) sesion.getAttribute("usuario");
-
-        // Obtener Operación
-        String op = request.getParameter("op");
-
-        // Invoca Formulario de Captura de Datos
-        if (op == null || op.equals("captura")) {
-          // Parámetros Listado
-          ParametrosListado pl = new ParametrosListado();
-          pl.setUser(usuario);
-
-          // Lista de Proyectos - Dependiendo del perfil
-          List<EntityProyecto> proyectos = proyectoDAL.obtenerProyectos(pl);
-
-          // Inyección de Datos
-          request.setAttribute("proyectos", proyectos);
-
-          // JSP
-          page = "partidas/partida-insercion";
-        } else if (op.equals("proceso")) {
-          // Request > Parámetros
-          String nombre = request.getParameter("nombre").trim();
-          String info = request.getParameter("info").trim();
-          String icono = request.getParameter("icono").trim();
-          int proyectoID = Integer.parseInt(request.getParameter("proyecto").trim());
-
-          // Parámetros > Entidad
-          EntityPartida partida = new EntityPartida(nombre, info, icono, proyectoID);
-
-          // Entidad > Inserción BD - true | false
-          boolean procesoOK = partidaDAL.insertarPartida(partida);
-
-          // Validar Proceso
-          page = procesoOK ? "success/operacion-realizada" : "errors/operacion-cancelada";
-        } else {
-          // Recurso NO disponible
-          page = "errors/page404";
-        }
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        PartidaDAL partidaDAL = new PartidaDAL(sesion);
+        ProyectoDAL proyectoDAL = new ProyectoDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // Obtener Operación
+          String op = request.getParameter("op");
+
+          // Invoca Formulario de Captura de Datos
+          if (op == null || op.equals("captura")) {
+            // BS > Lista de Proyectos
+            List<Proyecto> proyectos = proyectoDAL.obtenerProyectos();
+
+            // Inyección de Datos
+            request.setAttribute("proyectos", proyectos);
+
+            // JSP
+            page = "partidas/partida-insercion";
+          } else if (op.equals("proceso")) {
+            // Request > Parámetros
+            String nombre = request.getParameter("nombre").trim();
+            String info = request.getParameter("info").trim();
+            String icono = request.getParameter("icono").trim();
+            int proyectoID = Integer.parseInt(request.getParameter("proyecto").trim());
+
+            // Parámetros > Entidad
+            Partida partida = new Partida(nombre, info, icono, proyectoID);
+
+            // Entidad > Inserción BD - true | false
+            boolean checkOK = partidaDAL.insertarPartida(partida);
+
+            // Validar Operación
+            if (checkOK) {
+              // Parámetros
+              String titulo = "Operación Realizada con Éxito";
+              String mensaje = "Se ha incorporado correctamente una nueva partida";
+              String imagen = "public/img/tarea.png";
+              String destino = "controller?cmd=partida-listado";
+
+              // Inyeccion de Parámetros
+              parametrizarMensaje(titulo, mensaje, imagen, destino);
+            } else {
+              seleccionarMensaje(MSG_OPERACION_CANCELADA);
+            }
+          } else {
+            seleccionarMensaje(MSG_ERROR404);
+          }
+        } else {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+        }
       }
     } catch (NumberFormatException | NullPointerException e) {
-      // Recurso NO disponible
-      page = "errors/page404";
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

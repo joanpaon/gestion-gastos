@@ -21,7 +21,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.CuotaDAL;
-import org.japo.java.entities.EntityCuota;
+import org.japo.java.entities.Cuota;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -32,42 +32,41 @@ public final class CommandCuotaConsulta extends Command {
 
   @Override
   public void process() throws ServletException, IOException {
-    // Nombre JSP
-    String page;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    CuotaDAL cuotaDAL = new CuotaDAL();
+    // JSP
+    String page = "messages/message";
 
     try {
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // Request > ID Entidad
-        int id = Integer.parseInt(request.getParameter("id"));
-
-        // ID Entidad > Entidad
-        EntityCuota cuota = cuotaDAL.obtenerCuota(id);
-
-        // Inyecta Datos > JSP
-        request.setAttribute("cuota", cuota);
-
-        // Nombre JSP
-        page = "cuotas/cuota-consulta";
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        CuotaDAL cuotaDAL = new CuotaDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // Request > ID Entidad
+          int id = Integer.parseInt(request.getParameter("id"));
+
+          // ID Entidad > Entidad
+          Cuota cuota = cuotaDAL.obtenerCuota(id);
+
+          // Inyecta Datos > JSP
+          request.setAttribute("cuota", cuota);
+
+          // JSP
+          page = "cuotas/cuota-consulta";
+        } else {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+        }
       }
     } catch (NumberFormatException | NullPointerException e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección

@@ -1,25 +1,24 @@
-<%@page import="org.japo.java.entities.EntityPerfil"%>
-<%@page import="org.japo.java.entities.EntityUsuario"%>
-<%@page import="org.japo.java.entities.EntityAbono"%>
-<%@page import="org.japo.java.libraries.UtilesGastos"%>
+<%@page import="org.japo.java.entities.Perfil"%>
+<%@page import="org.japo.java.entities.Usuario"%>
+<%@page import="org.japo.java.entities.Abono"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  List<Abono> abonos = (ArrayList<Abono>) request.getAttribute("abonos");
+  String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
+  String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
+  String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
+  Long rowCount = (Long) request.getAttribute("row-count");
+  Long rowIndex = (Long) request.getAttribute("row-index");
+  Long rowsPage = (Long) request.getAttribute("rows-page");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-    // Datos Inyectados
-    List<EntityAbono> abonos = (ArrayList<EntityAbono>) request.getAttribute("abonos");
-    String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
-    String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
-    String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
-    Long rowCount = (Long) request.getAttribute("row-count");
-    Long rowIndex = (Long) request.getAttribute("row-index");
-    Long rowsPage = (Long) request.getAttribute("rows-page");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -53,11 +52,11 @@
 
       <main>
         <header>
-          <h2>Listado de EntityAbonos</h2>
-          <% EntityUsuario usuario = (EntityUsuario) session.getAttribute("usuario"); %>
-          <% if (usuario.getPerfilID() == EntityPerfil.DEVEL) { %>
+          <h2>Listado de Abonos</h2>
+          <% Usuario usuario = (Usuario) session.getAttribute("usuario"); %>
+          <% if (usuario.getPerfilID() == Perfil.DEVEL) { %>
           <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
-          <% } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) { %>
+          <% } else if (usuario.getPerfilID() == Perfil.ADMIN) { %>
           <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
           <% } else { %>
           <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
@@ -110,7 +109,7 @@
 
         <% if (abonos.isEmpty()) { %>
 
-        <h2>No hay EntityAbonos disponibles</h2>
+        <h2>No hay Abonos disponibles</h2>
 
         <% } else {%>
 
@@ -188,16 +187,16 @@
           <th>Acciones</th>
           </thead>
           <tbody>
-            <% for (EntityAbono a : abonos) {%>
+            <% for (Abono abono : abonos) {%>
 
             <tr>
-              <td><%= a.getId()%></td>
-              <td><%= a.getProyectoInfo()%></td>
-              <td><%= a.getUsuarioInfo()%></td>
+              <td><%= abono.getId()%></td>
+              <td><%= abono.getProyectoInfo()%></td>
+              <td><%= abono.getUsuarioInfo()%></td>
               <td>
-                <a class="btn btn-consultar" href="controller?cmd=abono-consulta&id=<%= a.getId()%>" title="Consulta">C</a>
-                <a class="btn btn-modificar" href="controller?cmd=abono-modificacion&id=<%= a.getId()%>" title="Modificación">M</a>
-                <a class="btn btn-borrar" href="controller?cmd=abono-borrado&id=<%= a.getId()%>" title="Eliminación">B</a>
+                <a class="btn btn-consultar" href="controller?cmd=abono-consulta&id=<%= abono.getId()%>" title="Consulta">C</a>
+                <a class="btn btn-modificar" href="controller?cmd=abono-modificacion&id=<%= abono.getId()%>" title="Modificación">M</a>
+                <a class="btn btn-borrar" href="controller?cmd=abono-borrado&id=<%= abono.getId()%>" title="Eliminación">B</a>
               </td>
             </tr>
 

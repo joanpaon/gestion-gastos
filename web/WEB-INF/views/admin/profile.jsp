@@ -2,13 +2,13 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Usuario usuario = (Usuario) request.getAttribute("usuario");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-      // Datos Inyectados
-      Usuario u = (Usuario) request.getAttribute("usuario");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -44,14 +44,14 @@
              href="controller?cmd=login">Inicio</a>
         </header> 
         <form method="post" accept-charset="Windows-1252"
-              action="controller?cmd=profile&op=proceso&id=<%= u.getId()%>">
+              action="controller?cmd=profile&op=proceso&id=<%= usuario.getId()%>">
           <div class="fieldset">
             <label for="user">Usuario</label>
             <input id="user" type="text" name="user"
                    required
                    pattern="\w{3,20}"
                    autocomplete="username"
-                   value="<%= u.getUser()%>"/>
+                   value="<%= usuario.getUser()%>"/>
             <div class="feedback user">&#9888;</div>
           </div>
           <div class="fieldset">
@@ -60,7 +60,7 @@
                    required
                    pattern="\w{3,20}"
                    autocomplete="current-password"
-                   value="<%= u.getPass()%>"/>
+                   value="<%= usuario.getPass()%>"/>
             <div class="feedback pass">&#9888;</div>
           </div>
           <div class="fieldset">
@@ -69,24 +69,24 @@
                    required
                    pattern="\w{3,20}"
                    autocomplete="current-password"
-                   value="<%= u.getPass()%>"/>
+                   value="<%= usuario.getPass()%>"/>
             <div class="feedback conf">&#9888;</div>
           </div>
           <div class="fieldset">
             <label for="email">Correo Electrónico</label>
             <input id="email" type="email" name="email" required 
-                   value="<%= u.getEmail()%>"/>
+                   value="<%= usuario.getEmail()%>"/>
             <div class="feedback email">&#9888;</div>
           </div>
           <div class="fieldset">
             <label for="icono">Icono</label>
-            <textarea id="icono" name="icono" rows="6"><%= u.getIcono()%></textarea>
+            <textarea id="icono" name="icono" rows="6"><%= usuario.getIcono()%></textarea>
             <div class="feedback icono">&#9888;</div>
           </div>
           <div class="fieldset">
             <label for="info">Información</label>
             <input id="info" type="text" name="info" 
-                   value="<%= u.getInfo()%>"/>
+                   value="<%= usuario.getInfo()%>"/>
             <div class="feedback info">&#9888;</div>
           </div>
           <div class="botones">

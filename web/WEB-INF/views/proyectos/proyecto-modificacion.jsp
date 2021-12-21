@@ -6,15 +6,15 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Proyecto proyecto = (Proyecto) request.getAttribute("proyecto");
+  List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuarios");
+  List<Cuota> cuotas = (ArrayList<Cuota>) request.getAttribute("cuotas");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-    // Datos Inyectados
-    Proyecto proyecto = (Proyecto) request.getAttribute("proyecto");
-    List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuario-lista");
-    List<Cuota> cuotas = (ArrayList<Cuota>) request.getAttribute("cuota-lista");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->

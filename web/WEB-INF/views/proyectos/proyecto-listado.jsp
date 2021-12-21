@@ -1,6 +1,6 @@
-<%@page import="org.japo.java.entities.EntityPerfil"%>
-<%@page import="org.japo.java.entities.EntityUsuario"%>
-<%@page import="org.japo.java.entities.EntityProyecto"%>
+<%@page import="org.japo.java.entities.Perfil"%>
+<%@page import="org.japo.java.entities.Usuario"%>
+<%@page import="org.japo.java.entities.Proyecto"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
 
@@ -11,7 +11,7 @@
 
   <%
     // Datos Inyectados
-    List<EntityProyecto> proyectos = (ArrayList<EntityProyecto>) request.getAttribute("proyectos");
+    List<Proyecto> proyectos = (ArrayList<Proyecto>) request.getAttribute("proyectos");
     String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
     String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
     String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
@@ -52,11 +52,11 @@
 
       <main>
         <header>
-          <h2>Listado de EntityProyectos</h2>
-          <% EntityUsuario usuario = (EntityUsuario) session.getAttribute("usuario"); %>
-          <% if (usuario.getPerfilID() == EntityPerfil.DEVEL) { %>
+          <h2>Listado de Proyectos</h2>
+          <% Usuario usuario = (Usuario) session.getAttribute("usuario"); %>
+          <% if (usuario.getPerfilID() == Perfil.DEVEL) { %>
           <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
-          <% } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) { %>
+          <% } else if (usuario.getPerfilID() == Perfil.ADMIN) { %>
           <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
           <% } else { %>
           <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
@@ -211,17 +211,17 @@
           </thead>
 
           <tbody>
-            <% for (EntityProyecto p : proyectos) {%>
+            <% for (Proyecto proyecto : proyectos) {%>
 
             <tr>
-              <td><%= p.getId()%></td>
-              <td><%= p.getNombre()%></td>
-              <td><%= p.getPropietarioInfo()%></td>
-              <td><%= p.getCuotaInfo()%></td>
+              <td><%= proyecto.getId()%></td>
+              <td><%= proyecto.getNombre()%></td>
+              <td><%= proyecto.getPropietarioInfo()%></td>
+              <td><%= proyecto.getCuotaInfo()%></td>
               <td>
-                <a class="btn btn-consultar" href="controller?cmd=proyecto-consulta&id=<%= p.getId()%>" title="Consulta">C</a>
-                <a class="btn btn-modificar" href="controller?cmd=proyecto-modificacion&id=<%= p.getId()%>" title="Modificación">M</a>
-                <a class="btn btn-borrar" href="controller?cmd=proyecto-borrado&id=<%= p.getId()%>" title="Eliminación">B</a>
+                <a class="btn btn-consultar" href="controller?cmd=proyecto-consulta&id=<%= proyecto.getId()%>" title="Consulta">C</a>
+                <a class="btn btn-modificar" href="controller?cmd=proyecto-modificacion&id=<%= proyecto.getId()%>" title="Modificación">M</a>
+                <a class="btn btn-borrar" href="controller?cmd=proyecto-borrado&id=<%= proyecto.getId()%>" title="Eliminación">B</a>
               </td>
             </tr>
 

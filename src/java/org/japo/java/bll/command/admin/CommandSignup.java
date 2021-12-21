@@ -18,8 +18,9 @@ package org.japo.java.bll.command.admin;
 import org.japo.java.bll.command.Command;
 import javax.servlet.ServletException;
 import java.io.IOException;
+import javax.servlet.http.HttpSession;
 import org.japo.java.dal.UsuarioDAL;
-import org.japo.java.entities.EntityUsuario;
+import org.japo.java.entities.Usuario;
 
 /**
  *
@@ -37,11 +38,14 @@ public final class CommandSignup extends Command {
     String page;
 
     try {
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+      
+      // Capas de Negocio
+      UsuarioDAL usuarioDAL = new UsuarioDAL(sesion);
+      
       // Obtener Operación
       String op = request.getParameter("op");
-
-      // Capas de Negocio
-      UsuarioDAL usuarioDAL = new UsuarioDAL();
 
       // Procesar Operación
       if (op == null || op.equals("captura")) {
@@ -56,7 +60,7 @@ public final class CommandSignup extends Command {
         String info = request.getParameter("info").trim();
 
         // Parámetros > Entidad
-        EntityUsuario usuario = new EntityUsuario(0, user, pass, email,
+        Usuario usuario = new Usuario(0, user, pass, email,
                 icono, DEF_PERFIL, info,
                 0, null, null, null);
 

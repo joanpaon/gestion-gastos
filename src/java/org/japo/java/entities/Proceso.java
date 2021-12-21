@@ -7,7 +7,7 @@ import java.util.Date;
  *
  * @author JAPO Labs - japolabs@gmail.com
  */
-public final class EntityProceso implements Serializable {
+public final class Proceso implements Serializable {
 
     private int id;
     private String nombre;
@@ -17,7 +17,7 @@ public final class EntityProceso implements Serializable {
     private Date createdAt = new Date();
     private Date updatedAt = new Date();
 
-    public EntityProceso(int id, String nombre, String info,
+    public Proceso(int id, String nombre, String info,
             int status, String data, Date createdAt, Date updatedAt) {
         this.id = id;
         this.nombre = nombre;
@@ -28,7 +28,7 @@ public final class EntityProceso implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    public EntityProceso(String nombre, String info) {
+    public Proceso(String nombre, String info) {
         this.nombre = nombre;
         this.info = info;
     }

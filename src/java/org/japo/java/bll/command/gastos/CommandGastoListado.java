@@ -22,7 +22,8 @@ import java.util.List;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.GastoDAL;
-import org.japo.java.entities.EntityGasto;
+import org.japo.java.entities.Gasto;
+import org.japo.java.entities.Usuario;
 import org.japo.java.entities.ParametrosListado;
 import org.japo.java.libraries.UtilesGastos;
 
@@ -32,68 +33,67 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class CommandGastoListado extends Command {
 
-  // Nombre de la tabla
-  public static final String TABLE_NAME = "gastos";
-
   @Override
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    GastoDAL gastoDAL = new GastoDAL();
+    String page = "messages/message";
 
     try {
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // Parámetros Listado
-        ParametrosListado pl = UtilesGastos.iniciarParametrosListado(TABLE_NAME, request);
-
-        // Filtro > Parámetros Listado
-        UtilesGastos.definirFiltradoListado(pl, request);
-
-        // Ordenación > Parámetros Listado
-        UtilesGastos.definirOrdenacionListado(pl, request);
-
-        // Total de Filas > Parámetros Listado
-        pl.setRowCount(gastoDAL.contarGastos(pl));
-
-        // Navegación > Parámetros Listado
-        UtilesGastos.definirNavegacionListado(pl, request);
-
-        // BD > Lista de Gastos ( Modificados )
-        List<EntityGasto> gastos = gastoDAL.obtenerGastos(pl);
-
-        // Inyecta Datos > JSP
-        request.setAttribute("gastos", gastos);
-
-        // Inyecta Parámetros Listado > JSP
-        request.setAttribute("filter-fld", pl.getFilterField());
-        request.setAttribute("filter-exp", pl.getFilterValue());
-        request.setAttribute("sort-fld", pl.getOrderField());
-        request.setAttribute("sort-dir", pl.getOrderProgress());
-        request.setAttribute("row-count", pl.getRowCount());
-        request.setAttribute("row-index", pl.getRowIndex());
-        request.setAttribute("rows-page", pl.getRowsPage());
-
-        // JSP
-        page = "gastos/gasto-listado";
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        GastoDAL gastoDAL = new GastoDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // Sesión > Usuario
+          Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+
+          // Parámetros Listado
+          ParametrosListado pl = new ParametrosListado("gestion_gastos", "gastos", usuario);
+
+          // Filtro > Parámetros Listado
+          UtilesGastos.definirFiltradoListado(pl, request);
+
+          // Ordenación > Parámetros Listado
+          UtilesGastos.definirOrdenacionListado(pl, request);
+
+          // Total de Filas > Parámetros Listado
+          pl.setRowCount(gastoDAL.contarGastos(pl));
+
+          // Navegación > Parámetros Listado
+          UtilesGastos.definirNavegacionListado(pl, request);
+
+          // BD > Lista de Gastos ( Modificados )
+          List<Gasto> gastos = gastoDAL.obtenerGastos(pl);
+
+          // Inyecta Datos > JSP
+          request.setAttribute("gastos", gastos);
+
+          // Inyecta Parámetros Listado > JSP
+          request.setAttribute("filter-fld", pl.getFilterField());
+          request.setAttribute("filter-exp", pl.getFilterValue());
+          request.setAttribute("sort-fld", pl.getOrderField());
+          request.setAttribute("sort-dir", pl.getOrderProgress());
+          request.setAttribute("row-count", pl.getRowCount());
+          request.setAttribute("row-index", pl.getRowIndex());
+          request.setAttribute("rows-page", pl.getRowsPage());
+
+          // JSP
+          page = "gastos/gasto-listado";
+        } else {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+        }
       }
-    } catch (Exception e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+    } catch (NumberFormatException | NullPointerException e) {
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

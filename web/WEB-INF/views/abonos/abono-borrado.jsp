@@ -4,13 +4,13 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Abono abono = (Abono) request.getAttribute("abono");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-    // Datos Inyectados
-    Abono abono = (Abono) request.getAttribute("abono");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->

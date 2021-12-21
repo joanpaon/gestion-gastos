@@ -7,7 +7,7 @@ import java.util.Date;
  *
  * @author JAPO Labs - japolabs@gmail.com
  */
-public final class EntityGasto implements Serializable {
+public final class Gasto implements Serializable {
 
   private int id;
   private int abonoID;
@@ -22,7 +22,7 @@ public final class EntityGasto implements Serializable {
   private Date createdAt;
   private Date updatedAt;
 
-  public EntityGasto(int id, int abonoID, String abonoInfo, double importe,
+  public Gasto(int id, int abonoID, String abonoInfo, double importe,
           String info, int partidaID, String partidaInfo, String recibo,
           int status, String data, Date createdAt, Date updatedAt) {
     this.id = id;
@@ -39,7 +39,7 @@ public final class EntityGasto implements Serializable {
     this.updatedAt = updatedAt;
   }
 
-  public EntityGasto(int id, int abono, double importe, String info,
+  public Gasto(int id, int abono, double importe, String info,
           int partida, String recibo,
           int status, String data, Date createdAt, Date updatedAt) {
     this.id = id;
@@ -54,7 +54,7 @@ public final class EntityGasto implements Serializable {
     this.updatedAt = updatedAt;
   }
 
-  public EntityGasto(double importe, String info, Date fecha) {
+  public Gasto(double importe, String info, Date fecha) {
     this.importe = importe;
     this.info = info;
     this.updatedAt = fecha;

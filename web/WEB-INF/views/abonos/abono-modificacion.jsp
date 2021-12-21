@@ -6,15 +6,15 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Abono abono = (Abono) request.getAttribute("abono");
+  List<Proyecto> proyectos = (ArrayList<Proyecto>) request.getAttribute("proyectos");
+  List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuarios");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-    // Datos Inyectados
-    Abono abono = (Abono) request.getAttribute("abono");
-    List<Proyecto> proyectos = (ArrayList<Proyecto>) request.getAttribute("proyecto-lista");
-    List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuario-lista");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -55,11 +55,11 @@
           <div class="fieldset">
             <label for="proyecto">Proyecto</label>
             <select id="proyecto" name="proyecto">
-              <% for (Proyecto p : proyectos) { %>
-              <% if (p.getId() == abono.getProyectoID()) {%>
-              <option value="<%= p.getId()%>" selected><%= p.getNombre()%></option>
+              <% for (Proyecto proyecto : proyectos) { %>
+              <% if (proyecto.getId() == abono.getProyectoID()) {%>
+              <option value="<%= proyecto.getId()%>" selected><%= proyecto.getNombre()%></option>
               <% } else {%>
-              <option value="<%= p.getId()%>"><%= p.getNombre()%></option>
+              <option value="<%= proyecto.getId()%>"><%= proyecto.getNombre()%></option>
               <% }%>
               <% }%>
             </select>
@@ -67,11 +67,11 @@
           <div class="fieldset">
             <label for="usuario">Usuario</label>
             <select id="usuario" name="usuario">
-              <% for (Usuario u : usuarios) { %>
-              <% if (u.getId() == abono.getUsuarioID()) {%>
-              <option value="<%= u.getId()%>" selected><%= u.getUser()%></option>
+              <% for (Usuario usuario : usuarios) { %>
+              <% if (usuario.getId() == abono.getUsuarioID()) {%>
+              <option value="<%= usuario.getId()%>" selected><%= usuario.getUser()%></option>
               <% } else {%>
-              <option value="<%= u.getId()%>"><%= u.getUser()%></option>
+              <option value="<%= usuario.getId()%>"><%= usuario.getUser()%></option>
               <% }%>
               <% }%>
             </select>

@@ -23,9 +23,8 @@ import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.dal.PerfilDAL;
 import org.japo.java.dal.UsuarioDAL;
-import org.japo.java.entities.EntityPerfil;
-import org.japo.java.entities.EntityUsuario;
-import org.japo.java.entities.ParametrosListado;
+import org.japo.java.entities.Perfil;
+import org.japo.java.entities.Usuario;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -37,87 +36,91 @@ public final class CommandUsuarioModificacion extends Command {
   @Override
   @SuppressWarnings("ConvertToStringSwitch")
   public void process() throws ServletException, IOException {
-    // Nombre JSP
-    String page;
-
-    // Entidad
-    EntityUsuario usuarioIni;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    PerfilDAL perfilDAL = new PerfilDAL();
-    UsuarioDAL usuarioDAL = new UsuarioDAL();
+    // JSP
+    String page = "messages/message";
 
     try {
+      // Entidad
+      Usuario usuarioIni;
+
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
-      } else if (adminBLL.validarAccesoComando(sesion, getClass().getSimpleName())) {
-        // Usuario Actual
-        EntityUsuario usuario = (EntityUsuario) sesion.getAttribute("usuario");
-
-        // Obtener ID Producto requerido
-        int id = Integer.parseInt(request.getParameter("id"));
-
-        // Obtener Operación
-        String op = request.getParameter("op");
-
-        // ID > Formulario Modificación
-        if (op == null || op.equals("captura")) {
-          // Parámetros Listado
-          ParametrosListado pl = new ParametrosListado();
-          pl.setUser(usuario);
-
-          // ID > Entidades
-          usuarioIni = usuarioDAL.obtenerUsuario(id);
-          List<EntityPerfil> perfiles = perfilDAL.obtenerPerfiles(pl);
-
-          // Inyectar Datos > JSP
-          request.setAttribute("usuario", usuarioIni);
-          request.setAttribute("perfiles", perfiles);
-
-          // Nombre JSP
-          page = "usuarios/usuario-modificacion";
-        } else if (op.equals("proceso")) {
-          // ID > Entidad a Modificar
-          usuarioIni = usuarioDAL.obtenerUsuario(id);
-
-          // Request > Parámetros
-          String user = request.getParameter("user").trim();
-          String pass = request.getParameter("pass").trim();
-          String email = request.getParameter("email").trim();
-          String icono = request.getParameter("icono").trim();
-          int perfil = Integer.parseInt(request.getParameter("perfil").trim());
-          String info = request.getParameter("info").trim();
-
-          // Parámetros > Entidad
-          EntityUsuario usuarioFin = new EntityUsuario(user, pass, email,
-                  icono, perfil, info,
-                  usuarioIni.getStatus(), usuarioIni.getData(),
-                  usuarioIni.getCreatedAt(), usuarioIni.getUpdatedAt());
-
-          // Ejecutar Operación
-          boolean procesoOK = usuarioDAL.modificarUsuario(usuarioFin);
-
-          // Validar Operación
-          page = procesoOK ? "success/operacion-realizada" : "errors/operacion-cancelada";
-        } else {
-          // Recurso NO Disponible
-          page = "errors/page404";
-        }
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Acceso NO Autorizado
-        page = "errors/acceso-denegado";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        PerfilDAL perfilDAL = new PerfilDAL(sesion);
+        UsuarioDAL usuarioDAL = new UsuarioDAL(sesion);
+
+        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+          // request > ID Entidad
+          int id = Integer.parseInt(request.getParameter("id"));
+
+          // request > ID Operación
+          String op = request.getParameter("op");
+
+          // Captura de Datos
+          if (op == null || op.equals("captura")) {
+            // ID Entidad > Objeto Entidad
+            usuarioIni = usuarioDAL.obtenerUsuario(id);
+
+            // BD > Lista de Abonos
+            List<Perfil> perfiles = perfilDAL.obtenerPerfiles();
+
+            // Inyectar Datos > JSP
+            request.setAttribute("usuario", usuarioIni);
+            request.setAttribute("perfiles", perfiles);
+
+            // JSP
+            page = "usuarios/usuario-modificacion";
+          } else if (op.equals("proceso")) {
+            // ID > Entidad a Modificar
+            usuarioIni = usuarioDAL.obtenerUsuario(id);
+
+            // Request > Parámetros
+            String user = request.getParameter("user").trim();
+            String pass = request.getParameter("pass").trim();
+            String email = request.getParameter("email").trim();
+            String icono = request.getParameter("icono").trim();
+            int perfilID = Integer.parseInt(request.getParameter("perfil").trim());
+            String info = request.getParameter("info").trim();
+
+            // Parámetros > Entidad
+            Usuario usuarioFin = new Usuario(id, user, pass, email,
+                    icono, perfilID, info,
+                    usuarioIni.getStatus(), usuarioIni.getData(),
+                    usuarioIni.getCreatedAt(), usuarioIni.getUpdatedAt());
+
+            // Ejecutar Operación
+            boolean checkOK = usuarioDAL.modificarUsuario(usuarioFin);
+
+            // Validar Operación
+            if (checkOK) {
+              // Parámetros
+              String titulo = "Operación Realizada con Éxito";
+              String mensaje = "Datos modificados correctamente";
+              String imagen = "public/img/tarea.png";
+              String destino = "controller?cmd=usuario-listado";
+
+              // Inyeccion de Parámetros
+              parametrizarMensaje(titulo, mensaje, imagen, destino);
+            } else {
+              seleccionarMensaje(MSG_OPERACION_CANCELADA);
+            }
+          } else {
+            seleccionarMensaje(MSG_ERROR404);
+          }
+        } else {
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+        }
       }
     } catch (NumberFormatException | NullPointerException e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

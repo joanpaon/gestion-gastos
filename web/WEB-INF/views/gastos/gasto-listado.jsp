@@ -1,6 +1,6 @@
-<%@page import="org.japo.java.entities.EntityPerfil"%>
-<%@page import="org.japo.java.entities.EntityUsuario"%>
-<%@page import="org.japo.java.entities.EntityGasto"%>
+<%@page import="org.japo.java.entities.Perfil"%>
+<%@page import="org.japo.java.entities.Usuario"%>
+<%@page import="org.japo.java.entities.Gasto"%>
 <%@page import="java.text.SimpleDateFormat"%>
 <%@page import="java.util.Locale"%>
 <%@page import="org.japo.java.libraries.UtilesGastos"%>
@@ -9,19 +9,19 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  List<Gasto> gastos = (ArrayList<Gasto>) request.getAttribute("gastos");
+  String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
+  String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
+  String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
+  Long rowCount = (Long) request.getAttribute("row-count");
+  Long rowIndex = (Long) request.getAttribute("row-index");
+  Long rowsPage = (Long) request.getAttribute("rows-page");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-    // Datos Inyectados
-    List<EntityGasto> gastos = (ArrayList<EntityGasto>) request.getAttribute("gastos");
-    String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
-    String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
-    String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
-    Long rowCount = (Long) request.getAttribute("row-count");
-    Long rowIndex = (Long) request.getAttribute("row-index");
-    Long rowsPage = (Long) request.getAttribute("rows-page");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -56,10 +56,10 @@
       <main>
         <header>
           <h2>Listado de Gastos</h2>
-          <% EntityUsuario usuario = (EntityUsuario) session.getAttribute("usuario"); %>
-          <% if (usuario.getPerfilID() == EntityPerfil.DEVEL) { %>
+          <% Usuario usuario = (Usuario) session.getAttribute("usuario"); %>
+          <% if (usuario.getPerfilID() == Perfil.DEVEL) { %>
           <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
-          <% } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) { %>
+          <% } else if (usuario.getPerfilID() == Perfil.ADMIN) { %>
           <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
           <% } else { %>
           <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
@@ -167,22 +167,22 @@
           <th>
             <% if (sortFld.isEmpty() || sortDir.isEmpty()) { %>
             <div>
-              <a href="controller?cmd=gasto-listado&sort-fld=fecha&sort-dir=asc">Fecha</a>
+              <a href="controller?cmd=gasto-listado&sort-fld=created_at&sort-dir=asc">Fecha</a>
               <span></span>
             </div>
-            <% } else if (sortFld.equals("fecha") && sortDir.equals("asc")) { %>
+            <% } else if (sortFld.equals("created_at") && sortDir.equals("asc")) { %>
             <div>
-              <a href="controller?cmd=gasto-listado&sort-fld=fecha&sort-dir=desc">Fecha</a>
+              <a href="controller?cmd=gasto-listado&sort-fld=created_at&sort-dir=desc">Fecha</a>
               <span>&#9650;</span>
             </div>
-            <% } else if (sortFld.equals("fecha") && sortDir.equals("desc")) { %>
+            <% } else if (sortFld.equals("created_at") && sortDir.equals("desc")) { %>
             <div>
               <a href="controller?cmd=gasto-listado&sort-dir=none">Fecha</a>
               <span>&#9660;</span>
             </div>
             <% } else { %>
             <div>
-              <a href="controller?cmd=gasto-listado&sort-fld=fecha&sort-dir=asc">Fecha</a>
+              <a href="controller?cmd=gasto-listado&sort-fld=created_at&sort-dir=asc">Fecha</a>
               <span></span>
             </div>
             <% } %>
@@ -213,7 +213,7 @@
           <th>Acciones</th>
           </thead>
           <tbody>
-            <% for (EntityGasto gasto : gastos) {%>
+            <% for (Gasto gasto : gastos) {%>
 
             <tr>
               <td><%= gasto.getId()%></td>

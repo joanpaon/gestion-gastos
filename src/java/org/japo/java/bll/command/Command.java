@@ -28,6 +28,13 @@ import javax.servlet.http.HttpServletResponse;
  */
 public abstract class Command implements ICommand {
 
+  public static final String MSG_OPERACION_REALIZADA = "operacion-realizada";
+  public static final String MSG_OPERACION_CANCELADA = "operacion-cancelada";
+  public static final String MSG_SESION_INVALIDA = "sesion-invalida";
+  public static final String MSG_SESION_CADUCADA = "sesion-caducada";
+  public static final String MSG_ACCESO_DENEGADO = "acceso-denegado";
+  public static final String MSG_ERROR404 = "error404";
+
   // Interfaz de Comunicación con el Contenedor
   protected ServletContext context;
 
@@ -56,12 +63,75 @@ public abstract class Command implements ICommand {
     } else {
       // Nombre Comando ( Petición ) > Nombre Vista ( Respuesta )
       cmd = String.format("/WEB-INF/views/%s.jsp", cmd.toLowerCase());
-      
+
       // Contexto + Nombre Vista > Despachador
       RequestDispatcher dispatcher = context.getRequestDispatcher(cmd);
 
       // Despachador + Petición + Respuesta > Redirección a Vista
       dispatcher.forward(request, response);
     }
+  }
+
+  protected String seleccionarMensaje(String selector) {
+    // Parámetros Mensaje
+    String titulo = "Situación Indefinida";
+    String mensaje = "Identificando las circunstancias de esta situación";
+    String imagen = "public/img/asking.png";
+    String destino = "controller?cmd=landing";
+    String page = "messages/message";
+
+    switch (selector) {
+      case MSG_OPERACION_REALIZADA:
+        titulo = "Operación Realizada con Éxito";
+        mensaje = "Se han borrado correctamente los datos seleccionados";
+        imagen = "public/img/tarea.png";
+        destino = "controller?cmd=usuario-listado";
+        break;
+      case MSG_OPERACION_CANCELADA:
+        titulo = "Operación Cancelada";
+        mensaje = "No se ha podido completar la operación";
+        imagen = "public/img/cancelar.png";
+        destino = "javascript:window.history.back();";
+        break;
+      case MSG_SESION_CADUCADA:
+        titulo = "Sesión Caducada";
+        mensaje = "Identifíquese para continuar su trabajo";
+        imagen = "public/img/expired.jpg";
+        destino = "controller?cmd=login";
+        break;
+      case MSG_SESION_INVALIDA:
+        titulo = "Sesión Inválida";
+        mensaje = "Identifíquese para continuar su trabajo";
+        imagen = "public/img/expired.jpg";
+        destino = "controller?cmd=login";
+        break;
+      case MSG_ACCESO_DENEGADO:
+        titulo = "Acceso NO Autorizado";
+        mensaje = "Nivel de Acceso Insuficiente para ese Recurso";
+        imagen = "public/img/cancelar.png";
+        destino = "javascript:window.history.back();";
+        break;
+      case MSG_ERROR404:
+        titulo = "Operación Cancelada";
+        mensaje = "Intento de acceso a un recurso NO disponible";
+        imagen = "public/img/cancelar.png";
+        destino = "javascript:window.history.back();";
+        break;
+    }
+
+    // Inyecta Datos
+    parametrizarMensaje(titulo, mensaje, imagen, destino);
+
+    // Devuelve el nombre de la página
+    return page;
+  }
+
+  protected void parametrizarMensaje(String titulo, String mensaje, 
+          String imagen, String destino) {
+    // Inyecta Datos
+    request.setAttribute("titulo", titulo);
+    request.setAttribute("mensaje", mensaje);
+    request.setAttribute("imagen", imagen);
+    request.setAttribute("destino", destino);
   }
 }

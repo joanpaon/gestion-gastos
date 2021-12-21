@@ -1,24 +1,24 @@
-<%@page import="org.japo.java.entities.EntityPerfil"%>
-<%@page import="org.japo.java.entities.EntityUsuario"%>
-<%@page import="org.japo.java.entities.EntityPartida"%>
+<%@page import="org.japo.java.entities.Perfil"%>
+<%@page import="org.japo.java.entities.Usuario"%>
+<%@page import="org.japo.java.entities.Partida"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  List<Partida> partidas = (ArrayList<Partida>) request.getAttribute("partidas");
+  String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
+  String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
+  String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
+  Long rowCount = (Long) request.getAttribute("row-count");
+  Long rowIndex = (Long) request.getAttribute("row-index");
+  Long rowsPage = (Long) request.getAttribute("rows-page");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-    // Datos Inyectados
-    List<EntityPartida> partidas = (ArrayList<EntityPartida>) request.getAttribute("partidas");
-    String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
-    String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
-    String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
-    Long rowCount = (Long) request.getAttribute("row-count");
-    Long rowIndex = (Long) request.getAttribute("row-index");
-    Long rowsPage = (Long) request.getAttribute("rows-page");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -53,10 +53,10 @@
       <main>
         <header>
           <h2>Listado de Partidas</h2>
-          <% EntityUsuario usuario = (EntityUsuario) session.getAttribute("usuario"); %>
-          <% if (usuario.getPerfilID() == EntityPerfil.DEVEL) { %>
+          <% Usuario usuario = (Usuario) session.getAttribute("usuario"); %>
+          <% if (usuario.getPerfilID() == Perfil.DEVEL) { %>
           <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
-          <% } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) { %>
+          <% } else if (usuario.getPerfilID() == Perfil.ADMIN) { %>
           <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
           <% } else { %>
           <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
@@ -188,7 +188,7 @@
           </thead>
 
           <tbody>
-            <% for (EntityPartida partida : partidas) {%>
+            <% for (Partida partida : partidas) {%>
 
             <tr>
               <td><%= partida.getId()%></td>

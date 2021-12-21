@@ -5,14 +5,14 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  List<Proceso> procesos = (ArrayList<Proceso>) request.getAttribute("procesos");
+  List<Perfil> perfiles = (ArrayList<Perfil>) request.getAttribute("perfiles");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-      // Datos Inyectados
-      List<Proceso> procesos = (ArrayList<Proceso>) request.getAttribute("proceso-lista");
-      List<Perfil> perfiles = (ArrayList<Perfil>) request.getAttribute("perfil-lista");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->

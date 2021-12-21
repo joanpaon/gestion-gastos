@@ -20,7 +20,7 @@ import javax.servlet.ServletException;
 import java.io.IOException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.dal.UsuarioDAL;
-import org.japo.java.entities.EntityUsuario;
+import org.japo.java.entities.Usuario;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -33,42 +33,31 @@ public final class CommandProfile extends Command {
   @SuppressWarnings("ConvertToStringSwitch")
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
-
-    // Entidad
-    EntityUsuario usuarioIni;
-
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Datos
-    UsuarioDAL usuarioDAL = new UsuarioDAL();
+    String page = "messages/message";
 
     try {
-      // Validar Sesión
+      // Sesión
+      HttpSession sesion = request.getSession(false);
+
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
-        // Validar Acceso
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // Obtener ID EntityUsuario
-        int id = Integer.parseInt(request.getParameter("id"));
+        // Usuario Actual
+        Usuario usuarioIni = (Usuario) sesion.getAttribute("usuario");
+
+        // Capas de Datos
+        UsuarioDAL usuarioDAL = new UsuarioDAL(sesion);
 
         // Obtener Operación
         String op = request.getParameter("op");
 
         if (op == null || op.equals("captura")) {
-          // ID > Entidad a Modificar
-          usuarioIni = usuarioDAL.obtenerUsuario(id);
-
           // Inyectar Datos > JSP
           request.setAttribute("usuario", usuarioIni);
 
           // JSP
           page = "admin/profile";
         } else if (op.equals("proceso")) {
-          // ID > Entidad a Modificar
-          usuarioIni = usuarioDAL.obtenerUsuario(id);
-
           // Request > Parámetros
           String user = request.getParameter("user").trim();
           String pass = request.getParameter("pass").trim();
@@ -78,24 +67,33 @@ public final class CommandProfile extends Command {
           String info = request.getParameter("info").trim();
 
           // Parámetros > Entidad
-          EntityUsuario usuarioFin = new EntityUsuario(id, user, pass, email,
-                  icono, perfilID, info,
+          Usuario usuarioFin = new Usuario(usuarioIni.getId(), user, pass,
+                  email, icono, perfilID, info,
                   usuarioIni.getStatus(), usuarioIni.getData(),
                   usuarioIni.getCreatedAt(), usuarioIni.getUpdatedAt());
-          
+
           // Ejecutar Operación
-          boolean procesoOK = usuarioDAL.modificarUsuario(usuarioFin);
+          boolean checkOK = usuarioDAL.modificarUsuario(usuarioFin);
 
           // Validar Operación
-          page = procesoOK ? "success/operacion-realizada" : "errors/operacion-cancelada";
+          if (checkOK) {
+            // Parámetros
+            String titulo = "Operación Realizada con Éxito";
+            String mensaje = "Perfil Actualizado correctamente";
+            String imagen = "public/img/tarea.png";
+            String destino = "controller?cmd=usuario-listado";
+
+            // Inyeccion de Parámetros
+            parametrizarMensaje(titulo, mensaje, imagen, destino);
+          } else {
+            seleccionarMensaje(MSG_OPERACION_CANCELADA);
+          }
         } else {
-          // Recurso NO Disponible
-          page = "errors/page404";
+          seleccionarMensaje(MSG_ERROR404);
         }
       }
     } catch (NumberFormatException | NullPointerException e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

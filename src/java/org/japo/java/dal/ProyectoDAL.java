@@ -5,78 +5,76 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 import org.japo.java.entities.ParametrosListado;
-import org.japo.java.entities.EntityProyecto;
-import org.japo.java.entities.EntityUsuario;
+import org.japo.java.entities.Proyecto;
+import org.japo.java.entities.Usuario;
 
 /**
  *
  * @author José A. Pacheco Ondoño - japolabs@gmail.com
  */
-public final class ProyectoDAL {
+public final class ProyectoDAL extends AbstractDAL {
 
-  public List<EntityProyecto> obtenerProyectos() {
-    return obtenerProyectos(new ParametrosListado());
+  // Constantes
+  private final String TABLA = "usuarios";
+
+  // Parámetros de Listado
+  private final ParametrosListado PL;
+
+  // Sesión
+  private final HttpSession sesion;
+
+  public ProyectoDAL(HttpSession sesion) {
+    this.sesion = sesion;
+
+    // Sesión > Usuario
+    Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+
+    // BD + TABLA + usuario > Parámetros de Listado
+    PL = new ParametrosListado(BD, TABLA, usuario);
   }
 
-  public EntityProyecto obtenerProyecto(int id) {
+  public List<Proyecto> obtenerProyectos() {
+    return obtenerProyectos(PL);
+  }
+
+  public Proyecto obtenerProyecto(int id) {
     // Parámetros de Listado
-    ParametrosListado pl = new ParametrosListado();
-    pl.setFilterField("id");
-    pl.setFilterValue(id + "");
-    pl.setFilterStrict(true);
+    PL.setFilterFields(Arrays.asList("id"));
+    PL.setFilterValue(id + "");
+    PL.setFilterStrict(true);
 
     // Lista de Proyectos
-    List<EntityProyecto> proyectos = obtenerProyectos(pl);
+    List<Proyecto> proyectos = obtenerProyectos(PL);
 
     // Referencia de Entidad
     return proyectos.isEmpty() ? null : proyectos.get(0);
   }
 
-  public boolean insertarProyecto(EntityProyecto proyecto) {
+  public boolean insertarProyecto(Proyecto proyecto) {
     // SQL
-    final String SQL
-            = "INSERT INTO "
-            + "proyectos "
-            + "("
-            + "nombre, info, icono, propietario, cuota, "
-            + "status, data, created_at, updated_at"
-            + ") "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    final String SQL = generarSQLInsert();
 
     // Número de registros afectados
     int numReg = 0;
 
     // Obtención del Contexto
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(SQL)) {
+               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
-        ps.setString(1, proyecto.getNombre());
-        ps.setString(2, proyecto.getInfo());
-        ps.setString(3, proyecto.getIcono());
-        ps.setInt(4, proyecto.getPropietarioID());
-        ps.setInt(5, proyecto.getCuotaID());
-        ps.setInt(6, proyecto.getStatus());
-        ps.setString(7, proyecto.getData());
-        ps.setDate(8, new java.sql.Date(proyecto.getCreatedAt().getTime()));
-        ps.setDate(9, new java.sql.Date(proyecto.getUpdatedAt().getTime()));
+        parametrizarInsert(ps, proyecto);
 
         // Ejecutar Sentencia
         numReg = ps.executeUpdate();
@@ -91,24 +89,17 @@ public final class ProyectoDAL {
 
   public boolean borrarProyecto(int id) {
     // SQL
-    final String SQL = "DELETE FROM proyectos WHERE id=?";
+    final String SQL = generarSQLDelete();
 
     // Número de registros afectados
     int numReg = 0;
 
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(SQL)) {
+               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
         ps.setInt(1, id);
 
@@ -123,43 +114,21 @@ public final class ProyectoDAL {
     return numReg == 1;
   }
 
-  public boolean modificarProyecto(EntityProyecto proyecto) {
+  public boolean modificarProyecto(Proyecto proyecto) {
     // SQL
-    final String SQL
-            = "UPDATE "
-            + "proyectos "
-            + "SET "
-            + "nombre=?, info=?, icono=?, propietario=?, cuota=? "
-            + "status=?, data=?, created_at=?, updated_at=?"
-            + "WHERE id=?";
+    final String SQL = generarSQLUpdate();
 
     // Número de Registros Afectados
     int numReg = 0;
 
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(SQL)) {
+               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
-        ps.setString(1, proyecto.getNombre());
-        ps.setString(2, proyecto.getInfo());
-        ps.setString(3, proyecto.getIcono());
-        ps.setInt(4, proyecto.getPropietarioID());
-        ps.setInt(5, proyecto.getCuotaID());
-        ps.setInt(6, proyecto.getStatus());
-        ps.setString(7, proyecto.getData());
-        ps.setDate(8, new java.sql.Date(proyecto.getCreatedAt().getTime()));
-        ps.setDate(9, new java.sql.Date(proyecto.getUpdatedAt().getTime()));
-        ps.setInt(10, proyecto.getId());
+        parametrizarUpdate(ps, proyecto);
 
         // Ejecutar Sentencia
         numReg = ps.executeUpdate();
@@ -173,97 +142,20 @@ public final class ProyectoDAL {
   }
 
   public Long contarProyectos(ParametrosListado pl) {
-    String sqlSelect
-            = "SELECT "
-            + "COUNT(*) "
-            + "FROM "
-            + "proyectos "
-            + "INNER JOIN "
-            + "usuarios ON usuarios.id = proyectos.propietario "
-            + "INNER JOIN "
-            + "cuotas ON cuotas.id = proyectos.cuota";
-
     // Número de Filas
     long filas = 0;
 
-    // WHERE - USER
-    String sqlUser;
-    EntityUsuario usuario = pl.getUser();
-    if (usuario == null) {
-      sqlUser = "";
-    } else {
-      sqlUser
-              = "proyectos.id IN ("
-              + "SELECT "
-              + "abonos.proyecto "
-              + "FROM "
-              + "abonos "
-              + "WHERE "
-              + "abonos.usuario = " + usuario.getId()
-              + ")";
-    }
+    // SQL
+    String sql = generarSQLComputo(pl);
 
-    // WHERE - FILTER
-    String sqlFilter;
-    if (pl.getFilterField() == null || pl.getFilterField().isEmpty()) {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else {
-        sqlFilter
-                = String.format("proyectos.id LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("proyectos.nombre LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("usuarios.user LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("cuotas.nombre LIKE '%%%s%%'", pl.getFilterValue());
-      }
-    } else {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else if (pl.isFilterStrict()) {
-        sqlFilter = String.format("proyectos.%s = '%s'",
-                pl.getFilterField(), pl.getFilterValue());
-      } else {
-        sqlFilter = String.format("proyectos.%s LIKE '%%%s%%'",
-                pl.getFilterField(), pl.getFilterValue());
-      }
-    }
-
-    // WHERE - USER + FILTER
-    String sqlWhere;
-    if (sqlUser.isBlank()) {
-      if (sqlFilter.isBlank()) {
-        sqlWhere = "";
-      } else {
-        sqlWhere = String.format(" WHERE %s", sqlFilter);
-      }
-    } else {
-      if (sqlFilter.isBlank()) {
-        sqlWhere = String.format(" WHERE %s", sqlUser);
-      } else {
-        sqlWhere = String.format(" WHERE %s AND %s", sqlUser, sqlFilter);
-      }
-    }
-
-    // SQL Completo: SELECT + WHERE
-    String sql = String.format("%s%s", sqlSelect, sqlWhere);
-
-    // Obtención del Contexto
     try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
-
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
       // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+      DataSource ds = obtenerDataSource(PL);
 
       try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(sql)) {
-        // BD > Lista de Entidades
-        try (ResultSet rs = ps.executeQuery()) {
+               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        try ( ResultSet rs = ps.executeQuery()) {
           if (rs.next()) {
-            // Número de Filas
             filas = rs.getLong(1);
           }
         }
@@ -272,14 +164,76 @@ public final class ProyectoDAL {
       System.out.println("ERROR: " + ex.getMessage());
     }
 
-    // Retorno Filas
+    // Retorno: Filas Contadas
     return filas;
   }
 
-  public List<EntityProyecto> obtenerProyectos(ParametrosListado pl) {
-    // SELECT
-    String sqlSelect
-            = "SELECT "
+  public List<Proyecto> obtenerProyectos(ParametrosListado pl) {
+    // SQL
+    String sql = generarSQLListado(pl);
+
+    // Lista Vacía
+    List<Proyecto> proyectos = new ArrayList<>();
+
+    try {
+      // Contexto Inicial > DataSource
+      DataSource ds = obtenerDataSource(PL);
+
+      try (
+               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+        proyectos = exportarListaProyectos(ps);
+      }
+    } catch (NamingException | SQLException ex) {
+      System.out.println("ERROR: " + ex.getMessage());
+    }
+
+    // Retorno Lista
+    return proyectos;
+  }
+
+  private List<Proyecto> exportarListaProyectos(PreparedStatement ps) throws SQLException {
+    // Lista 
+    List<Proyecto> proyectos = new ArrayList<>();
+
+    // BD > Lista de Entidades
+    try ( ResultSet rs = ps.executeQuery()) {
+      while (rs.next()) {
+        // Campos > Entidad
+        Proyecto proyecto = exportarProyecto(rs);
+
+        // Entidad > Lista
+        proyectos.add(proyecto);
+      }
+    }
+
+    // Retorno: Lista de Proyectos
+    return proyectos;
+  }
+
+  private Proyecto exportarProyecto(ResultSet rs) throws SQLException {
+    // Fila Actual > Campos 
+    int id = rs.getInt("id");
+    String nombre = rs.getString("nombre");
+    String info = rs.getString("info");
+    String icono = rs.getString("icono");
+    int propietarioID = rs.getInt("propietario_id");
+    String propietarioInfo = rs.getString("propietario_info");
+    int cuotaID = rs.getInt("cuota_id");
+    String cuotaInfo = rs.getString("cuota_info");
+    int status = rs.getInt("status");
+    String data = rs.getString("data");
+    Date createdAt = rs.getDate("created_at");
+    Date updatedAt = rs.getDate("updated_at");
+
+    // Campos > Entidad
+    return new Proyecto(id, nombre, info,
+            icono, propietarioID, propietarioInfo, cuotaID, cuotaInfo,
+            status, data, createdAt, updatedAt);
+  }
+
+  public String generarSQLSelect() {
+    return ""
+            + "SELECT "
             + "proyectos.id AS id, "
             + "proyectos.nombre AS nombre, "
             + "proyectos.info AS info, "
@@ -298,133 +252,90 @@ public final class ProyectoDAL {
             + "usuarios ON usuarios.id = proyectos.propietario "
             + "INNER JOIN "
             + "cuotas ON cuotas.id = proyectos.cuota";
+  }
 
-    // WHERE - USER
-    String sqlUser;
-    if (pl.getUser() == null) {
-      sqlUser = "";
-    } else {
-      sqlUser
-              = "proyectos.id IN ("
-              + "SELECT "
-              + "abonos.proyecto "
-              + "FROM "
-              + "abonos "
-              + "WHERE "
-              + "abonos.usuario = " + pl.getUser().getId()
-              + ")";
-    }
+  public String generarSQLSelectComputo() {
+    return ""
+            + "SELECT "
+            + "COUNT(*) "
+            + "FROM "
+            + "proyectos "
+            + "INNER JOIN "
+            + "usuarios ON usuarios.id = proyectos.propietario "
+            + "INNER JOIN "
+            + "cuotas ON cuotas.id = proyectos.cuota";
+  }
 
-    // WHERE - FILTER
-    String sqlFilter;
-    if (pl.getFilterField() == null || pl.getFilterField().isEmpty()) {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else {
-        sqlFilter
-                = String.format("proyectos.id LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("proyectos.nombre LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("usuarios.user LIKE '%%%s%%' OR ", pl.getFilterValue())
-                + String.format("cuotas.nombre LIKE '%%%s%%'", pl.getFilterValue());
-      }
-    } else {
-      if (pl.getFilterValue() == null || pl.getFilterValue().isEmpty()) {
-        sqlFilter = "";
-      } else if (pl.isFilterStrict()) {
-        sqlFilter = String.format("proyectos.%s = '%s'", pl.getFilterField(), pl.getFilterValue());
-      } else {
-        sqlFilter = String.format("proyectos.%s LIKE '%%%s%%'", pl.getFilterField(), pl.getFilterValue());
-      }
-    }
+  public String generarSQLInsert() {
+    return ""
+            + "INSERT INTO "
+            + "proyectos "
+            + "("
+            + "nombre, info, icono, propietario, cuota, "
+            + "status, data, created_at, updated_at"
+            + ") "
+            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+  }
 
-    // WHERE - USER + FILTER
-    String sqlWhere;
-    if (sqlUser.isBlank()) {
-      if (sqlFilter.isBlank()) {
-        sqlWhere = "";
-      } else {
-        sqlWhere = String.format(" WHERE %s", sqlFilter);
-      }
-    } else {
-      if (sqlFilter.isBlank()) {
-        sqlWhere = String.format(" WHERE %s", sqlUser);
-      } else {
-        sqlWhere = String.format(" WHERE %s AND %s", sqlUser, sqlFilter);
-      }
-    }
+  public String generarSQLUpdate() {
+    return ""
+            + "UPDATE "
+            + "proyectos "
+            + "SET "
+            + "nombre=?, info=?, icono=?, propietario=?, cuota=? "
+            + "status=?, data=?, created_at=?, updated_at=?"
+            + "WHERE id=?";
+  }
 
-    // ORDER BY
-    String sqlOrder;
-    if (pl.getOrderProgress() == null || pl.getOrderProgress().isEmpty()) {
-      sqlOrder = "";
-    } else if (pl.getOrderField() == null || pl.getOrderField().isEmpty()) {
-      sqlOrder = "";
-    } else if (pl.getOrderProgress().equalsIgnoreCase("asc") || pl.getOrderProgress().equalsIgnoreCase("desc")) {
-      sqlOrder = String.format(" ORDER BY %s %s", pl.getOrderField(), pl.getOrderProgress());
-    } else {
-      sqlOrder = "";
-    }
+  public String generarSQLDelete() {
+    return ""
+            + "DELETE FROM "
+            + "proyectos "
+            + "WHERE id=?";
+  }
 
-    // LIMIT A,B
-    String sqlLimit;
-    if (pl.getRowIndex() == null || pl.getRowsPage() == null) {
-      sqlLimit = "";
-    } else {
-      sqlLimit = String.format(" LIMIT %d,%d", pl.getRowIndex(), pl.getRowsPage());
-    }
+  private String generarSQLListado(ParametrosListado pl) {
+    // SQL Parciales
+    String select = generarSQLSelect();
+    String where = generarSQLWhere(pl);
+    String order = generarSQLOrder(pl);
+    String limit = generarSQLLimit(pl);
 
-    // SELECT + WHERE + ORDER + LIMIT
-    String sql = String.format("%s%s%s%s", sqlSelect, sqlWhere, sqlOrder, sqlLimit);
+    // SQL Completo: SELECT + WHERE + ORDER + LIMIT
+    return String.format("%s%s%s%s", select, where, order, limit);
+  }
 
-    // Lista Vacía
-    List<EntityProyecto> proyectos = new ArrayList<>();
+  protected String generarSQLComputo(ParametrosListado pl) {
+    // SQL Parciales
+    String select = generarSQLSelectComputo();
+    String where = generarSQLWhere(pl);
 
-    // Obtención del Contexto
-    try {
-      // Contexto Inicial Nombrado JNDI
-      Context iniCtx = new InitialContext();
+    // SQL Completo: SELECT + WHERE
+    return String.format("%s%s", select, where);
+  }
 
-      // Situar Contexto Inicial
-      Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
+  private void parametrizarInsert(PreparedStatement ps, Proyecto proyecto) throws SQLException {
+    ps.setString(1, proyecto.getNombre());
+    ps.setString(2, proyecto.getInfo());
+    ps.setString(3, proyecto.getIcono());
+    ps.setInt(4, proyecto.getPropietarioID());
+    ps.setInt(5, proyecto.getCuotaID());
+    ps.setInt(6, proyecto.getStatus());
+    ps.setString(7, proyecto.getData());
+    ps.setDate(8, new java.sql.Date(proyecto.getCreatedAt().getTime()));
+    ps.setDate(9, new java.sql.Date(proyecto.getUpdatedAt().getTime()));
+  }
 
-      // Contexto Inicial > DataSource
-      DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
-
-      try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(sql)) {
-        // BD > Lista de Entidades
-        try (ResultSet rs = ps.executeQuery()) {
-          while (rs.next()) {
-            // Fila Actual > Campos 
-            int id = rs.getInt("id");
-            String nombre = rs.getString("nombre");
-            String info = rs.getString("info");
-            String icono = rs.getString("icono");
-            int propietarioID = rs.getInt("propietario_id");
-            String propietarioInfo = rs.getString("propietario_info");
-            int cuotaID = rs.getInt("cuota_id");
-            String cuotaInfo = rs.getString("cuota_info");
-            int status = rs.getInt("status");
-            String data = rs.getString("data");
-            Date createdAt = rs.getDate("created_at");
-            Date updatedAt = rs.getDate("updated_at");
-
-            // Campos > Entidad
-            EntityProyecto proyecto = new EntityProyecto(id, nombre, info,
-                    icono, propietarioID, propietarioInfo, cuotaID, cuotaInfo,
-                    status, data, createdAt, updatedAt);
-
-            // Entidad > Lista
-            proyectos.add(proyecto);
-          }
-        }
-      }
-    } catch (NamingException | SQLException ex) {
-      System.out.println("ERROR: " + ex.getMessage());
-    }
-
-    // Retorno Lista
-    return proyectos;
+  private void parametrizarUpdate(PreparedStatement ps, Proyecto proyecto) throws SQLException {
+    ps.setString(1, proyecto.getNombre());
+    ps.setString(2, proyecto.getInfo());
+    ps.setString(3, proyecto.getIcono());
+    ps.setInt(4, proyecto.getPropietarioID());
+    ps.setInt(5, proyecto.getCuotaID());
+    ps.setInt(6, proyecto.getStatus());
+    ps.setString(7, proyecto.getData());
+    ps.setDate(8, new java.sql.Date(proyecto.getCreatedAt().getTime()));
+    ps.setDate(9, new java.sql.Date(proyecto.getUpdatedAt().getTime()));
+    ps.setInt(10, proyecto.getId());
   }
 }

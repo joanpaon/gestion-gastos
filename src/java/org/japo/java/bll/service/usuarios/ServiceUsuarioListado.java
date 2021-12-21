@@ -16,16 +16,15 @@
 package org.japo.java.bll.service.usuarios;
 
 import com.google.gson.Gson;
-//import com.google.gson.GsonBuilder;
 import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.List;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
-//import org.japo.java.entities.Grupo;
-import org.japo.java.entities.EntityUsuario;
+import org.japo.java.entities.Usuario;
 import org.japo.java.bll.service.Service;
 import org.japo.java.dal.UsuarioDAL;
+import org.japo.java.libraries.UtilesGastos;
 
 /**
  *
@@ -38,31 +37,37 @@ public final class ServiceUsuarioListado extends Service {
     // JSON Salida
     String json;
 
-    // Sesión
-    HttpSession sesion = request.getSession(false);
-
-    // Capas de Negocio
-    AdminBLL adminBLL = new AdminBLL();
-
-    // Capas de Datos
-    UsuarioDAL usuarioDAL = new UsuarioDAL();
-
     try {
-      // Validar Acceso
-      if (adminBLL.validarAccesoServicio(sesion, getClass().getSimpleName())) {
-        // Lista de Usuarios
-        List<EntityUsuario> listaUsr = usuarioDAL.obtenerUsuarios();
+      // Sesión
+      HttpSession sesion = request.getSession(false);
 
-        // List > JSON
-        json = new Gson().toJson(listaUsr);
-
-        // Objeto Gson
-//                Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        // List > JSON
-//                json = gson.toJson(listaUsr);
+      // Validar Sesión
+      if (!UtilesGastos.validarSesion(sesion)) {
+        // Recurso NO Disponible
+        json = "{\"response\": \"Sesión Caducada\"}";
       } else {
-        // Acceso NO Autorizado
-        json = "{'response': 'Acceso NO Autorizado'}";
+        // Capas de Negocio
+        AdminBLL adminBLL = new AdminBLL(sesion);
+
+        // Capas de Datos
+        UsuarioDAL usuarioDAL = new UsuarioDAL(sesion);
+
+        // Validar Acceso
+        if (adminBLL.validarAccesoServicio(getClass().getSimpleName())) {
+          // Lista de Usuarios
+          List<Usuario> listaUsr = usuarioDAL.obtenerUsuarios();
+
+          // List > JSON
+          json = new Gson().toJson(listaUsr);
+
+          // Objeto Gson
+//                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+          // List > JSON
+//                json = gson.toJson(listaUsr);
+        } else {
+          // Acceso NO Autorizado
+          json = "{'response': 'Acceso NO Autorizado'}";
+        }
       }
     } catch (Exception e) {
       // Recurso NO Disponible

@@ -2,13 +2,13 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  Cuota cuota = (Cuota) request.getAttribute("cuota");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-      // Datos Inyectados
-      Cuota c = (Cuota) request.getAttribute("cuota");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -45,14 +45,14 @@
         </header> 
 
         <form method="post" accept-charset="Windows-1252"
-              action="controller?cmd=cuota-modificacion&id=<%= c.getId()%>&op=proceso">
+              action="controller?cmd=cuota-modificacion&id=<%= cuota.getId()%>&op=proceso">
           <div class="fieldset">
             <label for="nombre">Nombre</label>
-            <input id="nombre" type="text" name="nombre" value="<%= c.getNombre()%>"/>
+            <input id="nombre" type="text" name="nombre" value="<%= cuota.getNombre()%>"/>
           </div>
           <div class="fieldset">
             <label for="info">Información</label>
-            <input id="info" type="text" name="info" value="<%= c.getInfo()%>"/>
+            <input id="info" type="text" name="info" value="<%= cuota.getInfo()%>"/>
           </div>
           <div class="botones">
             <button class="btn btn-submit" type="submit">Enviar</button>

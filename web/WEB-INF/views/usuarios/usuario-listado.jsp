@@ -1,24 +1,24 @@
-<%@page import="org.japo.java.entities.EntityPerfil"%>
-<%@page import="org.japo.java.entities.EntityUsuario"%>
+<%@page import="org.japo.java.entities.Perfil"%>
+<%@page import="org.japo.java.entities.Usuario"%>
 <%@page import="org.japo.java.libraries.UtilesGastos"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuarios");
+  String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
+  String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
+  String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
+  Long rowCount = (Long) request.getAttribute("row-count");
+  Long rowIndex = (Long) request.getAttribute("row-index");
+  Long rowsPage = (Long) request.getAttribute("rows-page");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-    // Datos Inyectados
-    List<EntityUsuario> usuarios = (ArrayList<EntityUsuario>) request.getAttribute("usuarios");
-    String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
-    String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
-    String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
-    Long rowCount = (Long) request.getAttribute("row-count");
-    Long rowIndex = (Long) request.getAttribute("row-index");
-    Long rowsPage = (Long) request.getAttribute("rows-page");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -53,14 +53,14 @@
       <main>
         <header>
           <h2>Listado de Usuarios</h2>
-          <% EntityUsuario usuario = (EntityUsuario) session.getAttribute("usuario"); %>
-          <% if (usuario.getPerfilID() == EntityPerfil.DEVEL) { %>
+          <% Usuario usuario = (Usuario) session.getAttribute("usuario"); %>
+          <% if (usuario.getPerfilID() == Perfil.DEVEL) { %>
           <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
-          <% } else if (usuario.getPerfilID() == EntityPerfil.ADMIN) { %>
+          <% } else if (usuario.getPerfilID() == Perfil.ADMIN) { %>
           <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
           <% } else { %>
           <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
-          <% } %>
+          <% }%>
           <a class="btn btn-insertar" href="controller?cmd=usuario-insercion&op=captura" title="Nuevo">N</a>
         </header>
 
@@ -188,16 +188,16 @@
           </thead>
 
           <tbody>
-            <% for (EntityUsuario u : usuarios) {%>
+            <% for (Usuario _usuario : usuarios) {%>
 
             <tr>
-              <td><%= u.getId()%></td>
-              <td><%= u.getUser()%></td>
-              <td><%= u.getPerfilInfo()%></td>
+              <td><%= _usuario.getId()%></td>
+              <td><%= _usuario.getUser()%></td>
+              <td><%= _usuario.getPerfilInfo()%></td>
               <td>
-                <a class="btn btn-consultar" href="controller?cmd=usuario-consulta&id=<%= u.getId()%>" title="Consulta">C</a>
-                <a class="btn btn-modificar" href="controller?cmd=usuario-modificacion&id=<%= u.getId()%>" title="Modificación">M</a>
-                <a class="btn btn-borrar" href="controller?cmd=usuario-borrado&id=<%= u.getId()%>" title="Eliminación">B</a>
+                <a class="btn btn-consultar" href="controller?cmd=usuario-consulta&id=<%= _usuario.getId()%>" title="Consulta">C</a>
+                <a class="btn btn-modificar" href="controller?cmd=usuario-modificacion&id=<%= _usuario.getId()%>" title="Modificación">M</a>
+                <a class="btn btn-borrar" href="controller?cmd=usuario-borrado&id=<%= _usuario.getId()%>" title="Eliminación">B</a>
               </td>
             </tr>
 

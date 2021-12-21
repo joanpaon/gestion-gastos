@@ -7,7 +7,7 @@
 
   <%
       // Datos Inyectados
-      Partida g = (Partida) request.getAttribute("partida");
+      Partida partida = (Partida) request.getAttribute("partida");
   %>
 
   <head>
@@ -52,27 +52,27 @@
             <tbody>
               <tr>
                 <td>ID</td>
-                <td><%= g.getId()%></td>
+                <td><%= partida.getId()%></td>
               </tr>
               <tr>
                 <td>Nombre</td>
-                <td><%= g.getNombre()%></td>
+                <td><%= partida.getNombre()%></td>
               </tr>
               <tr>
                 <td>Info</td>
-                <td><%= g.getInfo()%></td>
+                <td><%= partida.getInfo()%></td>
               </tr>
             </tbody>
           </table>
           <div class="imagen">
             <div class="imagen-margen">
-              <img src="<%= g.getIcono()%>" alt="<%= g.getNombre()%>"/> 
+              <img src="<%= partida.getIcono()%>" alt="<%= partida.getNombre()%>"/> 
             </div>
           </div>
         </div>
         <nav class="botones">
-          <a class="btn btn-borrar" href="controller?cmd=partida-borrado&id=<%= g.getId()%>&op=proceso">Borrar</a>
-          <a class="btn btn-cancelar" href="controller?cmd=partida-consulta&id=<%= g.getId()%>">Cancelar</a>
+          <a class="btn btn-borrar" href="controller?cmd=partida-borrado&id=<%= partida.getId()%>&op=proceso">Borrar</a>
+          <a class="btn btn-cancelar" href="controller?cmd=partida-consulta&id=<%= partida.getId()%>">Cancelar</a>
         </nav>
       </main>
 

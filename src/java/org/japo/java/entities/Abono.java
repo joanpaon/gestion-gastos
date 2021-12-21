@@ -6,7 +6,7 @@ import java.util.Date;
  *
  * @author JAPO Labs - japolabs@gmail.com
  */
-public final class EntityAbono {
+public final class Abono {
 
   private int id;
   private int proyectoID;
@@ -15,11 +15,11 @@ public final class EntityAbono {
   private String usuarioInfo;
   private String info;
   private int status;
-  private String data;
-  private Date createdAt;
-  private Date updatedAt;
+  private String data = "{}";
+  private Date createdAt = new Date();
+  private Date updatedAt = new Date();;
 
-  public EntityAbono(int id,
+  public Abono(int id,
           int proyectoID, String proyectoInfo,
           int usuarioID, String usuarioInfo,
           String info,
@@ -36,7 +36,7 @@ public final class EntityAbono {
     this.updatedAt = updatedAt;
   }
 
-  public EntityAbono(int id, int proyectoID, int usuarioID, String info,
+  public Abono(int id, int proyectoID, int usuarioID, String info,
           int status, String data, Date createdAt, Date updatedAt) {
     this.id = id;
     this.proyectoID = proyectoID;
@@ -48,10 +48,10 @@ public final class EntityAbono {
     this.updatedAt = updatedAt;
   }
 
-  public EntityAbono(int id, String proyecto, String usuario) {
-    this.id = id;
-    this.proyectoInfo = proyecto;
-    this.usuarioInfo = usuario;
+  public Abono(int proyectoID, int usuarioID, String info) {
+    this.proyectoID = proyectoID;
+    this.usuarioID = usuarioID;
+    this.info = info;
   }
 
   public int getId() {

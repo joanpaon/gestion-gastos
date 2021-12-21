@@ -6,7 +6,7 @@ import java.util.Date;
  *
  * @author JAPO Labs - japolabs@gmail.com
  */
-public final class EntityPermiso {
+public final class Permiso {
 
   private int id;
   private int procesoId;
@@ -19,7 +19,7 @@ public final class EntityPermiso {
   private Date createdAt;
   private Date updatedAt;
 
-  public EntityPermiso(int id, int procesoId, String procesoInfo,
+  public Permiso(int id, int procesoId, String procesoInfo,
           int perfilId, String perfilInfo, String info,
           int status, String data, Date createdAt, Date updatedAt) {
     this.id = id;
@@ -34,7 +34,7 @@ public final class EntityPermiso {
     this.updatedAt = updatedAt;
   }
 
-  public EntityPermiso(int id, int procesoId, int perfilId, String info,
+  public Permiso(int id, int procesoId, int perfilId, String info,
           int status, String data, Date createdAt, Date updatedAt) {
     this.id = id;
     this.procesoId = procesoId;
@@ -46,7 +46,7 @@ public final class EntityPermiso {
     this.updatedAt = updatedAt;
   }
 
-  public EntityPermiso(int procesoId, int perfilId, String info) {
+  public Permiso(int procesoId, int perfilId, String info) {
     this.procesoId = procesoId;
     this.perfilId = perfilId;
     this.info = info;

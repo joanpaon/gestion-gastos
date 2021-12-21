@@ -1,17 +1,18 @@
 <%@page import="java.util.ArrayList"%>
-<%@page import="org.japo.java.entities.Partida"%>
 <%@page import="java.util.List"%>
+<%@page import="org.japo.java.entities.Partida"%>
 <%@page import="org.japo.java.entities.Abono"%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Obtener Datos
+  List<Abono> abonos = (ArrayList<Abono>) request.getAttribute("abonos");
+  List<Partida> partidas = (ArrayList<Partida>) request.getAttribute("partidas");
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-  <%
-      // Obtener Datos
-      List<Abono> listaAbo = (ArrayList<Abono>) request.getAttribute("lista-abonos");
-      List<Partida> listaPda = (ArrayList<Partida>) request.getAttribute("lista-partidas");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -52,8 +53,8 @@
             <label for="abono">Abono</label>
             <select id="abono" name="abono" min="1">
               <option disabled selected value></option>
-              <% for (Abono a : listaAbo) {%>
-              <option value="<%= a.getId()%>"><%= a.getInfo()%></option>
+              <% for (Abono abono : abonos) {%>
+              <option value="<%= abono.getId()%>"><%= abono.getInfo()%></option>
               <% }%>
             </select>
           </div>
@@ -61,8 +62,8 @@
             <label for="partida">Partida</label>
             <select id="partida" name="partida">
               <option disabled selected value></option>
-              <% for (Partida p : listaPda) {%>
-              <option value="<%= p.getId()%>"><%= p.getNombre()%></option>
+              <% for (Partida partida : partidas) {%>
+              <option value="<%= partida.getId()%>"><%= partida.getNombre()%></option>
               <% }%>
             </select>
           </div>
