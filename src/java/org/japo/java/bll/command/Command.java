@@ -28,12 +28,13 @@ import javax.servlet.http.HttpServletResponse;
  */
 public abstract class Command implements ICommand {
 
-  public static final String MSG_OPERACION_REALIZADA = "operacion-realizada";
-  public static final String MSG_OPERACION_CANCELADA = "operacion-cancelada";
-  public static final String MSG_SESION_INVALIDA = "sesion-invalida";
-  public static final String MSG_SESION_CADUCADA = "sesion-caducada";
-  public static final String MSG_ACCESO_DENEGADO = "acceso-denegado";
-  public static final String MSG_ERROR404 = "error404";
+  // Selectores de Mensaje
+  protected final String MSG_OPERACION_REALIZADA = "operacion-realizada";
+  protected final String MSG_OPERACION_CANCELADA = "operacion-cancelada";
+  protected final String MSG_SESION_INVALIDA = "sesion-invalida";
+  protected final String MSG_SESION_CADUCADA = "sesion-caducada";
+  protected final String MSG_ACCESO_DENEGADO = "acceso-denegado";
+  protected final String MSG_ERROR404 = "error404";
 
   // Interfaz de Comunicación con el Contenedor
   protected ServletContext context;
@@ -72,13 +73,12 @@ public abstract class Command implements ICommand {
     }
   }
 
-  protected String seleccionarMensaje(String selector) {
+  protected void seleccionarMensaje(String selector) {
     // Parámetros Mensaje
-    String titulo = "Situación Indefinida";
-    String mensaje = "Identificando las circunstancias de esta situación";
-    String imagen = "public/img/asking.png";
-    String destino = "controller?cmd=landing";
-    String page = "messages/message";
+    String titulo;
+    String mensaje;
+    String imagen;
+    String destino;
 
     switch (selector) {
       case MSG_OPERACION_REALIZADA:
@@ -96,13 +96,13 @@ public abstract class Command implements ICommand {
       case MSG_SESION_CADUCADA:
         titulo = "Sesión Caducada";
         mensaje = "Identifíquese para continuar su trabajo";
-        imagen = "public/img/expired.jpg";
+        imagen = "public/img/expired.png";
         destino = "controller?cmd=login";
         break;
       case MSG_SESION_INVALIDA:
         titulo = "Sesión Inválida";
         mensaje = "Identifíquese para continuar su trabajo";
-        imagen = "public/img/expired.jpg";
+        imagen = "public/img/expired.png";
         destino = "controller?cmd=login";
         break;
       case MSG_ACCESO_DENEGADO:
@@ -117,16 +117,18 @@ public abstract class Command implements ICommand {
         imagen = "public/img/cancelar.png";
         destino = "javascript:window.history.back();";
         break;
+      default:
+        titulo = "Situación NO Definida";
+        mensaje = "No se debería de haber podido llegar aquí";
+        imagen = "public/img/asking.png";
+        destino = "controller?cmd=landing";
     }
 
     // Inyecta Datos
     parametrizarMensaje(titulo, mensaje, imagen, destino);
-
-    // Devuelve el nombre de la página
-    return page;
   }
 
-  protected void parametrizarMensaje(String titulo, String mensaje, 
+  protected void parametrizarMensaje(String titulo, String mensaje,
           String imagen, String destino) {
     // Inyecta Datos
     request.setAttribute("titulo", titulo);

@@ -43,7 +43,7 @@
 
       <main>
         <header>
-          <h2>Incorporación de Permisos de Perfil</h2>
+          <h2>Inserción de Permisos</h2>
           <a class="btn btn-listar" accept-charset="Windows-1252" 
              href="controller?cmd=permiso-listado">Listado</a>
         </header> 

@@ -15,16 +15,16 @@
  */
 package org.japo.java.bll.command.abonos;
 
-import org.japo.java.bll.command.Command;
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.List;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
+import org.japo.java.bll.command.Command;
 import org.japo.java.dal.AbonoDAL;
 import org.japo.java.entities.Abono;
-import org.japo.java.entities.Usuario;
 import org.japo.java.entities.ParametrosListado;
+import org.japo.java.entities.Usuario;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -43,16 +43,8 @@ public final class CommandAbonoListado extends Command {
       HttpSession sesion = request.getSession(false);
 
       // Validar Sesión
-      if (!UtilesGastos.validarSesion(sesion)) {
-        // Parámetros
-        String titulo = "Sesión Caducada";
-        String mensaje = "Identificación requerida para continuar";
-        String imagen = "public/img/expired.jpg";
-        String destino = "controller?cmd=login";
-
-        // Inyeccion de Parámetros
-        parametrizarMensaje(titulo, mensaje, imagen, destino);
-      } else {
+      boolean sesionOK = UtilesGastos.validarSesion(sesion);
+      if (sesionOK) {
         // Capas de Negocio
         AdminBLL adminBLL = new AdminBLL(sesion);
 
@@ -67,16 +59,16 @@ public final class CommandAbonoListado extends Command {
           ParametrosListado pl = new ParametrosListado("gestion_gastos", "abonos", usuario);
 
           // Filtro > Parámetros Listado
-          UtilesGastos.definirFiltradoListado(pl, request);
+          UtilesGastos.definirListaFiltro(pl, request);
 
           // Ordenación > Parámetros Listado
-          UtilesGastos.definirOrdenacionListado(pl, request);
+          UtilesGastos.definirListaOrden(pl, request);
 
           // Total de Filas > Parámetros Listado
           pl.setRowCount(abonoDAL.contarAbonos(pl));
 
           // Navegación > Parámetros Listado
-          UtilesGastos.definirNavegacionListado(pl, request);
+          UtilesGastos.definirListaPagina(pl, request);
 
           // BD > Lista de Abonos
           List<Abono> abonos = abonoDAL.obtenerAbonos(pl);
@@ -96,25 +88,13 @@ public final class CommandAbonoListado extends Command {
           // JSP
           page = "abonos/abono-listado";
         } else {
-          // Parámetros
-          String titulo = "Acceso NO Autorizado";
-          String mensaje = "Nivel de Acceso Insuficiente para ese Recurso";
-          String imagen = "public/img/cancelar.png";
-          String destino = "javascript:window.history.back();";
-
-          // Inyeccion de Parámetros
-          parametrizarMensaje(titulo, mensaje, imagen, destino);
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
         }
+      } else {
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       }
     } catch (NumberFormatException | NullPointerException e) {
-      // Parámetros
-      String titulo = "Operación Cancelada";
-      String mensaje = "Intento de acceso a un recurso NO disponible";
-      String imagen = "public/img/cancelar.png";
-      String destino = "javascript:window.history.back();";
-
-      // Inyeccion de Parámetros
-      parametrizarMensaje(titulo, mensaje, imagen, destino);
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

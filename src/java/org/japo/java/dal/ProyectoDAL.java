@@ -1,3 +1,18 @@
+/* 
+ * Copyright 2021 José A. Pacheco Ondoño - japolabs@gmail.com.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.japo.java.dal;
 
 import java.sql.Connection;
@@ -8,11 +23,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
+import org.japo.java.entities.AtributosLista;
 import org.japo.java.entities.ParametrosListado;
 import org.japo.java.entities.Proyecto;
 import org.japo.java.entities.Usuario;
@@ -72,7 +86,7 @@ public final class ProyectoDAL extends AbstractDAL {
       DataSource ds = obtenerDataSource(PL);
 
       try (
-               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(SQL)) {
+              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
         parametrizarInsert(ps, proyecto);
 
@@ -99,7 +113,7 @@ public final class ProyectoDAL extends AbstractDAL {
       DataSource ds = obtenerDataSource(PL);
 
       try (
-               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(SQL)) {
+              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
         ps.setInt(1, id);
 
@@ -126,7 +140,7 @@ public final class ProyectoDAL extends AbstractDAL {
       DataSource ds = obtenerDataSource(PL);
 
       try (
-               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(SQL)) {
+              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
         parametrizarUpdate(ps, proyecto);
 
@@ -153,8 +167,8 @@ public final class ProyectoDAL extends AbstractDAL {
       DataSource ds = obtenerDataSource(PL);
 
       try (
-               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-        try ( ResultSet rs = ps.executeQuery()) {
+              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (ResultSet rs = ps.executeQuery()) {
           if (rs.next()) {
             filas = rs.getLong(1);
           }
@@ -166,6 +180,34 @@ public final class ProyectoDAL extends AbstractDAL {
 
     // Retorno: Filas Contadas
     return filas;
+  }
+
+  public void contarFilas(AtributosLista la) {
+    // Número de Filas
+    long filas = 0;
+
+    // SQL
+    String sql = generarSQLComputo(la);
+
+    try {
+      // Contexto Inicial > DataSource
+      DataSource ds = obtenerDataSource(PL);
+
+      try (
+              Connection conn = ds.getConnection();
+              PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (ResultSet rs = ps.executeQuery()) {
+          if (rs.next()) {
+            filas = rs.getLong(1);
+          }
+        }
+      }
+    } catch (NamingException | SQLException ex) {
+      System.out.println("ERROR: " + ex.getMessage());
+    }
+
+    // Actualizar Computo Filas
+    la.getPagina().setFilasTotal(filas);
   }
 
   public List<Proyecto> obtenerProyectos(ParametrosListado pl) {
@@ -180,7 +222,30 @@ public final class ProyectoDAL extends AbstractDAL {
       DataSource ds = obtenerDataSource(PL);
 
       try (
-               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        proyectos = exportarListaProyectos(ps);
+      }
+    } catch (NamingException | SQLException ex) {
+      System.out.println("ERROR: " + ex.getMessage());
+    }
+
+    // Retorno Lista
+    return proyectos;
+  }
+
+  public List<Proyecto> obtenerProyectos(AtributosLista al) {
+    // SQL
+    String sql = generarSQLListado(al);
+
+    // Lista Vacía
+    List<Proyecto> proyectos = new ArrayList<>();
+
+    try {
+      // Contexto Inicial > DataSource
+      DataSource ds = obtenerDataSource(PL);
+
+      try (
+              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
         proyectos = exportarListaProyectos(ps);
       }
     } catch (NamingException | SQLException ex) {
@@ -196,7 +261,7 @@ public final class ProyectoDAL extends AbstractDAL {
     List<Proyecto> proyectos = new ArrayList<>();
 
     // BD > Lista de Entidades
-    try ( ResultSet rs = ps.executeQuery()) {
+    try (ResultSet rs = ps.executeQuery()) {
       while (rs.next()) {
         // Campos > Entidad
         Proyecto proyecto = exportarProyecto(rs);
@@ -305,10 +370,30 @@ public final class ProyectoDAL extends AbstractDAL {
     return String.format("%s%s%s%s", select, where, order, limit);
   }
 
+  private String generarSQLListado(AtributosLista al) {
+    // SQL Parciales
+    String select = generarSQLSelect();
+    String where = generarSQLWhere(al);
+    String order = generarSQLOrder(al);
+    String limit = generarSQLLimit(al);
+
+    // SQL Completo: SELECT + WHERE + ORDER + LIMIT
+    return String.format("%s%s%s%s", select, where, order, limit);
+  }
+
   protected String generarSQLComputo(ParametrosListado pl) {
     // SQL Parciales
     String select = generarSQLSelectComputo();
     String where = generarSQLWhere(pl);
+
+    // SQL Completo: SELECT + WHERE
+    return String.format("%s%s", select, where);
+  }
+
+  protected String generarSQLComputo(AtributosLista la) {
+    // SQL Parciales
+    String select = generarSQLSelectComputo();
+    String where = generarSQLWhere(la);
 
     // SQL Completo: SELECT + WHERE
     return String.format("%s%s", select, where);

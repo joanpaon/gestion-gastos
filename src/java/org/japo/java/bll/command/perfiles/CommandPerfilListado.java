@@ -60,16 +60,16 @@ public final class CommandPerfilListado extends Command {
           ParametrosListado pl = new ParametrosListado("gestion_gastos", "listados", usuario);
 
           // Filtro > Parámetros Listado
-          UtilesGastos.definirFiltradoListado(pl, request);
+          UtilesGastos.definirListaFiltro(pl, request);
 
           // Ordenación > Parámetros Listado
-          UtilesGastos.definirOrdenacionListado(pl, request);
+          UtilesGastos.definirListaOrden(pl, request);
 
           // Total de Filas > Parámetros Listado
           pl.setRowCount(perfilDAL.contarPerfiles(pl));
 
           // Navegación > Parámetros Listado
-          UtilesGastos.definirNavegacionListado(pl, request);
+          UtilesGastos.definirListaPagina(pl, request);
 
           // BD > Lista de Cuotas
           List<Perfil> perfiles = perfilDAL.obtenerPerfiles(pl);

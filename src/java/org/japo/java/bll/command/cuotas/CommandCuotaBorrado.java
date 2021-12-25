@@ -84,7 +84,7 @@ public final class CommandCuotaBorrado extends Command {
               String titulo = "Operación Realizada con Éxito";
               String mensaje = "Se han borrado correctamente los datos seleccionados";
               String imagen = "public/img/tarea.png";
-              String destino = "controller?cmd=usuario-listado";
+              String destino = "controller?cmd=cuota-listado";
 
               // Inyeccion de Parámetros
               parametrizarMensaje(titulo, mensaje, imagen, destino);

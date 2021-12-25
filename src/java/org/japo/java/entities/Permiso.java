@@ -14,10 +14,10 @@ public final class Permiso {
   private int perfilId;
   private String perfilInfo;
   private String info;
-  private int status;
-  private String data;
-  private Date createdAt;
-  private Date updatedAt;
+  private int status = 0;
+  private String data = "{}";
+  private Date createdAt = new Date();
+  private Date updatedAt = new Date();
 
   public Permiso(int id, int procesoId, String procesoInfo,
           int perfilId, String perfilInfo, String info,

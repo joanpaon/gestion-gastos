@@ -15,17 +15,18 @@
  */
 package org.japo.java.bll.command.proyectos;
 
-import org.japo.java.bll.command.Command;
-import javax.servlet.ServletException;
 import java.io.IOException;
 import java.util.List;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
-import org.japo.java.entities.ParametrosListado;
-import org.japo.java.entities.Proyecto;
-import org.japo.java.libraries.UtilesGastos;
+import org.japo.java.bll.command.Command;
 import org.japo.java.dal.ProyectoDAL;
+import org.japo.java.dal.UsuarioDAL;
+import org.japo.java.entities.AtributosLista;
+import org.japo.java.entities.Proyecto;
 import org.japo.java.entities.Usuario;
+import org.japo.java.libraries.UtilesGastos;
 
 /**
  *
@@ -51,40 +52,65 @@ public final class CommandProyectoListado extends Command {
 
         // Capas de Datos
         ProyectoDAL proyectoDAL = new ProyectoDAL(sesion);
+        UsuarioDAL usuarioDAL = new UsuarioDAL(sesion);
 
         if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
           // Sesión > Usuario
           Usuario usuario = (Usuario) sesion.getAttribute("usuario");
 
-          // Parámetros Listado
-          ParametrosListado pl = new ParametrosListado("gestion_gastos", "proyectos", usuario);
+          // Atributos de Lista
+          AtributosLista al = new AtributosLista("gestion_gastos", "proyectos", usuario);
 
-          // Filtro > Parámetros Listado
-          UtilesGastos.definirFiltradoListado(pl, request);
+          // Request > ID Objetivo > Entidad Objetivo
+          int objetivoId;
+          try {
+            objetivoId = Integer.parseInt(request.getParameter("objetivo-id"));
+          } catch (NumberFormatException | NullPointerException e) {
+            objetivoId = 0;
+          }
+          
+          // Request > ID Objetivo > Entidad Objetivo
+          Usuario objetivo = usuarioDAL.obtenerUsuario(objetivoId);
+          
+          // Entidad Objetivo > Atributos de Lista
+          al.setObjetivo(objetivo);
+          
+          // Filtro > Atributos de Lista
+          UtilesGastos.definirListaFiltro(al, request);
 
-          // Ordenación > Parámetros Listado
-          UtilesGastos.definirOrdenacionListado(pl, request);
+          // Ordenación > Atributos de Lista
+          UtilesGastos.definirListaOrden(al, request);
 
-          // Total de Filas > Parámetros Listado
-          pl.setRowCount(proyectoDAL.contarProyectos(pl));
+          // Total de Filas > Atributos de Lista
+          proyectoDAL.contarFilas(al);
 
-          // Navegación > Parámetros Listado
-          UtilesGastos.definirNavegacionListado(pl, request);
+          // Navegación > Atributos de Lista
+          UtilesGastos.definirListaPagina(al, request);
 
           // BD > Lista de Proyectos
-          List<Proyecto> proyectos = proyectoDAL.obtenerProyectos(pl);
+          List<Proyecto> proyectos = proyectoDAL.obtenerProyectos(al);
+
+          // BD > Lista de Usuarios
+          List<Usuario> usuarios = usuarioDAL.obtenerUsuarios();
 
           // Inyecta Datos Listado > JSP
           request.setAttribute("proyectos", proyectos);
+          request.setAttribute("objetivo", objetivo);
+          request.setAttribute("usuarios", usuarios);
 
-          // Inyecta Parámetros Listado > JSP
-          request.setAttribute("filter-fld", pl.getFilterField());
-          request.setAttribute("filter-exp", pl.getFilterValue());
-          request.setAttribute("sort-fld", pl.getOrderField());
-          request.setAttribute("sort-dir", pl.getOrderProgress());
-          request.setAttribute("row-count", pl.getRowCount());
-          request.setAttribute("row-index", pl.getRowIndex());
-          request.setAttribute("rows-page", pl.getRowsPage());
+          // Inyecta Filtro > JSP
+          request.setAttribute("filtro-campos", al.getFiltro().getCampos());
+          request.setAttribute("filtro-patron", al.getFiltro().getPatron());
+          request.setAttribute("filtro-exacto", al.getFiltro().isExacto());
+
+          // Inyecta Orden > JSP
+          request.setAttribute("orden-campo", al.getOrden().getCampo());
+          request.setAttribute("orden-avance", al.getOrden().getAvance());
+
+          // Inyecta Pagina > JSP
+          request.setAttribute("pagina-indice", al.getPagina().getIndice());
+          request.setAttribute("pagina-filas-pagina", al.getPagina().getFilasPagina());
+          request.setAttribute("pagina-filas-total", al.getPagina().getFilasTotal());
 
           // JSP
           page = "proyectos/proyecto-listado";

@@ -6,19 +6,29 @@
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
+<%
+  // Datos Inyectados
+  List<Proyecto> proyectos = (ArrayList<Proyecto>) request.getAttribute("proyectos");
+  Usuario objetivo = ((Usuario) request.getAttribute("objetivo"));
+  List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuarios");
+
+  // Filtro
+  List<String> filtroCampos = (List<String>) request.getAttribute("filtro-campos");
+  String filtroPatron = request.getAttribute("filtro-patron").toString();
+  boolean filtroExacto = Boolean.parseBoolean((String) request.getAttribute("filtro-exacto"));
+
+  // Orden
+  String ordenCampo = (String) request.getAttribute("orden-campo");
+  String ordenAvance = (String) request.getAttribute("orden-avance");
+
+  // Página
+  long paginaIndice = Long.parseLong((String) request.getAttribute("pagina-indice"));
+  long paginaFilasPagina = Long.parseLong((String) request.getAttribute("pagina-filas-pagina"));
+  long paginaFilasTotal = Long.parseLong((String) request.getAttribute("pagina-filas-total"));
+%>
+
 <!DOCTYPE html>
 <html lang="es">
-
-  <%
-    // Datos Inyectados
-    List<Proyecto> proyectos = (ArrayList<Proyecto>) request.getAttribute("proyectos");
-    String filterExp = request.getAttribute("filter-exp") == null ? "" : request.getAttribute("filter-exp").toString();
-    String sortFld = request.getAttribute("sort-fld") == null ? "" : request.getAttribute("sort-fld").toString();
-    String sortDir = request.getAttribute("sort-dir") == null ? "" : request.getAttribute("sort-dir").toString();
-    Long rowCount = (Long) request.getAttribute("row-count");
-    Long rowIndex = (Long) request.getAttribute("row-index");
-    Long rowsPage = (Long) request.getAttribute("rows-page");
-  %>
 
   <head>
     <!-- These lines go in the first 1024 bytes -->
@@ -68,8 +78,8 @@
           <a href="controller?cmd=proyecto-listado&op=ini" class="btn btn-ini" title="Principio">&lt;&lt;</a>
           <a href="controller?cmd=proyecto-listado&op=prv" class="btn btn-prv" title="Anterior">&lt;</a>
           <div class="slider">
-            <input type="range" min="0" max="<%= rowsPage > 0 ? rowCount / rowsPage : 0%>" value="<%= rowsPage > 0 ? rowIndex / rowsPage : 0%>">
-            <a href="#" class="btn btn-num" title="Nº de Página"><%= rowsPage > 0 ? rowIndex / rowsPage : 0%></a>
+            <input type="range" min="0" max="<%= paginaFilasPagina > 0 ? paginaFilasTotal / paginaFilasPagina : 0%>" value="<%= paginaFilasPagina > 0 ? paginaIndice / paginaFilasPagina : 0%>">
+            <a href="#" class="btn btn-num" title="Nº de Página"><%= paginaFilasPagina > 0 ? paginaIndice / paginaFilasPagina : 0%></a>
           </div>
           <a href="controller?cmd=proyecto-listado&op=nxt" class="btn btn-nxt" title="Siguiente">&gt;</a>
           <a href="controller?cmd=proyecto-listado&op=end" class="btn btn-end" title="Final">&gt;&gt;</a>
@@ -77,22 +87,22 @@
           <div class="rows-page">
             <label for="rows-page">Filas</label>
             <select id="rows-page">
-              <% if (rowsPage == 10) { %>
+              <% if (paginaFilasPagina == 10) { %>
               <option value="10" selected>10</option>
               <option value="20">20</option>
               <option value="40">40</option>
               <option value="80">80</option>
-              <% } else if (rowsPage == 20) { %>
+              <% } else if (paginaFilasPagina == 20) { %>
               <option value="10">10</option>
               <option value="20" selected>20</option>
               <option value="40">40</option>
               <option value="80">80</option>
-              <% } else if (rowsPage == 40) { %>
+              <% } else if (paginaFilasPagina == 40) { %>
               <option value="10">10</option>
               <option value="20">20</option>
               <option value="40" selected>40</option>
               <option value="80">80</option>
-              <% } else if (rowsPage == 80) { %>
+              <% } else if (paginaFilasPagina == 80) { %>
               <option value="10">10</option>
               <option value="20">20</option>
               <option value="40">40</option>
@@ -102,7 +112,7 @@
           </div>
           |
           <div class="filter">
-            <input type="text" value="<%=filterExp%>" autofocus />
+            <input type="text" value="<%=filtroPatron%>" autofocus />
             <a href="#" class="btn btn-filter">⚡</a>
           </div>
         </nav>
@@ -116,17 +126,17 @@
         <table>
           <thead>
           <th>
-            <% if (sortFld.isEmpty() || sortDir.isEmpty()) { %>
+            <% if (ordenCampo.isEmpty() || ordenAvance.isEmpty()) { %>
             <div>
               <a href="controller?cmd=proyecto-listado&sort-fld=id&sort-dir=asc">ID</a>
               <span></span>
             </div>
-            <% } else if (sortFld.equals("id") && sortDir.equals("asc")) { %>
+            <% } else if (ordenCampo.equals("id") && ordenAvance.equals("asc")) { %>
             <div>
               <a href="controller?cmd=proyecto-listado&sort-fld=id&sort-dir=desc">ID</a>
               <span>&#9650;</span>
             </div>
-            <% } else if (sortFld.equals("id") && sortDir.equals("desc")) { %>
+            <% } else if (ordenCampo.equals("id") && ordenAvance.equals("desc")) { %>
             <div>
               <a href="controller?cmd=proyecto-listado&sort-dir=">ID</a>
               <span>&#9660;</span>
@@ -139,17 +149,17 @@
             <% } %>
           </th>
           <th>
-            <% if (sortFld.isEmpty() || sortDir.isEmpty()) { %>
+            <% if (ordenCampo.isEmpty() || ordenAvance.isEmpty()) { %>
             <div>
               <a href="controller?cmd=proyecto-listado&sort-fld=nombre&sort-dir=asc">Nombre</a>
               <span></span>
             </div>
-            <% } else if (sortFld.equals("nombre") && sortDir.equals("asc")) { %>
+            <% } else if (ordenCampo.equals("nombre") && ordenAvance.equals("asc")) { %>
             <div>
               <a href="controller?cmd=proyecto-listado&sort-fld=nombre&sort-dir=desc">Nombre</a>
               <span>&#9650;</span>
             </div>
-            <% } else if (sortFld.equals("nombre") && sortDir.equals("desc")) { %>
+            <% } else if (ordenCampo.equals("nombre") && ordenAvance.equals("desc")) { %>
             <div>
               <a href="controller?cmd=proyecto-listado&sort-dir=none">Nombre</a>
               <span>&#9660;</span>
@@ -162,17 +172,17 @@
             <% } %>
           </th>
           <th>
-            <% if (sortFld.isEmpty() || sortDir.isEmpty()) { %>
+            <% if (ordenCampo.isEmpty() || ordenAvance.isEmpty()) { %>
             <div>
               <a href="controller?cmd=proyecto-listado&sort-fld=propietario&sort-dir=asc">Propietario</a>
               <span></span>
             </div>
-            <% } else if (sortFld.equals("propietario") && sortDir.equals("asc")) { %>
+            <% } else if (ordenCampo.equals("propietario") && ordenAvance.equals("asc")) { %>
             <div>
               <a href="controller?cmd=proyecto-listado&sort-fld=propietario&sort-dir=desc">Propietario</a>
               <span>&#9650;</span>
             </div>
-            <% } else if (sortFld.equals("propietario") && sortDir.equals("desc")) { %>
+            <% } else if (ordenCampo.equals("propietario") && ordenAvance.equals("desc")) { %>
             <div>
               <a href="controller?cmd=proyecto-listado&sort-dir=none">Propietario</a>
               <span>&#9660;</span>
@@ -185,17 +195,17 @@
             <% } %>
           </th>
           <th>
-            <% if (sortFld.isEmpty() || sortDir.isEmpty()) { %>
+            <% if (ordenCampo.isEmpty() || ordenAvance.isEmpty()) { %>
             <div>
               <a href="controller?cmd=proyecto-listado&sort-fld=cuota&sort-dir=asc">Cuota</a>
               <span></span>
             </div>
-            <% } else if (sortFld.equals("cuota") && sortDir.equals("asc")) { %>
+            <% } else if (ordenCampo.equals("cuota") && ordenAvance.equals("asc")) { %>
             <div>
               <a href="controller?cmd=proyecto-listado&sort-fld=cuota&sort-dir=desc">Cuota</a>
               <span>&#9650;</span>
             </div>
-            <% } else if (sortFld.equals("cuota") && sortDir.equals("desc")) { %>
+            <% } else if (ordenCampo.equals("cuota") && ordenAvance.equals("desc")) { %>
             <div>
               <a href="controller?cmd=proyecto-listado&sort-dir=none">Cuota</a>
               <span>&#9660;</span>
@@ -236,8 +246,8 @@
           <a href="controller?cmd=proyecto-listado&op=ini" class="btn btn-ini" title="Principio">&lt;&lt;</a>
           <a href="controller?cmd=proyecto-listado&op=prv" class="btn btn-prv" title="Anterior">&lt;</a>
           <div class="slider">
-            <input type="range" min="0" max="<%= rowsPage > 0 ? rowCount / rowsPage : 0%>" value="<%= rowsPage > 0 ? rowIndex / rowsPage : 0%>">
-            <a href="#" class="btn btn-num" title="Nº de Página"><%= rowsPage > 0 ? rowIndex / rowsPage : 0%></a>
+            <input type="range" min="0" max="<%= paginaFilasPagina > 0 ? paginaFilasTotal / paginaFilasPagina : 0%>" value="<%= paginaFilasPagina > 0 ? paginaIndice / paginaFilasPagina : 0%>">
+            <a href="#" class="btn btn-num" title="Nº de Página"><%= paginaFilasPagina > 0 ? paginaIndice / paginaFilasPagina : 0%></a>
           </div>
           <a href="controller?cmd=proyecto-listado&op=nxt" class="btn btn-nxt" title="Siguiente">&gt;</a>
           <a href="controller?cmd=proyecto-listado&op=end" class="btn btn-end" title="Final">&gt;&gt;</a>
@@ -245,22 +255,22 @@
           <div class="rows-page">
             <label for="rows-page">Filas</label>
             <select id="rows-page">
-              <% if (rowsPage == 10) { %>
+              <% if (paginaFilasPagina == 10) { %>
               <option value="10" selected>10</option>
               <option value="20">20</option>
               <option value="40">40</option>
               <option value="80">80</option>
-              <% } else if (rowsPage == 20) { %>
+              <% } else if (paginaFilasPagina == 20) { %>
               <option value="10">10</option>
               <option value="20" selected>20</option>
               <option value="40">40</option>
               <option value="80">80</option>
-              <% } else if (rowsPage == 40) { %>
+              <% } else if (paginaFilasPagina == 40) { %>
               <option value="10">10</option>
               <option value="20">20</option>
               <option value="40" selected>40</option>
               <option value="80">80</option>
-              <% } else if (rowsPage == 80) { %>
+              <% } else if (paginaFilasPagina == 80) { %>
               <option value="10">10</option>
               <option value="20">20</option>
               <option value="40">40</option>
@@ -270,7 +280,7 @@
           </div>
           |
           <div class="filter">
-            <input type="text" value="<%=filterExp%>" autofocus />
+            <input type="text" value="<%=filtroPatron%>" autofocus />
             <a href="#" class="btn btn-filter">⚡</a>
           </div>
         </nav>

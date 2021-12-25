@@ -82,7 +82,8 @@ public final class PermisoDAL extends AbstractDAL {
       DataSource ds = obtenerDataSource(PL);
 
       try (
-               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(SQL)) {
+              Connection conn = ds.getConnection();
+              PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
         parametrizarInsert(ps, permiso);
 
@@ -109,7 +110,7 @@ public final class PermisoDAL extends AbstractDAL {
       DataSource ds = obtenerDataSource(PL);
 
       try (
-               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(SQL)) {
+              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
         ps.setInt(1, id);
 
@@ -146,7 +147,7 @@ public final class PermisoDAL extends AbstractDAL {
       DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
 
       try (
-               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(SQL)) {
+              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
         ps.setInt(1, permiso.getProcesoId());
         ps.setInt(2, permiso.getPerfilId());
@@ -174,7 +175,7 @@ public final class PermisoDAL extends AbstractDAL {
       DataSource ds = obtenerDataSource(PL);
 
       try (
-               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(SQL)) {
+              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
         // Parametrizar Sentencia
         parametrizarUpdate(ps, permiso);
 
@@ -201,8 +202,8 @@ public final class PermisoDAL extends AbstractDAL {
       DataSource ds = obtenerDataSource(PL);
 
       try (
-               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
-        try ( ResultSet rs = ps.executeQuery()) {
+              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (ResultSet rs = ps.executeQuery()) {
           if (rs.next()) {
             filas = rs.getLong(1);
           }
@@ -228,7 +229,7 @@ public final class PermisoDAL extends AbstractDAL {
       DataSource ds = obtenerDataSource(PL);
 
       try (
-               Connection conn = ds.getConnection();  PreparedStatement ps = conn.prepareStatement(sql)) {
+              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
         permisos = exportarListaPermisos(ps);
       }
     } catch (NamingException | SQLException ex) {
@@ -244,7 +245,7 @@ public final class PermisoDAL extends AbstractDAL {
     List<Permiso> permisos = new ArrayList<>();
 
     // BD > Lista de Entidades
-    try ( ResultSet rs = ps.executeQuery()) {
+    try (ResultSet rs = ps.executeQuery()) {
       while (rs.next()) {
         // Campos > Entidad
         Permiso permiso = exportarPermiso(rs);

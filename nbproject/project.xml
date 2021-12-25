@@ -10,9 +10,6 @@
                     <file>${file.reference.gson-2.8.8.jar}</file>
                     <path-in-war>WEB-INF/lib</path-in-war>
                 </library>
-                <library dirs="200">
-                    <file>${libs.eclipselink.classpath}</file>
-                </library>
             </web-module-libraries>
             <web-module-additional-libraries/>
             <source-roots>

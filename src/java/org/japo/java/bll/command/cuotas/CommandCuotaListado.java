@@ -60,16 +60,16 @@ public final class CommandCuotaListado extends Command {
           ParametrosListado pl = new ParametrosListado("gestion_gastos", "cuotas", usuario);
 
           // Filtro > Parámetros Listado
-          UtilesGastos.definirFiltradoListado(pl, request);
+          UtilesGastos.definirListaFiltro(pl, request);
 
           // Ordenación > Parámetros Listado
-          UtilesGastos.definirOrdenacionListado(pl, request);
+          UtilesGastos.definirListaOrden(pl, request);
 
           // Total de Filas > Parámetros Listado
           pl.setRowCount(cuotaDAL.contarCuotas(pl));
 
           // Navegación > Parámetros Listado
-          UtilesGastos.definirNavegacionListado(pl, request);
+          UtilesGastos.definirListaPagina(pl, request);
 
           // BD > Lista de Cuotas
           List<Cuota> cuotas = cuotaDAL.obtenerCuotas(pl);

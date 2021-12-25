@@ -15,10 +15,10 @@
  */
 package org.japo.java.bll.command.admin;
 
-import org.japo.java.bll.command.Command;
-import javax.servlet.ServletException;
 import java.io.IOException;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
+import org.japo.java.bll.command.Command;
 import org.japo.java.dal.UsuarioDAL;
 import org.japo.java.entities.Perfil;
 import org.japo.java.entities.Usuario;

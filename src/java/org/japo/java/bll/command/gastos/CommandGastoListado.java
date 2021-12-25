@@ -60,16 +60,16 @@ public final class CommandGastoListado extends Command {
           ParametrosListado pl = new ParametrosListado("gestion_gastos", "gastos", usuario);
 
           // Filtro > Parámetros Listado
-          UtilesGastos.definirFiltradoListado(pl, request);
+          UtilesGastos.definirListaFiltro(pl, request);
 
           // Ordenación > Parámetros Listado
-          UtilesGastos.definirOrdenacionListado(pl, request);
+          UtilesGastos.definirListaOrden(pl, request);
 
           // Total de Filas > Parámetros Listado
           pl.setRowCount(gastoDAL.contarGastos(pl));
 
           // Navegación > Parámetros Listado
-          UtilesGastos.definirNavegacionListado(pl, request);
+          UtilesGastos.definirListaPagina(pl, request);
 
           // BD > Lista de Gastos ( Modificados )
           List<Gasto> gastos = gastoDAL.obtenerGastos(pl);

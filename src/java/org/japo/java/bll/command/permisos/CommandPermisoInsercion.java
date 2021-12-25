@@ -27,8 +27,6 @@ import org.japo.java.dal.ProcesoDAL;
 import org.japo.java.entities.Permiso;
 import org.japo.java.entities.Perfil;
 import org.japo.java.entities.Proceso;
-import org.japo.java.entities.Usuario;
-import org.japo.java.entities.ParametrosListado;
 import org.japo.java.libraries.UtilesGastos;
 
 /**

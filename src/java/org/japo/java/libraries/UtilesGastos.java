@@ -1,18 +1,38 @@
+/* 
+ * Copyright 2021 José A. Pacheco Ondoño - japolabs@gmail.com.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.japo.java.libraries;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import org.japo.java.entities.Abono;
+import org.japo.java.entities.AtributosLista;
 import org.japo.java.entities.Cuota;
-import org.japo.java.entities.Perfil;
+import org.japo.java.entities.Filtro;
+import org.japo.java.entities.Orden;
+import org.japo.java.entities.Pagina;
 import org.japo.java.entities.ParametrosListado;
 import org.japo.java.entities.Partida;
+import org.japo.java.entities.Perfil;
 import org.japo.java.entities.Permiso;
 import org.japo.java.entities.Proceso;
 import org.japo.java.entities.Proyecto;
@@ -170,7 +190,6 @@ public class UtilesGastos {
         if (usuario == null) {
           // Invalida Sesión
           sesion.invalidate();
-
         } else {
           // Prueba de Validez Ortopédica :S
           // Llegados aquí ...
@@ -250,7 +269,7 @@ public class UtilesGastos {
     return p;
   }
 
-  public static final void definirFiltradoListado(ParametrosListado pl,
+  public static final void definirListaFiltro(ParametrosListado pl,
           HttpServletRequest request) {
     // Constantes
     final String REQUEST_FILTER_FIELD = "filter-fld";
@@ -308,13 +327,52 @@ public class UtilesGastos {
     pl.setFilterValue(filterExp);
   }
 
-  public static final void definirOrdenacionListado(ParametrosListado p,
+  // Actualiza los parámetros de filtro en la entidad de atributos de lista
+  // desde los parametros de la petición y si no existen desde los valores 
+  // anteriores de la entidad de atributos de lista 
+  public static final void definirListaFiltro(AtributosLista la,
+          HttpServletRequest request) {
+    // Request > Parámetros Filtro
+    List<String> campos;
+    String[] camposPeticion = request.getParameterValues("filtro-campos");
+    String patron = request.getParameter("filtro-patron");
+    boolean exacto = request.getParameter("filtro-exacto") != null;
+
+    // Entidad Atributos de Lista > Entidad Filtro
+    Filtro filtro = la.getFiltro();
+
+    // Parámetros Filtro - Campos
+    if (camposPeticion == null) {
+      campos = filtro.getCampos();
+    } else {
+      campos = Arrays.asList(camposPeticion);
+    }
+
+    // Parámetros Filtro - Patron
+    if (patron == null) {
+      patron = filtro.getPatron();
+    } else {
+      patron = patron.trim();
+    }
+
+    // Validar Parámetros Filtro
+    if (campos.isEmpty()) {
+      filtro = new Filtro();
+    } else {
+      filtro = new Filtro(campos, patron, exacto);
+    }
+
+    // Parámetros Filtro > Entidad Filtro > Entidad Atributos de Lista
+    la.setFiltro(filtro);
+  }
+
+  public static final void definirListaOrden(ParametrosListado pl,
           HttpServletRequest request) {
     // Constantes
     final String REQUEST_SORT_FIELD = "sort-fld";
     final String REQUEST_SORT_DIRECTION = "sort-dir";
-    final String SESSION_SORT_FIELD = p.getTable() + "-sort-fld";
-    final String SESSION_SORT_DIRECTION = p.getTable() + "-sort-dir";
+    final String SESSION_SORT_FIELD = pl.getTable() + "-sort-fld";
+    final String SESSION_SORT_DIRECTION = pl.getTable() + "-sort-dir";
 
     // Request > Sesion
     HttpSession sesion = request.getSession(false);
@@ -426,17 +484,46 @@ public class UtilesGastos {
     }
 
     // Parámetros Ordenación > Parámetros Listado
-    p.setOrderField(sortFld);
-    p.setOrderProgress(sortDir);
+    pl.setOrderField(sortFld);
+    pl.setOrderProgress(sortDir);
   }
 
-  public static final void definirNavegacionListado(ParametrosListado p,
+  public static final void definirListaOrden(AtributosLista la,
+          HttpServletRequest request) {
+    // Atributos de Lista > Orden + Validación
+    Orden orden = la.getOrden();
+
+    // Request > Campo de Ordenación
+    String campo = request.getParameter("orden-campo");
+    if (campo == null) {
+      campo = orden.getCampo();
+    } else if (campo.isBlank()) {
+      campo = "";
+    }
+
+    // Request > Avance de Ordenación
+    String avance = request.getParameter("orden-avance");
+    if (avance == null) {
+      avance = orden.getAvance();
+    } else if (avance.equalsIgnoreCase("ASC")) {
+      avance = "ASC";
+    } else if (avance.equalsIgnoreCase("DESC")) {
+      avance = "DESC";
+    } else {
+      avance = "";
+    }
+
+    // Orden > Parámetros Listado
+    la.setOrden(new Orden(campo, avance));
+  }
+
+  public static final void definirListaPagina(ParametrosListado pl,
           HttpServletRequest request) {
     // Constantes
     final long FILAS_PAGINA = 10;
     final String REQUEST_ROWS_PAGE = "rows-page";
-    final String SESSION_ROWS_PAGE = p.getTable() + "-rows-page";
-    final String SESSION_ROW_INDEX = p.getTable() + "-row-index";
+    final String SESSION_ROWS_PAGE = pl.getTable() + "-rows-page";
+    final String SESSION_ROW_INDEX = pl.getTable() + "-row-index";
 
     // Request > Sesion
     HttpSession sesion = request.getSession(false);
@@ -489,12 +576,12 @@ public class UtilesGastos {
         break;
       case "nxt":
         // Parámetros Paginación - SIGUIENTE
-        rowIndex = rowIndex + rowsPage < p.getRowCount() ? rowIndex + rowsPage : rowIndex;
+        rowIndex = rowIndex + rowsPage < pl.getRowCount() ? rowIndex + rowsPage : rowIndex;
         break;
       case "end":
         // Parámetros Paginación - FIN
-        rowIndex = p.getRowCount() / rowsPage * rowsPage;
-        rowIndex = rowIndex >= rowsPage && p.getRowCount() % rowsPage == 0 ? rowIndex - rowsPage : rowIndex;
+        rowIndex = pl.getRowCount() / rowsPage * rowsPage;
+        rowIndex = rowIndex >= rowsPage && pl.getRowCount() % rowsPage == 0 ? rowIndex - rowsPage : rowIndex;
         break;
       case "num":
         // Página Enésima
@@ -513,7 +600,74 @@ public class UtilesGastos {
     sesion.setAttribute(SESSION_ROW_INDEX, rowIndex);
 
     // Navegación > Parámetros Listado
-    p.setRowsPage(rowsPage);
-    p.setRowIndex(rowIndex);
+    pl.setRowsPage(rowsPage);
+    pl.setRowIndex(rowIndex);
+  }
+
+  public static final void definirListaPagina(AtributosLista la,
+          HttpServletRequest request) {
+    // Sesión > Atributos Página
+    Pagina pagina = la.getPagina();
+
+    // Atributos de Lista > Total de Filas
+    long filasTotal = pagina.getFilasTotal();
+
+    // Request > Índice de Pagina + Validación
+    long indice = 0L;
+    if (request.getParameter("indice") != null) {
+      indice = Long.parseLong(request.getParameter("indice"));
+      if (indice < 0) {
+        indice = pagina.getIndice();
+      }
+    }
+
+    // Request > Filas por Pagina + Validación
+    long filasPagina = filasTotal;
+    if (request.getParameter("filas-pagina") != null) {
+      filasPagina = Long.parseLong(request.getParameter("filas-pagina"));
+      if (filasPagina < 0) {
+        filasPagina = filasTotal;
+      }
+    }
+
+    // Request > Navegación + Validación
+    String nav = request.getParameter("nav");
+    if (nav == null) {
+      nav = "ini";
+    } else if (!nav.equals("ini") && !nav.equals("end")
+            && !nav.equals("prv") && !nav.equals("nxt")
+            && !nav.equals("num")) {
+      nav = "ini";
+    }
+
+    // Navegación > Indice
+    switch (nav) {
+      case "prv":
+        // Parámetros Paginación - PREVIO
+        indice = indice - filasPagina > 0 ? indice - filasPagina : 0;
+        break;
+      case "nxt":
+        // Parámetros Paginación - SIGUIENTE
+        indice = indice + filasPagina < filasTotal ? indice + filasPagina : indice;
+        break;
+      case "end":
+        // Parámetros Paginación - FIN
+        indice = filasTotal / filasPagina * filasPagina;
+        indice = indice >= filasPagina && filasTotal % filasPagina == 0 ? indice - filasPagina : indice;
+        break;
+      case "num":
+        // Se recibe el indice de la página a la que se desea ir
+        break;
+      case "ini":
+      default:
+        // Parámetros Paginación - INICIO
+        indice = 0L;
+    }
+
+    // Atributos Pagina > Pagina
+    pagina = new Pagina(indice, filasPagina, filasTotal);
+
+    // Atributos Página > Parámetros Listado
+    la.setPagina(pagina);
   }
 }

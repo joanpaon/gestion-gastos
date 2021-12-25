@@ -39,7 +39,7 @@ import org.japo.java.entities.ParametrosListado;
 public final class CuotaDAL extends AbstractDAL {
 
   // Constantes
-  private final String TABLA = "usuarios";
+  private final String TABLA = "cuotas";
 
   // Parámetros de Listado
   private final ParametrosListado PL;
@@ -278,7 +278,7 @@ public final class CuotaDAL extends AbstractDAL {
             + "nombre, info, "
             + "status, data, created_at, updated_at"
             + ") "
-            + "VALUES (?, ?)";
+            + "VALUES (?, ?, ?, ?, ?, ?)";
   }
 
   public String generarSQLUpdate() {

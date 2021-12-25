@@ -60,16 +60,16 @@ public final class CommandProcesoListado extends Command {
           ParametrosListado pl = new ParametrosListado("gestion_gastos", "procesos", usuario);
 
           // Filtro > Parámetros Listado
-          UtilesGastos.definirFiltradoListado(pl, request);
+          UtilesGastos.definirListaFiltro(pl, request);
 
           // Ordenación > Parámetros Listado
-          UtilesGastos.definirOrdenacionListado(pl, request);
+          UtilesGastos.definirListaOrden(pl, request);
 
           // Total de Filas > Parámetros Listado
           pl.setRowCount(procesoDAL.contarProcesos(pl));
 
           // Navegación > Parámetros Listado
-          UtilesGastos.definirNavegacionListado(pl, request);
+          UtilesGastos.definirListaPagina(pl, request);
 
           // BD > Lista de Procesos
           List<Proceso> procesos = procesoDAL.obtenerProcesos(pl);

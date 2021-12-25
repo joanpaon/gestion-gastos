@@ -60,16 +60,16 @@ public final class CommandPermisoListado extends Command {
           ParametrosListado pl = new ParametrosListado("gestion_gastos", "permisos", usuario);
 
           // Filtro > Parámetros Listado
-          UtilesGastos.definirFiltradoListado(pl, request);
+          UtilesGastos.definirListaFiltro(pl, request);
 
           // Ordenación > Parámetros Listado
-          UtilesGastos.definirOrdenacionListado(pl, request);
+          UtilesGastos.definirListaOrden(pl, request);
 
           // Total de Filas > Parámetros Listado
           pl.setRowCount(permisoDAL.contarPermisos(pl));
 
           // Navegación > Parámetros Listado
-          UtilesGastos.definirNavegacionListado(pl, request);
+          UtilesGastos.definirListaPagina(pl, request);
 
           // BD > Lista de Permisos de Perfil
           List<Permiso> permisos = permisoDAL.obtenerPermisos(pl);

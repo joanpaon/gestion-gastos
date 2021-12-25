@@ -1,3 +1,5 @@
+<%@page import="java.text.SimpleDateFormat"%>
+<%@page import="java.util.Date"%>
 <%@page import="java.util.ArrayList"%>
 <%@page import="java.util.List"%>
 <%@page import="org.japo.java.entities.Partida"%>
@@ -73,7 +75,8 @@
           </div>
           <div class="fieldset">
             <label for="fecha">Fecha</label>
-            <input id="fecha" type="date" name="fecha" required />
+            <input id="fecha" type="date" name="fecha" required
+                   value="<%=new SimpleDateFormat("yyyy-MM-dd").format(new Date())%>" />
           </div>
           <div class="fieldset">
             <label for="info">Información</label>

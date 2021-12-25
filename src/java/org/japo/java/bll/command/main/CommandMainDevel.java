@@ -15,10 +15,10 @@
  */
 package org.japo.java.bll.command.main;
 
-import org.japo.java.bll.command.Command;
-import javax.servlet.ServletException;
 import java.io.IOException;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
+import org.japo.java.bll.command.Command;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -30,7 +30,7 @@ public final class CommandMainDevel extends Command {
   @Override
   public void process() throws ServletException, IOException {
     // JSP
-    String page;
+    String page = "messages/message";
 
     // Sesión
     HttpSession sesion = request.getSession(false);
@@ -38,14 +38,13 @@ public final class CommandMainDevel extends Command {
     try {
       // Validar Sesión
       if (!UtilesGastos.validarSesion(sesion)) {
-        page = "errors/sesion-caducada";
+        seleccionarMensaje(MSG_SESION_INVALIDA);
       } else {
-        // JSP
+        // Página Principal del Perfil
         page = "main/main-devel";
       }
     } catch (NullPointerException e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP

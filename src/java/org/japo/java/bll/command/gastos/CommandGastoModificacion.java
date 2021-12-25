@@ -119,7 +119,7 @@ public final class CommandGastoModificacion extends Command {
               String titulo = "Operación Realizada con Éxito";
               String mensaje = "Se han modificado correctamente los datos del usuario";
               String imagen = "public/img/tarea.png";
-              String destino = "controller?cmd=usuario-listado";
+              String destino = "controller?cmd=gasto-listado";
 
               // Inyeccion de Parámetros
               parametrizarMensaje(titulo, mensaje, imagen, destino);

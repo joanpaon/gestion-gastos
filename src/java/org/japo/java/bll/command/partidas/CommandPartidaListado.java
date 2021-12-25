@@ -63,16 +63,16 @@ public final class CommandPartidaListado extends Command {
           ParametrosListado pl = new ParametrosListado("gestion_gastos", "partidas", usuario);
 
           // Filtro > Parámetros Listado
-          UtilesGastos.definirFiltradoListado(pl, request);
+          UtilesGastos.definirListaFiltro(pl, request);
 
           // Ordenación > Parámetros Listado
-          UtilesGastos.definirOrdenacionListado(pl, request);
+          UtilesGastos.definirListaOrden(pl, request);
 
           // Total de Filas > Parámetros Listado
           pl.setRowCount(partidaDAL.contarRegistros(pl));
 
           // Navegación > Parámetros Listado
-          UtilesGastos.definirNavegacionListado(pl, request);
+          UtilesGastos.definirListaPagina(pl, request);
 
           // BD > Lista de Cuotas
           List<Partida> partidas = partidaDAL.obtenerPartidas(pl);
@@ -91,13 +91,11 @@ public final class CommandPartidaListado extends Command {
           // JSP
           page = "partidas/partida-listado";
         } else {
-          // Acceso NO Autorizado
-          page = "errors/acceso-denegado";
+          seleccionarMensaje(MSG_ACCESO_DENEGADO);
         }
       }
-    } catch (Exception e) {
-      // Recurso NO Disponible
-      page = "errors/page404";
+    } catch (NumberFormatException | NullPointerException e) {
+      seleccionarMensaje(MSG_ERROR404);
     }
 
     // Redirección JSP
