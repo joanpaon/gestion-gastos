@@ -52,7 +52,7 @@ public final class UsuarioDAL extends AbstractDAL {
         Usuario usuario = (Usuario) sesion.getAttribute("usuario");
 
         // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, TABLA, usuario);
+        PL = new ParametrosListado(BD, usuario);
     }
 
     public List<Usuario> obtenerUsuarios() {
@@ -73,9 +73,10 @@ public final class UsuarioDAL extends AbstractDAL {
     }
 
     public Usuario obtenerUsuario(String user) {
-        PL.setFilterFields(Arrays.asList("usuarios.user"));
+        PL.setFilterFields(new ArrayList<>(Arrays.asList("usuarios.user")));
         PL.setFilterValue(user);
         PL.setFilterStrict(true);
+        PL.setRowsPage(Long.MAX_VALUE);
 
         // Lista de Usuarios
         List<Usuario> usuarios = obtenerUsuarios(PL);

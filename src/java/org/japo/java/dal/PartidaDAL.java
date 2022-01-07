@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.naming.NamingException;
@@ -52,7 +53,7 @@ public final class PartidaDAL extends AbstractDAL {
         Usuario usuario = (Usuario) sesion.getAttribute("usuario");
 
         // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, TABLA, usuario);
+        PL = new ParametrosListado(BD, usuario);
     }
 
     public List<Partida> obtenerPartidas() {
@@ -61,7 +62,7 @@ public final class PartidaDAL extends AbstractDAL {
 
     public Partida obtenerPartida(int id) {
         // Parámetros de Listado
-        PL.setFilterField("id");
+        PL.setFilterFields(new ArrayList<>(Arrays.asList("id")));
         PL.setFilterValue(id + "");
         PL.setFilterStrict(true);
 

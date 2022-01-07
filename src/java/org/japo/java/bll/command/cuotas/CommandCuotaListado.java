@@ -37,10 +37,8 @@ public final class CommandCuotaListado extends Command {
 
     // Constantes Referenciales
     private static final String BASE_DATOS = "gestion_gastos";
-    private static final String TABLA = "cuotas";
 
     // Constantes de Atributos - Filtro
-    private static final String FILTRO_CAMPOS = "filter-fld";
     private static final String FILTRO_PATRON = "filter-exp";
 
     // Constantes de Atributos - Ordenación
@@ -52,8 +50,16 @@ public final class CommandCuotaListado extends Command {
     private static final String FILA_ACTUAL = "row-index";
     private static final String FILAS_PAGINA = "rows-page";
 
+    // Lista de Campos a Listar - Ordenación
+    private static final String[] CAMPOS_LISTADO
+            = {"cuotas.id", "cuotas.nombre", "cuotas.info"};
+
     // Atributo ParámetrosListado - Sesión
-    private static final String PARAMETROS_LISTADO_SESION = "parametros-listado-cuotas";
+    private static final String PARAMETROS_LISTADO_SESION 
+            = "parametros-listado-cuotas";
+
+    // Redirección Página JSP Proceso
+    private static final String PAGINA_PROCESO = "cuotas/cuota-listado";
 
     @Override
     public void process() throws ServletException, IOException {
@@ -80,11 +86,10 @@ public final class CommandCuotaListado extends Command {
 
                     // Sesion > ParametrosListado ( Usuarios )
                     ParametrosListado pl = (ParametrosListado) sesion.getAttribute(PARAMETROS_LISTADO_SESION);
-                    pl = pl != null ? pl : new ParametrosListado(BASE_DATOS, TABLA, usuario);
+                    pl = pl != null ? pl : new ParametrosListado(BASE_DATOS, usuario);
 
                     // Campos de Listado > Parámetros Listado
-                    String[] camposListado = {"cuotas.id", "cuotas.nombre", "cuotas.info"};
-                    pl.setFilterFields(new ArrayList<>(Arrays.asList(camposListado)));
+                    pl.setFilterFields(new ArrayList<>(Arrays.asList(CAMPOS_LISTADO)));
 
                     // Request + Filtro > Parámetros Listado
                     UtilesGastos.definirFiltroListado(pl, request);
@@ -102,7 +107,6 @@ public final class CommandCuotaListado extends Command {
                     request.setAttribute("cuotas", cuotas);
 
                     // Inyecta Parámetros Listado > JSP
-                    request.setAttribute(FILTRO_CAMPOS, pl.getFilterField());
                     request.setAttribute(FILTRO_PATRON, pl.getFilterValue());
                     request.setAttribute(ORDEN_CAMPO, pl.getOrderField());
                     request.setAttribute(ORDEN_AVANCE, pl.getOrderAdvance());
@@ -111,7 +115,7 @@ public final class CommandCuotaListado extends Command {
                     request.setAttribute(FILAS_PAGINA, pl.getRowsPage());
 
                     // JSP
-                    page = "cuotas/cuota-listado";
+                    page = PAGINA_PROCESO;
 
                     // ParámetrosListado > Sesion
                     sesion.setAttribute(PARAMETROS_LISTADO_SESION, pl);

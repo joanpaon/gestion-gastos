@@ -41,7 +41,7 @@ public final class PermisoDAL extends AbstractDAL {
         Usuario usuario = (Usuario) sesion.getAttribute("usuario");
 
         // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, TABLA, usuario);
+        PL = new ParametrosListado(BD, usuario);
     }
 
     public List<Permiso> obtenerPermisos() {
@@ -50,10 +50,9 @@ public final class PermisoDAL extends AbstractDAL {
 
     public Permiso obtenerPermiso(int id) {
         // Parámetros de Listado
-        PL.setFilterFields(new ArrayList<>(Arrays.asList("permisos.id")));
+        PL.setFilterFields(new ArrayList<>(Arrays.asList("id")));
         PL.setFilterValue(id + "");
         PL.setFilterStrict(true);
-        PL.setRowsPage(Long.MAX_VALUE);
 
         // Lista de Permisos
         List<Permiso> permisos = obtenerPermisos(PL);

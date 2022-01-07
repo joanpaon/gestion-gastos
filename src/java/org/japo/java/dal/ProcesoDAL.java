@@ -38,7 +38,7 @@ public final class ProcesoDAL extends AbstractDAL {
         Usuario usuario = (Usuario) sesion.getAttribute("usuario");
 
         // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, TABLA, usuario);
+        PL = new ParametrosListado(BD, usuario);
     }
 
     public List<Proceso> obtenerProcesos() {
@@ -47,7 +47,7 @@ public final class ProcesoDAL extends AbstractDAL {
 
     public Proceso obtenerProceso(int id) {
         // Parámetros de Listado
-        PL.setFilterFields(Arrays.asList("id"));
+        PL.setFilterFields(new ArrayList<>(Arrays.asList("id")));
         PL.setFilterValue(id + "");
         PL.setFilterStrict(true);
 
@@ -60,9 +60,10 @@ public final class ProcesoDAL extends AbstractDAL {
 
     public Proceso obtenerProceso(String nombre) {
         // Parámetros de Listado
-        PL.setFilterFields(Arrays.asList("nombre"));
+        PL.setFilterFields(new ArrayList<>(Arrays.asList("nombre")));
         PL.setFilterValue(nombre);
         PL.setFilterStrict(true);
+        PL.setRowsPage(Long.MAX_VALUE);
 
         // Lista de Proyectos
         List<Proceso> procesos = obtenerProcesos(PL);

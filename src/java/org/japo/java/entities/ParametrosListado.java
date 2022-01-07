@@ -13,10 +13,7 @@ public final class ParametrosListado implements Serializable {
     public static final long DEF_FILAS_PAGINA = 10;
 
     private Usuario user;
-    private String userField;
     private String dbName = "gestion_gastos";
-    private String table;
-    private String filterField = "";
     private List<String> filterFields = new ArrayList<>();
     private String filterValue = "";
     private boolean filterStrict = false;
@@ -31,34 +28,8 @@ public final class ParametrosListado implements Serializable {
     public ParametrosListado() {
     }
 
-    public ParametrosListado(
-            String dbName, String table,
-            Usuario user, String userField,
-            String filterField, String filterValue, boolean filterStrict,
-            String orderField, String orderAdvance,
-            Long rowCount, Long rowsPage, Long rowIndex) {
+    public ParametrosListado(String dbName, Usuario user) {
         this.dbName = dbName;
-        this.table = table;
-        this.user = user;
-        this.userField = userField;
-        this.filterField = filterField;
-        this.filterValue = filterValue;
-        this.filterStrict = filterStrict;
-        this.orderField = orderField;
-        this.orderAdvance = orderAdvance;
-        this.rowCount = rowCount;
-        this.rowsPage = rowsPage;
-        this.rowIndex = rowIndex;
-    }
-
-    public ParametrosListado(String dbName, String table) {
-        this.dbName = dbName;
-        this.table = table;
-    }
-
-    public ParametrosListado(String dbName, String table, Usuario user) {
-        this.dbName = dbName;
-        this.table = table;
         this.user = user;
     }
 
@@ -70,36 +41,12 @@ public final class ParametrosListado implements Serializable {
         this.user = user;
     }
 
-    public String getUserField() {
-        return userField;
-    }
-
-    public void setUserField(String userField) {
-        this.userField = userField;
-    }
-
     public String getDbName() {
         return dbName;
     }
 
     public void setDbName(String dbName) {
         this.dbName = dbName;
-    }
-
-    public String getTable() {
-        return table;
-    }
-
-    public void setTable(String table) {
-        this.table = table;
-    }
-
-    public String getFilterField() {
-        return filterField;
-    }
-
-    public void setFilterField(String filterField) {
-        this.filterField = filterField;
     }
 
     public List<String> getFilterFields() {

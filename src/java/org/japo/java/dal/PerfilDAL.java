@@ -38,7 +38,7 @@ public final class PerfilDAL extends AbstractDAL {
         Usuario usuario = (Usuario) sesion.getAttribute("usuario");
 
         // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, TABLA, usuario);
+        PL = new ParametrosListado(BD, usuario);
     }
 
     public List<Perfil> obtenerPerfiles() {
@@ -47,7 +47,7 @@ public final class PerfilDAL extends AbstractDAL {
 
     public Perfil obtenerPerfil(int id) {
         // Parámetros de Listado
-        PL.setFilterFields(Arrays.asList("id"));
+        PL.setFilterFields(new ArrayList<>(Arrays.asList("id")));
         PL.setFilterValue(id + "");
         PL.setFilterStrict(true);
 
@@ -189,7 +189,7 @@ public final class PerfilDAL extends AbstractDAL {
         // Obtención del Contexto
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(new ParametrosListado("gestion_gastos", "perfiles"));
+            DataSource ds = obtenerDataSource(pl);
 
             try (
                     Connection conn = ds.getConnection();

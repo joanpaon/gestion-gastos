@@ -26,7 +26,6 @@ import java.util.List;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
-import org.japo.java.entities.AtributosLista;
 import org.japo.java.entities.ParametrosListado;
 import org.japo.java.entities.Perfil;
 import org.japo.java.entities.Proyecto;
@@ -55,7 +54,7 @@ public final class ProyectoDAL extends AbstractDAL {
         Usuario usuario = (Usuario) sesion.getAttribute("usuario");
 
         // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, TABLA, usuario);
+        PL = new ParametrosListado(BD, usuario);
     }
 
     public List<Proyecto> obtenerProyectos() {
@@ -185,34 +184,6 @@ public final class ProyectoDAL extends AbstractDAL {
         return filas;
     }
 
-    public void contarFilas(AtributosLista la) {
-        // Número de Filas
-        long filas = 0;
-
-        // SQL
-        String sql = generarSQLComputo(la);
-
-        try {
-            // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
-
-            try (
-                    Connection conn = ds.getConnection();
-                    PreparedStatement ps = conn.prepareStatement(sql)) {
-                try (ResultSet rs = ps.executeQuery()) {
-                    if (rs.next()) {
-                        filas = rs.getLong(1);
-                    }
-                }
-            }
-        } catch (NamingException | SQLException ex) {
-            System.out.println("ERROR: " + ex.getMessage());
-        }
-
-        // Actualizar Computo Filas
-        la.getPagina().setFilasTotal(filas);
-    }
-
     public List<Proyecto> obtenerProyectos(ParametrosListado pl) {
         // Número de Usuarios > Parámetro Listado
         pl.setRowCount(contarProyectos(pl));
@@ -222,29 +193,6 @@ public final class ProyectoDAL extends AbstractDAL {
 
         // SQL
         String sql = generarSQLListado(pl);
-
-        // Lista Vacía
-        List<Proyecto> proyectos = new ArrayList<>();
-
-        try {
-            // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
-
-            try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-                proyectos = exportarListaProyectos(ps);
-            }
-        } catch (NamingException | SQLException ex) {
-            System.out.println("ERROR: " + ex.getMessage());
-        }
-
-        // Retorno Lista
-        return proyectos;
-    }
-
-    public List<Proyecto> obtenerProyectos(AtributosLista al) {
-        // SQL
-        String sql = generarSQLListado(al);
 
         // Lista Vacía
         List<Proyecto> proyectos = new ArrayList<>();
@@ -379,30 +327,10 @@ public final class ProyectoDAL extends AbstractDAL {
         return String.format("%s%s%s%s", select, where, order, limit);
     }
 
-    private String generarSQLListado(AtributosLista al) {
-        // SQL Parciales
-        String select = generarSQLSelect();
-        String where = generarSQLWhere(al);
-        String order = generarSQLOrder(al);
-        String limit = generarSQLLimit(al);
-
-        // SQL Completo: SELECT + WHERE + ORDER + LIMIT
-        return String.format("%s%s%s%s", select, where, order, limit);
-    }
-
     protected String generarSQLComputo(ParametrosListado pl) {
         // SQL Parciales
         String select = generarSQLSelectComputo();
         String where = generarSQLWhere(pl);
-
-        // SQL Completo: SELECT + WHERE
-        return String.format("%s%s", select, where);
-    }
-
-    protected String generarSQLComputo(AtributosLista la) {
-        // SQL Parciales
-        String select = generarSQLSelectComputo();
-        String where = generarSQLWhere(la);
 
         // SQL Completo: SELECT + WHERE
         return String.format("%s%s", select, where);

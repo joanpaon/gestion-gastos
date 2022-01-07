@@ -37,10 +37,8 @@ public final class CommandProcesoListado extends Command {
 
     // Constantes Referenciales
     private static final String BASE_DATOS = "gestion_gastos";
-    private static final String TABLA = "proyectos";
 
     // Constantes de Atributos - Filtro
-    private static final String FILTRO_CAMPOS = "filter-fld";
     private static final String FILTRO_PATRON = "filter-exp";
 
     // Constantes de Atributos - Ordenación
@@ -58,7 +56,7 @@ public final class CommandProcesoListado extends Command {
 
     // Atributo ParámetrosListado - Sesión
     private static final String PARAMETROS_LISTADO_SESION
-            = "parametros-listado-" + TABLA;
+            = "parametros-listado-procesos";
 
     // Redirección Página JSP Proceso
     private static final String PAGINA_PROCESO = "procesos/proceso-listado";
@@ -88,7 +86,7 @@ public final class CommandProcesoListado extends Command {
 
                     // Sesion > ParametrosListado ( Usuarios )
                     ParametrosListado pl = (ParametrosListado) sesion.getAttribute(PARAMETROS_LISTADO_SESION);
-                    pl = pl != null ? pl : new ParametrosListado(BASE_DATOS, TABLA, usuario);
+                    pl = pl != null ? pl : new ParametrosListado(BASE_DATOS, usuario);
 
                     // Campos de Listado > Parámetros Listado
                     pl.setFilterFields(new ArrayList<>(Arrays.asList(CAMPOS_LISTADO)));
@@ -109,7 +107,6 @@ public final class CommandProcesoListado extends Command {
                     request.setAttribute("procesos", procesos);
 
                     // Inyecta Parámetros Listado > JSP
-                    request.setAttribute(FILTRO_CAMPOS, pl.getFilterField());
                     request.setAttribute(FILTRO_PATRON, pl.getFilterValue());
                     request.setAttribute(ORDEN_CAMPO, pl.getOrderField());
                     request.setAttribute(ORDEN_AVANCE, pl.getOrderAdvance());

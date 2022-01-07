@@ -55,7 +55,7 @@ public final class CuotaDAL extends AbstractDAL {
         Usuario usuario = (Usuario) sesion.getAttribute("usuario");
 
         // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, TABLA, usuario);
+        PL = new ParametrosListado(BD, usuario);
     }
 
     public List<Cuota> obtenerCuotas() {
@@ -64,7 +64,7 @@ public final class CuotaDAL extends AbstractDAL {
 
     public Cuota obtenerCuota(int id) {
         // Parámetros de Listado
-        PL.setFilterFields(Arrays.asList("id"));
+        PL.setFilterFields(new ArrayList<>(Arrays.asList("id")));
         PL.setFilterValue(id + "");
         PL.setFilterStrict(true);
 

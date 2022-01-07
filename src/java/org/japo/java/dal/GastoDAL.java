@@ -29,6 +29,7 @@ import javax.sql.DataSource;
 import org.japo.java.entities.Gasto;
 import org.japo.java.entities.ParametrosListado;
 import org.japo.java.entities.Perfil;
+import org.japo.java.entities.Usuario;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -37,25 +38,37 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class GastoDAL extends AbstractDAL {
 
+    // Constantes
+    private final String TABLA = "gastos";
+
+    // Parámetros de Listado
+    private final ParametrosListado PL;
+
+    // Campos
     private final HttpSession sesion;
 
     public GastoDAL(HttpSession sesion) {
         this.sesion = sesion;
+
+        // Sesión > Usuario
+        Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+
+        // BD + TABLA + usuario > Parámetros de Listado
+        PL = new ParametrosListado(BD, usuario);
     }
 
     public List<Gasto> obtenerGastos() {
-        return obtenerGastos(new ParametrosListado("gestion_gastos", "gastos"));
+        return obtenerGastos(PL);
     }
 
     public Gasto obtenerGasto(int id) {
-        // Parámetros de Listado - POR DEFECTO
-        ParametrosListado pl = new ParametrosListado("gestion_gastos", "gastos");
-        pl.setFilterFields(Arrays.asList("id"));
-        pl.setFilterValue(id + "");
-        pl.setFilterStrict(true);
+        // Parámetros de Listado
+        PL.setFilterFields(new ArrayList<>(Arrays.asList("gastos.id")));
+        PL.setFilterValue(id + "");
+        PL.setFilterStrict(true);
 
         // Lista de Usuarios
-        List<Gasto> gastos = obtenerGastos(pl);
+        List<Gasto> gastos = obtenerGastos(PL);
 
         // Referencia de Entidad
         return gastos.isEmpty() ? null : gastos.get(0);
@@ -71,7 +84,7 @@ public final class GastoDAL extends AbstractDAL {
         // Obtención del Contexto
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(new ParametrosListado("gestion_gastos", "gastos"));
+            DataSource ds = obtenerDataSource(PL);
 
             try (
                     Connection conn = ds.getConnection();
@@ -99,7 +112,7 @@ public final class GastoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(new ParametrosListado("gestion_gastos", "gastos"));
+            DataSource ds = obtenerDataSource(PL);
 
             try (
                     Connection conn = ds.getConnection();
@@ -127,7 +140,7 @@ public final class GastoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(new ParametrosListado("gestion_gastos", "gastos"));
+            DataSource ds = obtenerDataSource(PL);
 
             try (
                     Connection conn = ds.getConnection();
