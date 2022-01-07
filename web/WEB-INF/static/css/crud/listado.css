@@ -117,7 +117,7 @@ main td:last-child {
 main .btn {
   width: 3rem;
   height: 1.8rem;
-  
+
   padding-top: .1rem;
 
   color: black;
@@ -257,6 +257,12 @@ main .paginacion input[type="range"] {
 
 /* --- */
 
+main .paginacion .rows-page {
+
+}
+
+/* --- */
+
 main .paginacion .filter {
   display: flex;
   justify-content: center;
@@ -280,7 +286,7 @@ main .paginacion input[type="text"] {
 
 main .paginacion .btn-filter {
   padding-top: 0;
-  
+
   font-family: sans-serif;
 }
 
@@ -288,7 +294,7 @@ main .paginacion .btn-filter {
 
 main .paginacion .rows-page {
   font-weight: bolder;
-  
+
   display: flex;
   justify-content: center;
   align-items: center;

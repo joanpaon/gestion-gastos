@@ -10,155 +10,175 @@ import java.util.List;
  */
 public final class ParametrosListado implements Serializable {
 
-  private Usuario user;
-  private String userField;
-  private String dbName = "gestion_gastos";
-  private String table;
-  private String filterField = "";
-  private List<String> filterFields = new ArrayList<>();
-  private String filterValue = "";
-  private boolean filterStrict;
-  private String orderField = "";
-  private String orderProgress = "";
-  private Long rowCount;
-  private Long rowsPage;
-  private Long rowIndex;
+    public static final long DEF_FILAS_PAGINA = 10;
 
-  public ParametrosListado() {
-  }
+    private Usuario user;
+    private String userField;
+    private String dbName = "gestion_gastos";
+    private String table;
+    private String filterField = "";
+    private List<String> filterFields = new ArrayList<>();
+    private String filterValue = "";
+    private boolean filterStrict = false;
+    private String orderField = "";
+    private String orderAdvance = "";
+    private String action = "ini";
+    private int page = 0;
+    private Long rowCount;
+    private Long rowsPage = DEF_FILAS_PAGINA;
+    private Long rowIndex = 0L;
 
-  public ParametrosListado(
-          String dbName, String table,
-          Usuario user, String userField,
-          String filterField, String filterValue, boolean filterStrict,
-          String orderField, String orderProgress,
-          Long rowCount, Long rowsPage, Long rowIndex) {
-    this.dbName = dbName;
-    this.table = table;
-    this.user = user;
-    this.userField = userField;
-    this.filterField = filterField;
-    this.filterValue = filterValue;
-    this.filterStrict = filterStrict;
-    this.orderField = orderField;
-    this.orderProgress = orderProgress;
-    this.rowCount = rowCount;
-    this.rowsPage = rowsPage;
-    this.rowIndex = rowIndex;
-  }
+    public ParametrosListado() {
+    }
 
-  public ParametrosListado(String dbName, String table) {
-    this.dbName = dbName;
-    this.table = table;
-  }
+    public ParametrosListado(
+            String dbName, String table,
+            Usuario user, String userField,
+            String filterField, String filterValue, boolean filterStrict,
+            String orderField, String orderAdvance,
+            Long rowCount, Long rowsPage, Long rowIndex) {
+        this.dbName = dbName;
+        this.table = table;
+        this.user = user;
+        this.userField = userField;
+        this.filterField = filterField;
+        this.filterValue = filterValue;
+        this.filterStrict = filterStrict;
+        this.orderField = orderField;
+        this.orderAdvance = orderAdvance;
+        this.rowCount = rowCount;
+        this.rowsPage = rowsPage;
+        this.rowIndex = rowIndex;
+    }
 
-  public ParametrosListado(String dbName, String table, Usuario user) {
-    this.dbName = dbName;
-    this.table = table;
-    this.user = user;
-  }
+    public ParametrosListado(String dbName, String table) {
+        this.dbName = dbName;
+        this.table = table;
+    }
 
-  public Usuario getUser() {
-    return user;
-  }
+    public ParametrosListado(String dbName, String table, Usuario user) {
+        this.dbName = dbName;
+        this.table = table;
+        this.user = user;
+    }
 
-  public void setUser(Usuario user) {
-    this.user = user;
-  }
+    public Usuario getUser() {
+        return user;
+    }
 
-  public String getUserField() {
-    return userField;
-  }
+    public void setUser(Usuario user) {
+        this.user = user;
+    }
 
-  public void setUserField(String userField) {
-    this.userField = userField;
-  }
+    public String getUserField() {
+        return userField;
+    }
 
-  public String getDbName() {
-    return dbName;
-  }
+    public void setUserField(String userField) {
+        this.userField = userField;
+    }
 
-  public void setDbName(String dbName) {
-    this.dbName = dbName;
-  }
+    public String getDbName() {
+        return dbName;
+    }
 
-  public String getTable() {
-    return table;
-  }
+    public void setDbName(String dbName) {
+        this.dbName = dbName;
+    }
 
-  public void setTable(String table) {
-    this.table = table;
-  }
+    public String getTable() {
+        return table;
+    }
 
-  public String getFilterField() {
-    return filterField;
-  }
+    public void setTable(String table) {
+        this.table = table;
+    }
 
-  public void setFilterField(String filterField) {
-    this.filterField = filterField;
-  }
+    public String getFilterField() {
+        return filterField;
+    }
 
-  public List<String> getFilterFields() {
-    return filterFields;
-  }
+    public void setFilterField(String filterField) {
+        this.filterField = filterField;
+    }
 
-  public void setFilterFields(List<String> filterFields) {
-    this.filterFields = filterFields;
-  }
+    public List<String> getFilterFields() {
+        return filterFields;
+    }
 
-  public String getFilterValue() {
-    return filterValue;
-  }
+    public void setFilterFields(List<String> filterFields) {
+        this.filterFields = filterFields;
+    }
 
-  public void setFilterValue(String filterValue) {
-    this.filterValue = filterValue;
-  }
+    public String getFilterValue() {
+        return filterValue;
+    }
 
-  public boolean isFilterStrict() {
-    return filterStrict;
-  }
+    public void setFilterValue(String filterValue) {
+        this.filterValue = filterValue;
+    }
 
-  public void setFilterStrict(boolean filterStrict) {
-    this.filterStrict = filterStrict;
-  }
+    public boolean isFilterStrict() {
+        return filterStrict;
+    }
 
-  public String getOrderField() {
-    return orderField;
-  }
+    public void setFilterStrict(boolean filterStrict) {
+        this.filterStrict = filterStrict;
+    }
 
-  public void setOrderField(String orderField) {
-    this.orderField = orderField;
-  }
+    public String getOrderField() {
+        return orderField;
+    }
 
-  public String getOrderProgress() {
-    return orderProgress;
-  }
+    public void setOrderField(String orderField) {
+        this.orderField = orderField;
+    }
 
-  public void setOrderProgress(String orderProgress) {
-    this.orderProgress = orderProgress;
-  }
+    public String getOrderAdvance() {
+        return orderAdvance;
+    }
 
-  public Long getRowCount() {
-    return rowCount;
-  }
+    public void setOrderAdvance(String orderAdvance) {
+        this.orderAdvance = orderAdvance;
+    }
 
-  public void setRowCount(Long rowCount) {
-    this.rowCount = rowCount;
-  }
+    public String getAction() {
+        return action;
+    }
 
-  public Long getRowsPage() {
-    return rowsPage;
-  }
+    public void setAction(String action) {
+        this.action = action;
+    }
 
-  public void setRowsPage(Long rowsPage) {
-    this.rowsPage = rowsPage;
-  }
+    public int getPage() {
+        return page;
+    }
 
-  public Long getRowIndex() {
-    return rowIndex;
-  }
+    public void setPage(int page) {
+        this.page = page;
+    }
 
-  public void setRowIndex(Long rowIndex) {
-    this.rowIndex = rowIndex;
-  }
+    public Long getRowCount() {
+        return rowCount;
+    }
+
+    public void setRowCount(Long rowCount) {
+        this.rowCount = rowCount;
+    }
+
+    public Long getRowsPage() {
+        return rowsPage;
+    }
+
+    public void setRowsPage(Long rowsPage) {
+        this.rowsPage = rowsPage;
+    }
+
+    public Long getRowIndex() {
+        return rowIndex;
+    }
+
+    public void setRowIndex(Long rowIndex) {
+        this.rowIndex = rowIndex;
+    }
 }

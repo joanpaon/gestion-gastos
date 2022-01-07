@@ -1,5 +1,5 @@
 main th:nth-child(1), td:nth-child(1) {
-  width: 7rem;
+  width: 5rem;
 
   text-align: center;
 }
@@ -7,7 +7,7 @@ main th:nth-child(1), td:nth-child(1) {
 /* --- */
 
 main th:nth-child(2), td:nth-child(2) {
-  width: 30rem;
+  width: 20rem;
 
   text-align: left;
 }

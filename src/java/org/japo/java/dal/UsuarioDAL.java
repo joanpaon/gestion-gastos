@@ -28,6 +28,7 @@ import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 import org.japo.java.entities.ParametrosListado;
 import org.japo.java.entities.Usuario;
+import org.japo.java.libraries.UtilesGastos;
 
 /**
  *
@@ -35,330 +36,337 @@ import org.japo.java.entities.Usuario;
  */
 public final class UsuarioDAL extends AbstractDAL {
 
-  // Constantes
-  private final String TABLA = "usuarios";
+    // Constantes
+    private final String TABLA = "usuarios";
 
-  // Parámetros de Listado
-  private final ParametrosListado PL;
-
-  // Sesión
-  private final HttpSession sesion;
-
-  public UsuarioDAL(HttpSession sesion) {
-    this.sesion = sesion;
-
-    // Sesión > Usuario
-    Usuario usuario = (Usuario) sesion.getAttribute("usuario");
-
-    // BD + TABLA + usuario > Parámetros de Listado
-    PL = new ParametrosListado(BD, TABLA, usuario);
-  }
-
-  public List<Usuario> obtenerUsuarios() {
-    return obtenerUsuarios(PL);
-  }
-
-  public Usuario obtenerUsuario(int id) {
     // Parámetros de Listado
-    PL.setFilterFields(Arrays.asList("id"));
-    PL.setFilterValue(id + "");
-    PL.setFilterStrict(true);
+    private final ParametrosListado PL;
 
-    // Lista de Usuarios
-    List<Usuario> usuarios = obtenerUsuarios(PL);
+    // Sesión
+    private final HttpSession sesion;
 
-    // Referencia de Entidad
-    return usuarios.isEmpty() ? null : usuarios.get(0);
-  }
+    public UsuarioDAL(HttpSession sesion) {
+        this.sesion = sesion;
 
-  public Usuario obtenerUsuario(String user) {
-    PL.setFilterFields(Arrays.asList("user"));
-    PL.setFilterValue(user);
-    PL.setFilterStrict(true);
+        // Sesión > Usuario
+        Usuario usuario = (Usuario) sesion.getAttribute("usuario");
 
-    // Lista de Usuarios
-    List<Usuario> usuarios = obtenerUsuarios(PL);
-
-    // Referencia de Entidad
-    return usuarios.isEmpty() ? null : usuarios.get(0);
-  }
-
-  public boolean insertarUsuario(Usuario usuario) {
-    // SQL
-    final String SQL = generarSQLInsert();
-
-    // Número de registros afectados
-    int numReg = 0;
-
-    // Obtención del Contexto
-    try {
-      // Contexto Inicial > DataSource
-      DataSource ds = obtenerDataSource(PL);
-
-      try (
-              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
-        // Parametrizar Sentencia
-        parametrizarInsert(ps, usuario);
-
-        // Ejecutar Sentencia
-        numReg = ps.executeUpdate();
-      }
-    } catch (NamingException | SQLException ex) {
-      System.out.println("ERROR: " + ex.getMessage());
+        // BD + TABLA + usuario > Parámetros de Listado
+        PL = new ParametrosListado(BD, TABLA, usuario);
     }
 
-    // Retorno: true | false
-    return numReg == 1;
-  }
-
-  public boolean borrarUsuario(int id) {
-    // SQL
-    final String SQL = generarSQLDelete();
-
-    // Número de registros afectados
-    int numReg = 0;
-
-    try {
-      // Contexto Inicial > DataSource
-      DataSource ds = obtenerDataSource(PL);
-
-      try (
-              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
-        // Parametrizar Sentencia
-        ps.setInt(1, id);
-
-        // Ejecutar Sentencia
-        numReg = ps.executeUpdate();
-      }
-    } catch (NamingException | SQLException ex) {
-      System.out.println("ERROR: " + ex.getMessage());
+    public List<Usuario> obtenerUsuarios() {
+        return obtenerUsuarios(PL);
     }
 
-    // Retorno: true | false
-    return numReg == 1;
-  }
+    public Usuario obtenerUsuario(int id) {
+        // Parámetros de Listado
+        PL.setFilterFields(new ArrayList<>(Arrays.asList("usuarios.id")));
+        PL.setFilterValue(id + "");
+        PL.setFilterStrict(true);
 
-  public boolean modificarUsuario(Usuario usuario) {
-    // SQL
-    final String SQL = generarSQLUpdate();
+        // Lista de Usuarios
+        List<Usuario> usuarios = obtenerUsuarios(PL);
 
-    // Número de Registros Afectados
-    int numReg = 0;
-
-    try {
-      // Contexto Inicial > DataSource
-      DataSource ds = obtenerDataSource(PL);
-
-      try (
-              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
-        // Parametrizar Sentencia
-        parametrizarUpdate(ps, usuario);
-
-        // Ejecutar Sentencia
-        numReg = ps.executeUpdate();
-      }
-    } catch (NamingException | SQLException ex) {
-      System.out.println("ERROR: " + ex.getMessage());
+        // Referencia de Entidad
+        return usuarios.isEmpty() ? null : usuarios.get(0);
     }
 
-    // Retorno: true | false
-    return numReg == 1;
-  }
+    public Usuario obtenerUsuario(String user) {
+        PL.setFilterFields(Arrays.asList("usuarios.user"));
+        PL.setFilterValue(user);
+        PL.setFilterStrict(true);
 
-  public Long contarUsuarios(ParametrosListado pl) {
-    // Número de Filas
-    long filas = 0;
+        // Lista de Usuarios
+        List<Usuario> usuarios = obtenerUsuarios(PL);
 
-    // SQL
-    String sql = generarSQLComputo(pl);
+        // Referencia de Entidad
+        return usuarios.isEmpty() ? null : usuarios.get(0);
+    }
 
-    try {
-      // Contexto Inicial > DataSource
-      DataSource ds = obtenerDataSource(PL);
+    public boolean insertarUsuario(Usuario usuario) {
+        // SQL
+        final String SQL = generarSQLInsert();
 
-      try (
-              Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-        try (ResultSet rs = ps.executeQuery()) {
-          if (rs.next()) {
-            filas = rs.getLong(1);
-          }
+        // Número de registros afectados
+        int numReg = 0;
+
+        // Obtención del Contexto
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(PL);
+
+            try (
+                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
+                // Parametrizar Sentencia
+                parametrizarInsert(ps, usuario);
+
+                // Ejecutar Sentencia
+                numReg = ps.executeUpdate();
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
         }
-      }
-    } catch (NamingException | SQLException ex) {
-      System.out.println("ERROR: " + ex.getMessage());
+
+        // Retorno: true | false
+        return numReg == 1;
     }
 
-    // Retorno: Filas Contadas
-    return filas;
-  }
+    public boolean borrarUsuario(int id) {
+        // SQL
+        final String SQL = generarSQLDelete();
 
-  public List<Usuario> obtenerUsuarios(ParametrosListado pl) {
-    // SQL
-    String sql = generarSQLListado(pl);
+        // Número de registros afectados
+        int numReg = 0;
 
-    // Lista Vacía
-    List<Usuario> usuarios = new ArrayList<>();
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(PL);
 
-    try {
-      // Contexto Inicial > DataSource
-      DataSource ds = obtenerDataSource(PL);
+            try (
+                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
+                // Parametrizar Sentencia
+                ps.setInt(1, id);
 
-      try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(sql)) {
-        usuarios = exportarListaUsuarios(ps);
-      }
-    } catch (NamingException | SQLException ex) {
-      System.out.println("ERROR: " + ex.getMessage());
+                // Ejecutar Sentencia
+                numReg = ps.executeUpdate();
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno: true | false
+        return numReg == 1;
     }
 
-    // Retorno Lista
-    return usuarios;
-  }
+    public boolean modificarUsuario(Usuario usuario) {
+        // SQL
+        final String SQL = generarSQLUpdate();
 
-  private List<Usuario> exportarListaUsuarios(PreparedStatement ps) throws SQLException {
-    // Lista 
-    List<Usuario> usuarios = new ArrayList<>();
+        // Número de Registros Afectados
+        int numReg = 0;
 
-    // BD > Lista de Entidades
-    try (ResultSet rs = ps.executeQuery()) {
-      while (rs.next()) {
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(PL);
+
+            try (
+                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
+                // Parametrizar Sentencia
+                parametrizarUpdate(ps, usuario);
+
+                // Ejecutar Sentencia
+                numReg = ps.executeUpdate();
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno: true | false
+        return numReg == 1;
+    }
+
+    public Long contarUsuarios(ParametrosListado pl) {
+        // Número de Filas
+        long filas = 0;
+
+        // SQL
+        String sql = generarSQLComputo(pl);
+
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(PL);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        filas = rs.getLong(1);
+                    }
+                }
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno: Filas Contadas
+        return filas;
+    }
+
+    public List<Usuario> obtenerUsuarios(ParametrosListado pl) {
+        // Número de Usuarios > Parámetro Listado
+        pl.setRowCount(contarUsuarios(pl));
+
+        // Navegación > Parametros listado
+        UtilesGastos.definirIndiceListado(pl);
+
+        // SQL
+        String sql = generarSQLListado(pl);
+
+        // Lista Vacía
+        List<Usuario> usuarios = new ArrayList<>();
+
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(pl);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                usuarios = exportarListaUsuarios(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
+        return usuarios;
+    }
+
+    private List<Usuario> exportarListaUsuarios(PreparedStatement ps) throws SQLException {
+        // Lista 
+        List<Usuario> usuarios = new ArrayList<>();
+
+        // BD > Lista de Entidades
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                // Campos > Entidad
+                Usuario usuario = exportarUsuario(rs);
+
+                // Entidad > Lista
+                usuarios.add(usuario);
+            }
+        }
+
+        // Retorno: Lista de Usuarios
+        return usuarios;
+    }
+
+    private Usuario exportarUsuario(ResultSet rs) throws SQLException {
+        // Fila Actual > Campos 
+        int id = rs.getInt("id");
+        String user = rs.getString("user");
+        String pass = rs.getString("pass");
+        String email = rs.getString("email");
+        String icono = rs.getString("icono");
+        int perfilId = rs.getInt("perfil_id");
+        String perfilInfo = rs.getString("perfil_info");
+        String info = rs.getString("info");
+        int status = rs.getInt("status");
+        String data = rs.getString("data");
+        Date createdAt = rs.getDate("created_at");
+        Date updatedAt = rs.getDate("updated_at");
+
         // Campos > Entidad
-        Usuario usuario = exportarUsuario(rs);
-
-        // Entidad > Lista
-        usuarios.add(usuario);
-      }
+        return new Usuario(id, user, pass,
+                email, icono, perfilId, perfilInfo, info,
+                status, data, createdAt, updatedAt);
     }
 
-    // Retorno: Lista de Usuarios
-    return usuarios;
-  }
+    public String generarSQLSelect() {
+        return ""
+                + "SELECT "
+                + "usuarios.id AS id, "
+                + "usuarios.user AS user, "
+                + "usuarios.pass AS pass, "
+                + "usuarios.email AS email, "
+                + "usuarios.icono AS icono, "
+                + "usuarios.perfil AS perfil_id, "
+                + "perfiles.nombre AS perfil_info, "
+                + "usuarios.info AS info, "
+                + "usuarios.status AS status, "
+                + "usuarios.data AS data, "
+                + "usuarios.created_at AS created_at, "
+                + "usuarios.updated_at AS updated_at "
+                + "FROM "
+                + "usuarios "
+                + "INNER JOIN "
+                + "perfiles ON perfiles.id = usuarios.perfil";
+    }
 
-  private Usuario exportarUsuario(ResultSet rs) throws SQLException {
-    // Fila Actual > Campos 
-    int id = rs.getInt("id");
-    String user = rs.getString("user");
-    String pass = rs.getString("pass");
-    String email = rs.getString("email");
-    String icono = rs.getString("icono");
-    int perfilId = rs.getInt("perfil_id");
-    String perfilInfo = rs.getString("perfil_info");
-    String info = rs.getString("info");
-    int status = rs.getInt("status");
-    String data = rs.getString("data");
-    Date createdAt = rs.getDate("created_at");
-    Date updatedAt = rs.getDate("updated_at");
+    public String generarSQLSelectComputo() {
+        return ""
+                + "SELECT "
+                + "COUNT(*) "
+                + "FROM "
+                + "usuarios "
+                + "INNER JOIN "
+                + "perfiles ON perfiles.id = usuarios.perfil";
+    }
 
-    // Campos > Entidad
-    return new Usuario(id, user, pass,
-            email, icono, perfilId, perfilInfo, info,
-            status, data, createdAt, updatedAt);
-  }
+    public String generarSQLInsert() {
+        return ""
+                + "INSERT INTO "
+                + "usuarios "
+                + "("
+                + "user, pass, email, icono, perfil, info, "
+                + "status, data, created_at, updated_at"
+                + ") "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    }
 
-  public String generarSQLSelect() {
-    return ""
-            + "SELECT "
-            + "usuarios.id AS id, "
-            + "usuarios.user AS user, "
-            + "usuarios.pass AS pass, "
-            + "usuarios.email AS email, "
-            + "usuarios.icono AS icono, "
-            + "usuarios.perfil AS perfil_id, "
-            + "perfiles.nombre AS perfil_info, "
-            + "usuarios.info AS info, "
-            + "usuarios.status AS status, "
-            + "usuarios.data AS data, "
-            + "usuarios.created_at AS created_at, "
-            + "usuarios.updated_at AS updated_at "
-            + "FROM "
-            + "usuarios "
-            + "INNER JOIN "
-            + "perfiles ON perfiles.id = usuarios.perfil";
-  }
+    public String generarSQLUpdate() {
+        return ""
+                + "UPDATE "
+                + "usuarios "
+                + "SET "
+                + "user=?, pass=?, email=?, icono=?, perfil=?, info=?, "
+                + "status=?, data=?, created_at=?, updated_at=? "
+                + "WHERE id=?";
+    }
 
-  public String generarSQLSelectComputo() {
-    return ""
-            + "SELECT "
-            + "COUNT(*) "
-            + "FROM "
-            + "usuarios "
-            + "INNER JOIN "
-            + "perfiles ON perfiles.id = usuarios.perfil";
-  }
+    public String generarSQLDelete() {
+        return ""
+                + "DELETE FROM "
+                + "usuarios "
+                + "WHERE id=?";
+    }
 
-  public String generarSQLInsert() {
-    return ""
-            + "INSERT INTO "
-            + "usuarios "
-            + "("
-            + "user, pass, email, icono, perfil, info, "
-            + "status, data, created_at, updated_at"
-            + ") "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-  }
+    private String generarSQLListado(ParametrosListado pl) {
+        // SQL Parciales
+        String select = generarSQLSelect();
+        String where = generarSQLWhere(pl);
+        String order = generarSQLOrder(pl);
+        String limit = generarSQLLimit(pl);
 
-  public String generarSQLUpdate() {
-    return ""
-            + "UPDATE "
-            + "usuarios "
-            + "SET "
-            + "user=?, pass=?, email=?, icono=?, perfil=?, info=?, "
-            + "status=?, data=?, created_at=?, updated_at=? "
-            + "WHERE id=?";
-  }
+        // SQL Completo: SELECT + WHERE + ORDER + LIMIT
+        return String.format("%s%s%s%s", select, where, order, limit);
+    }
 
-  public String generarSQLDelete() {
-    return ""
-            + "DELETE FROM "
-            + "usuarios "
-            + "WHERE id=?";
-  }
+    protected String generarSQLComputo(ParametrosListado pl) {
+        // SQL Parciales
+        String select = generarSQLSelectComputo();
+        String where = generarSQLWhere(pl);
 
-  private String generarSQLListado(ParametrosListado pl) {
-    // SQL Parciales
-    String select = generarSQLSelect();
-    String where = generarSQLWhere(pl);
-    String order = generarSQLOrder(pl);
-    String limit = generarSQLLimit(pl);
+        // SQL Completo: SELECT + WHERE
+        return String.format("%s%s", select, where);
+    }
 
-    // SQL Completo: SELECT + WHERE + ORDER + LIMIT
-    return String.format("%s%s%s%s", select, where, order, limit);
-  }
+    private void parametrizarInsert(PreparedStatement ps, Usuario usuario) throws SQLException {
+        ps.setString(1, usuario.getUser());
+        ps.setString(2, usuario.getPass());
+        ps.setString(3, usuario.getEmail());
+        ps.setString(4, usuario.getIcono());
+        ps.setInt(5, usuario.getPerfilID());
+        ps.setString(6, usuario.getInfo());
+        ps.setInt(7, usuario.getStatus());
+        ps.setString(8, usuario.getData());
+        ps.setDate(9, new java.sql.Date(usuario.getCreatedAt().getTime()));
+        ps.setDate(10, new java.sql.Date(usuario.getUpdatedAt().getTime()));
+    }
 
-  protected String generarSQLComputo(ParametrosListado pl) {
-    // SQL Parciales
-    String select = generarSQLSelectComputo();
-    String where = generarSQLWhere(pl);
-
-    // SQL Completo: SELECT + WHERE
-    return String.format("%s%s", select, where);
-  }
-
-  private void parametrizarInsert(PreparedStatement ps, Usuario usuario) throws SQLException {
-    ps.setString(1, usuario.getUser());
-    ps.setString(2, usuario.getPass());
-    ps.setString(3, usuario.getEmail());
-    ps.setString(4, usuario.getIcono());
-    ps.setInt(5, usuario.getPerfilID());
-    ps.setString(6, usuario.getInfo());
-    ps.setInt(7, usuario.getStatus());
-    ps.setString(8, usuario.getData());
-    ps.setDate(9, new java.sql.Date(usuario.getCreatedAt().getTime()));
-    ps.setDate(10, new java.sql.Date(usuario.getUpdatedAt().getTime()));
-  }
-
-  private void parametrizarUpdate(PreparedStatement ps, Usuario usuario) throws SQLException {
-    ps.setString(1, usuario.getUser());
-    ps.setString(2, usuario.getPass());
-    ps.setString(3, usuario.getEmail());
-    ps.setString(4, usuario.getIcono());
-    ps.setInt(5, usuario.getPerfilID());
-    ps.setString(6, usuario.getInfo());
-    ps.setInt(7, usuario.getStatus());
-    ps.setString(8, usuario.getData());
-    ps.setDate(9, new java.sql.Date(usuario.getCreatedAt().getTime()));
-    ps.setDate(10, new java.sql.Date(usuario.getUpdatedAt().getTime()));
-    ps.setInt(11, usuario.getId());
-  }
+    private void parametrizarUpdate(PreparedStatement ps, Usuario usuario) throws SQLException {
+        ps.setString(1, usuario.getUser());
+        ps.setString(2, usuario.getPass());
+        ps.setString(3, usuario.getEmail());
+        ps.setString(4, usuario.getIcono());
+        ps.setInt(5, usuario.getPerfilID());
+        ps.setString(6, usuario.getInfo());
+        ps.setInt(7, usuario.getStatus());
+        ps.setString(8, usuario.getData());
+        ps.setDate(9, new java.sql.Date(usuario.getCreatedAt().getTime()));
+        ps.setDate(10, new java.sql.Date(usuario.getUpdatedAt().getTime()));
+        ps.setInt(11, usuario.getId());
+    }
 }

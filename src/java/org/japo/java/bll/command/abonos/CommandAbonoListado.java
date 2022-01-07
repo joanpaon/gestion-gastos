@@ -16,6 +16,8 @@
 package org.japo.java.bll.command.abonos;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
@@ -33,71 +35,96 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class CommandAbonoListado extends Command {
 
-  @Override
-  public void process() throws ServletException, IOException {
-    // JSP
-    String page = "messages/message";
+    // Constantes Referenciales
+    private static final String BASE_DATOS = "gestion_gastos";
+    private static final String TABLA = "abonos";
 
-    try {
-      // Sesión
-      HttpSession sesion = request.getSession(false);
+    // Constantes de Atributos - Filtro
+    private static final String FILTRO_CAMPOS = "filter-fld";
+    private static final String FILTRO_PATRON = "filter-exp";
 
-      // Validar Sesión
-      boolean sesionOK = UtilesGastos.validarSesion(sesion);
-      if (sesionOK) {
-        // Capas de Negocio
-        AdminBLL adminBLL = new AdminBLL(sesion);
+    // Constantes de Atributos - Ordenación
+    private static final String ORDEN_CAMPO = "sort-fld";
+    private static final String ORDEN_AVANCE = "sort-dir";
 
-        // Capas de Datos
-        AbonoDAL abonoDAL = new AbonoDAL(sesion);
+    // Constantes de Atributos - Paginación
+    private static final String FILAS_TOTAL = "row-count";
+    private static final String FILA_ACTUAL = "row-index";
+    private static final String FILAS_PAGINA = "rows-page";
 
-        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
-          // Sesión > Usuario
-          Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+    // Atributo ParámetrosListado - Sesión
+    private static final String PARAMETROS_LISTADO_SESION = "parametros-listado-abonos";
 
-          // Parámetros Listado
-          ParametrosListado pl = new ParametrosListado("gestion_gastos", "abonos", usuario);
+    @Override
+    public void process() throws ServletException, IOException {
+        // JSP
+        String page = "messages/message";
 
-          // Filtro > Parámetros Listado
-          UtilesGastos.definirListaFiltro(pl, request);
+        try {
+            // Sesión
+            HttpSession sesion = request.getSession(false);
 
-          // Ordenación > Parámetros Listado
-          UtilesGastos.definirListaOrden(pl, request);
+            // Validar Sesión
+            boolean sesionOK = UtilesGastos.validarSesion(sesion);
+            if (sesionOK) {
+                // Capas de Negocio
+                AdminBLL adminBLL = new AdminBLL(sesion);
 
-          // Total de Filas > Parámetros Listado
-          pl.setRowCount(abonoDAL.contarAbonos(pl));
+                // Capas de Datos
+                AbonoDAL abonoDAL = new AbonoDAL(sesion);
 
-          // Navegación > Parámetros Listado
-          UtilesGastos.definirListaPagina(pl, request);
+                if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+                    // Sesión > Usuario
+                    Usuario usuario = (Usuario) sesion.getAttribute("usuario");
 
-          // BD > Lista de Abonos
-          List<Abono> abonos = abonoDAL.obtenerAbonos(pl);
+                    // Sesion > ParametrosListado ( Usuarios )
+                    ParametrosListado pl = (ParametrosListado) sesion.getAttribute(PARAMETROS_LISTADO_SESION);
+                    pl = pl != null ? pl : new ParametrosListado(BASE_DATOS, TABLA, usuario);
 
-          // Inyecta Datos Listado > JSP
-          request.setAttribute("abonos", abonos);
+                    // Campos de Listado > Parámetros Listado
+                    String[] camposListado = {"abonos.id", "proyectos.nombre", "usuarios.user"};
+                    pl.setFilterFields(new ArrayList<>(Arrays.asList(camposListado)));
 
-          // Inyecta Parámetros Listado > JSP
-          request.setAttribute("filter-fld", pl.getFilterField());
-          request.setAttribute("filter-exp", pl.getFilterValue());
-          request.setAttribute("sort-fld", pl.getOrderField());
-          request.setAttribute("sort-dir", pl.getOrderProgress());
-          request.setAttribute("row-count", pl.getRowCount());
-          request.setAttribute("row-index", pl.getRowIndex());
-          request.setAttribute("rows-page", pl.getRowsPage());
+                    // Request + Filtro > Parámetros Listado
+                    UtilesGastos.definirFiltroListado(pl, request);
 
-          // JSP
-          page = "abonos/abono-listado";
-        } else {
-          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+                    // Request + Orden > Parámetros Listado
+                    UtilesGastos.definirOrdenListado(pl, request);
+
+                    // Request + Navegación > Parámetros Listado
+                    UtilesGastos.definirNavegacionListado(pl, request);
+
+                    // BD > Lista de Abonos
+                    List<Abono> abonos = abonoDAL.obtenerAbonos(pl);
+
+                    // Inyecta Datos Listado > JSP
+                    request.setAttribute("abonos", abonos);
+
+                    // Inyecta Parámetros Listado > JSP
+                    request.setAttribute(FILTRO_CAMPOS, pl.getFilterField());
+                    request.setAttribute(FILTRO_PATRON, pl.getFilterValue());
+                    request.setAttribute(ORDEN_CAMPO, pl.getOrderField());
+                    request.setAttribute(ORDEN_AVANCE, pl.getOrderAdvance());
+                    request.setAttribute(FILAS_TOTAL, pl.getRowCount());
+                    request.setAttribute(FILA_ACTUAL, pl.getRowIndex());
+                    request.setAttribute(FILAS_PAGINA, pl.getRowsPage());
+
+                    // JSP
+                    page = "abonos/abono-listado";
+
+                    // ParámetrosListado > Sesion
+                    sesion.setAttribute(PARAMETROS_LISTADO_SESION, pl);
+                } else {
+                    seleccionarMensaje(MSG_ACCESO_DENEGADO);
+                }
+            } else {
+                seleccionarMensaje(MSG_SESION_INVALIDA);
+            }
+        } catch (NumberFormatException | NullPointerException e) {
+            seleccionarMensaje(MSG_ERROR404);
         }
-      } else {
-        seleccionarMensaje(MSG_SESION_INVALIDA);
-      }
-    } catch (NumberFormatException | NullPointerException e) {
-      seleccionarMensaje(MSG_ERROR404);
-    }
 
-    // Redirección JSP
-    forward(page);
-  }
+        // Redirección JSP
+        forward(page);
+    }
 }

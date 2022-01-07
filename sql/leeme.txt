@@ -1,0 +1,5 @@
+Estructura de BD + Algunos datos de Ejemplo
+
+MariaDB en XAMPP 8
+
+Importar desde phpMyAdmin en XAMPP

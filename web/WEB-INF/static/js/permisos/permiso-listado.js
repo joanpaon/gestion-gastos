@@ -24,8 +24,8 @@ document.addEventListener("DOMContentLoaded", () => {
         btnPageDn.innerText = page;
 
         // Valor > Enlace
-        btnPageUp.setAttribute("href", "controller?cmd=perfil-permiso-listado&op=num&page=" + page);
-        btnPageDn.setAttribute("href", "controller?cmd=perfil-permiso-listado&op=num&page=" + page);
+        btnPageUp.setAttribute("href", "controller?cmd=permiso-listado&op=num&page=" + page);
+        btnPageDn.setAttribute("href", "controller?cmd=permiso-listado&op=num&page=" + page);
     });
 
     // Slider DOWN - Evento input
@@ -41,18 +41,18 @@ document.addEventListener("DOMContentLoaded", () => {
         btnPageDn.innerText = page;
 
         // Valor > Enlace
-        btnPageUp.setAttribute("href", "controller?cmd=perfil-permiso-listado&op=num&page=" + page);
-        btnPageDn.setAttribute("href", "controller?cmd=perfil-permiso-listado&op=num&page=" + page);
+        btnPageUp.setAttribute("href", "controller?cmd=permiso-listado&op=num&page=" + page);
+        btnPageDn.setAttribute("href", "controller?cmd=permiso-listado&op=num&page=" + page);
     });
 
     // Select UP - Evento Input
     lstRowsPageUp.addEventListener("input", () => {
-        window.location.href = "controller?cmd=perfil-permiso-listado&rows-page=" + lstRowsPageUp.value;
+        window.location.href = "controller?cmd=permiso-listado&rows-page=" + lstRowsPageUp.value;
     });
 
     // Select DOWN - Evento Input
     lstRowsPageDn.addEventListener("input", () => {
-        window.location.href = "controller?cmd=perfil-permiso-listado&rows-page=" + lstRowsPageDn.value;
+        window.location.href = "controller?cmd=permiso-listado&rows-page=" + lstRowsPageDn.value;
     });
 
     // Texto Filtro UP - Evento Input
@@ -67,11 +67,11 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Botón Filtro UP - Evento Click
     btnFilterUp.addEventListener("click", () => {
-        window.location.href = "controller?cmd=perfil-permiso-listado&filter-exp=" + txfFilterUp.value;
+        window.location.href = "controller?cmd=permiso-listado&filter-exp=" + txfFilterUp.value;
     });    
     
     // Botón Filtro DOWN - Evento Click
     btnFilterDn.addEventListener("click", () => {
-        window.location.href = "controller?cmd=perfil-permiso-listado&filter-exp=" + txfFilterDn.value;
+        window.location.href = "controller?cmd=permiso-listado&filter-exp=" + txfFilterDn.value;
     });    
 });

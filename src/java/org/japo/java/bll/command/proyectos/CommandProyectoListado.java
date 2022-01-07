@@ -16,14 +16,15 @@
 package org.japo.java.bll.command.proyectos;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
 import org.japo.java.bll.command.Command;
 import org.japo.java.dal.ProyectoDAL;
-import org.japo.java.dal.UsuarioDAL;
-import org.japo.java.entities.AtributosLista;
+import org.japo.java.entities.ParametrosListado;
 import org.japo.java.entities.Proyecto;
 import org.japo.java.entities.Usuario;
 import org.japo.java.libraries.UtilesGastos;
@@ -34,95 +35,102 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class CommandProyectoListado extends Command {
 
-  @Override
-  public void process() throws ServletException, IOException {
-    // JSP
-    String page = "messages/message";
+    // Constantes Referenciales
+    private static final String BASE_DATOS = "gestion_gastos";
+    private static final String TABLA = "proyectos";
 
-    try {
-      // Sesión
-      HttpSession sesion = request.getSession(false);
+    // Constantes de Atributos - Filtro
+    private static final String FILTRO_CAMPOS = "filter-fld";
+    private static final String FILTRO_PATRON = "filter-exp";
 
-      // Validar Sesión
-      if (!UtilesGastos.validarSesion(sesion)) {
-        seleccionarMensaje(MSG_SESION_INVALIDA);
-      } else {
-        // Capas de Negocio
-        AdminBLL adminBLL = new AdminBLL(sesion);
+    // Constantes de Atributos - Ordenación
+    private static final String ORDEN_CAMPO = "sort-fld";
+    private static final String ORDEN_AVANCE = "sort-dir";
 
-        // Capas de Datos
-        ProyectoDAL proyectoDAL = new ProyectoDAL(sesion);
-        UsuarioDAL usuarioDAL = new UsuarioDAL(sesion);
+    // Constantes de Atributos - Paginación
+    private static final String FILAS_TOTAL = "row-count";
+    private static final String FILA_ACTUAL = "row-index";
+    private static final String FILAS_PAGINA = "rows-page";
 
-        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
-          // Sesión > Usuario
-          Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+    // Lista de Campos a Listar - Ordenación
+    private static final String[] CAMPOS_LISTADO
+            = {"proyectos.id", "proyectos.nombre", "usuarios.user", "cuotas.nombre"};
 
-          // Atributos de Lista
-          AtributosLista al = new AtributosLista("gestion_gastos", "proyectos", usuario);
+    // Atributo ParámetrosListado - Sesión
+    private static final String PARAMETROS_LISTADO_SESION
+            = "parametros-listado-" + TABLA;
 
-          // Request > ID Objetivo > Entidad Objetivo
-          int objetivoId;
-          try {
-            objetivoId = Integer.parseInt(request.getParameter("objetivo-id"));
-          } catch (NumberFormatException | NullPointerException e) {
-            objetivoId = 0;
-          }
-          
-          // Request > ID Objetivo > Entidad Objetivo
-          Usuario objetivo = usuarioDAL.obtenerUsuario(objetivoId);
-          
-          // Entidad Objetivo > Atributos de Lista
-          al.setObjetivo(objetivo);
-          
-          // Filtro > Atributos de Lista
-          UtilesGastos.definirListaFiltro(al, request);
+    // Redirección Página JSP Proceso
+    private static final String PAGINA_PROCESO = "proyectos/proyecto-listado";
 
-          // Ordenación > Atributos de Lista
-          UtilesGastos.definirListaOrden(al, request);
+    @Override
+    public void process() throws ServletException, IOException {
+        // JSP
+        String page = "messages/message";
 
-          // Total de Filas > Atributos de Lista
-          proyectoDAL.contarFilas(al);
+        try {
+            // Sesión
+            HttpSession sesion = request.getSession(false);
 
-          // Navegación > Atributos de Lista
-          UtilesGastos.definirListaPagina(al, request);
+            // Validar Sesión
+            if (!UtilesGastos.validarSesion(sesion)) {
+                seleccionarMensaje(MSG_SESION_INVALIDA);
+            } else {
+                // Capas de Negocio
+                AdminBLL adminBLL = new AdminBLL(sesion);
 
-          // BD > Lista de Proyectos
-          List<Proyecto> proyectos = proyectoDAL.obtenerProyectos(al);
+                // Capas de Datos
+                ProyectoDAL proyectoDAL = new ProyectoDAL(sesion);
 
-          // BD > Lista de Usuarios
-          List<Usuario> usuarios = usuarioDAL.obtenerUsuarios();
+                if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+                    // Sesión > Usuario
+                    Usuario usuario = (Usuario) sesion.getAttribute("usuario");
 
-          // Inyecta Datos Listado > JSP
-          request.setAttribute("proyectos", proyectos);
-          request.setAttribute("objetivo", objetivo);
-          request.setAttribute("usuarios", usuarios);
+                    // Sesion > ParametrosListado ( Usuarios )
+                    ParametrosListado pl = (ParametrosListado) sesion.getAttribute(PARAMETROS_LISTADO_SESION);
+                    pl = pl != null ? pl : new ParametrosListado(BASE_DATOS, TABLA, usuario);
 
-          // Inyecta Filtro > JSP
-          request.setAttribute("filtro-campos", al.getFiltro().getCampos());
-          request.setAttribute("filtro-patron", al.getFiltro().getPatron());
-          request.setAttribute("filtro-exacto", al.getFiltro().isExacto());
+                    // Campos de Listado > Parámetros Listado
+                    pl.setFilterFields(new ArrayList<>(Arrays.asList(CAMPOS_LISTADO)));
 
-          // Inyecta Orden > JSP
-          request.setAttribute("orden-campo", al.getOrden().getCampo());
-          request.setAttribute("orden-avance", al.getOrden().getAvance());
+                    // Request + Filtro > Parámetros Listado
+                    UtilesGastos.definirFiltroListado(pl, request);
 
-          // Inyecta Pagina > JSP
-          request.setAttribute("pagina-indice", al.getPagina().getIndice());
-          request.setAttribute("pagina-filas-pagina", al.getPagina().getFilasPagina());
-          request.setAttribute("pagina-filas-total", al.getPagina().getFilasTotal());
+                    // Request + Orden > Parámetros Listado
+                    UtilesGastos.definirOrdenListado(pl, request);
 
-          // JSP
-          page = "proyectos/proyecto-listado";
-        } else {
-          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+                    // Request + Navegación > Parámetros Listado
+                    UtilesGastos.definirNavegacionListado(pl, request);
+
+                    // BD > Lista de Proyectos
+                    List<Proyecto> proyectos = proyectoDAL.obtenerProyectos(pl);
+
+                    // Inyecta Datos > JSP
+                    request.setAttribute("proyectos", proyectos);
+
+                    // Inyecta Parámetros Listado > JSP
+                    request.setAttribute(FILTRO_CAMPOS, pl.getFilterField());
+                    request.setAttribute(FILTRO_PATRON, pl.getFilterValue());
+                    request.setAttribute(ORDEN_CAMPO, pl.getOrderField());
+                    request.setAttribute(ORDEN_AVANCE, pl.getOrderAdvance());
+                    request.setAttribute(FILAS_TOTAL, pl.getRowCount());
+                    request.setAttribute(FILA_ACTUAL, pl.getRowIndex());
+                    request.setAttribute(FILAS_PAGINA, pl.getRowsPage());
+
+                    // JSP
+                    page = PAGINA_PROCESO;
+
+                    // ParámetrosListado > Sesion
+                    sesion.setAttribute(PARAMETROS_LISTADO_SESION, pl);
+                } else {
+                    seleccionarMensaje(MSG_ACCESO_DENEGADO);
+                }
+            }
+        } catch (NumberFormatException | NullPointerException e) {
+            seleccionarMensaje(MSG_ERROR404);
         }
-      }
-    } catch (NumberFormatException | NullPointerException e) {
-      seleccionarMensaje(MSG_ERROR404);
-    }
 
-    // Redirección JSP
-    forward(page);
-  }
+        // Redirección JSP
+        forward(page);
+    }
 }

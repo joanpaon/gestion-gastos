@@ -28,6 +28,8 @@ import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 import org.japo.java.entities.Gasto;
 import org.japo.java.entities.ParametrosListado;
+import org.japo.java.entities.Perfil;
+import org.japo.java.libraries.UtilesGastos;
 
 /**
  *
@@ -35,307 +37,361 @@ import org.japo.java.entities.ParametrosListado;
  */
 public final class GastoDAL extends AbstractDAL {
 
-  private final HttpSession sesion;
+    private final HttpSession sesion;
 
-  public GastoDAL(HttpSession sesion) {
-    this.sesion = sesion;
-  }
-
-  public List<Gasto> obtenerGastos() {
-    return obtenerGastos(new ParametrosListado("gestion_gastos", "gastos"));
-  }
-
-  public Gasto obtenerGasto(int id) {
-    // Parámetros de Listado - POR DEFECTO
-    ParametrosListado pl = new ParametrosListado("gestion_gastos", "gastos");
-    pl.setFilterFields(Arrays.asList("id"));
-    pl.setFilterValue(id + "");
-    pl.setFilterStrict(true);
-
-    // Lista de Usuarios
-    List<Gasto> gastos = obtenerGastos(pl);
-
-    // Referencia de Entidad
-    return gastos.isEmpty() ? null : gastos.get(0);
-  }
-
-  public boolean insertarGasto(Gasto gasto) {
-    // SQL
-    final String SQL = generarSQLInsert();
-
-    // Número de registros afectados
-    int numReg = 0;
-
-    // Obtención del Contexto
-    try {
-      // Contexto Inicial > DataSource
-      DataSource ds = obtenerDataSource(new ParametrosListado("gestion_gastos", "gastos"));
-
-      try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(SQL)) {
-        // Parametrizar Sentencia
-        parametrizarInsert(ps, gasto);
-
-        // Ejecutar Sentencia
-        numReg = ps.executeUpdate();
-      }
-    } catch (NamingException | SQLException ex) {
-      System.out.println("ERROR: " + ex.getMessage());
+    public GastoDAL(HttpSession sesion) {
+        this.sesion = sesion;
     }
 
-    // Retorno: true | false
-    return numReg == 1;
-  }
-
-  public boolean borrarGasto(int id) {
-    // SQL
-    final String SQL = "DELETE FROM gastos WHERE id=?";
-
-    // Número de registros afectados
-    int numReg = 0;
-
-    try {
-      // Contexto Inicial > DataSource
-      DataSource ds = obtenerDataSource(new ParametrosListado("gestion_gastos", "gastos"));
-
-      try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(SQL)) {
-        // Parametrizar Sentencia
-        ps.setInt(1, id);
-
-        // Ejecutar Sentencia
-        numReg = ps.executeUpdate();
-      }
-    } catch (NamingException | SQLException ex) {
-      System.out.println("ERROR: " + ex.getMessage());
+    public List<Gasto> obtenerGastos() {
+        return obtenerGastos(new ParametrosListado("gestion_gastos", "gastos"));
     }
 
-    // Retorno: true | false
-    return numReg == 1;
-  }
+    public Gasto obtenerGasto(int id) {
+        // Parámetros de Listado - POR DEFECTO
+        ParametrosListado pl = new ParametrosListado("gestion_gastos", "gastos");
+        pl.setFilterFields(Arrays.asList("id"));
+        pl.setFilterValue(id + "");
+        pl.setFilterStrict(true);
 
-  public boolean modificarGasto(Gasto gasto) {
-    // SQL
-    final String SQL = generarSQLUpdate();
+        // Lista de Usuarios
+        List<Gasto> gastos = obtenerGastos(pl);
 
-    // Número de Registros Afectados
-    int numReg = 0;
-
-    try {
-      // Contexto Inicial > DataSource
-      DataSource ds = obtenerDataSource(new ParametrosListado("gestion_gastos", "gastos"));
-
-      try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(SQL)) {
-        // Parametrizar Sentencia
-        parametrizarUpdate(ps, gasto);
-
-        // Ejecutar Sentencia
-        numReg = ps.executeUpdate();
-      }
-    } catch (NamingException | SQLException ex) {
-      System.out.println("ERROR: " + ex.getMessage());
+        // Referencia de Entidad
+        return gastos.isEmpty() ? null : gastos.get(0);
     }
 
-    // Retorno: true | false
-    return numReg == 1;
-  }
+    public boolean insertarGasto(Gasto gasto) {
+        // SQL
+        final String SQL = generarSQLInsert();
 
-  public Long contarGastos(ParametrosListado pl) {
-    // Número de Filas
-    long filas = 0;
+        // Número de registros afectados
+        int numReg = 0;
 
-    // SQL
-    String sql = generarSQLComputo(pl);
+        // Obtención del Contexto
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(new ParametrosListado("gestion_gastos", "gastos"));
 
-    // Obtención del Contexto
-    try {
-      // Contexto Inicial > DataSource
-      DataSource ds = obtenerDataSource(pl);
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(SQL)) {
+                // Parametrizar Sentencia
+                parametrizarInsert(ps, gasto);
 
-      try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(sql)) {
-        try (ResultSet rs = ps.executeQuery()) {
-          if (rs.next()) {
-            filas = rs.getLong(1);
-          }
+                // Ejecutar Sentencia
+                numReg = ps.executeUpdate();
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
         }
-      }
-    } catch (NamingException | SQLException ex) {
-      System.out.println("ERROR: " + ex.getMessage());
+
+        // Retorno: true | false
+        return numReg == 1;
     }
 
-    // Retorno Filas
-    return filas;
-  }
+    public boolean borrarGasto(int id) {
+        // SQL
+        final String SQL = "DELETE FROM gastos WHERE id=?";
 
-  public List<Gasto> obtenerGastos(ParametrosListado pl) {
-    // SQL
-    String sql = generarSQLListado(pl);
+        // Número de registros afectados
+        int numReg = 0;
 
-    // Lista Vacía
-    List<Gasto> gastos = new ArrayList<>();
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(new ParametrosListado("gestion_gastos", "gastos"));
 
-    // Obtención del Contexto
-    try {
-      // Contexto Inicial > DataSource
-      DataSource ds = obtenerDataSource(pl);
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(SQL)) {
+                // Parametrizar Sentencia
+                ps.setInt(1, id);
 
-      try (
-              Connection conn = ds.getConnection();
-              PreparedStatement ps = conn.prepareStatement(sql)) {
-        gastos = exportarListaGastos(ps);
-      }
-    } catch (NamingException | SQLException ex) {
-      System.out.println("ERROR: " + ex.getMessage());
+                // Ejecutar Sentencia
+                numReg = ps.executeUpdate();
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno: true | false
+        return numReg == 1;
     }
 
-    // Retorno Lista
-    return gastos;
-  }
+    public boolean modificarGasto(Gasto gasto) {
+        // SQL
+        final String SQL = generarSQLUpdate();
 
-  private List<Gasto> exportarListaGastos(PreparedStatement ps) throws SQLException {
-    // Lista 
-    List<Gasto> lista = new ArrayList<>();
+        // Número de Registros Afectados
+        int numReg = 0;
 
-    // BD > Lista de Entidades
-    try (ResultSet rs = ps.executeQuery()) {
-      while (rs.next()) {
-        // Campos > Entidad
-        Gasto data = exportarGasto(rs);
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(new ParametrosListado("gestion_gastos", "gastos"));
 
-        // Entidad > Lista
-        lista.add(data);
-      }
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(SQL)) {
+                // Parametrizar Sentencia
+                parametrizarUpdate(ps, gasto);
+
+                // Ejecutar Sentencia
+                numReg = ps.executeUpdate();
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno: true | false
+        return numReg == 1;
     }
 
-    // Retorno: Lista de Gastos
-    return lista;
-  }
+    public Long contarGastos(ParametrosListado pl) {
+        // Número de Filas
+        long filas = 0;
 
-  private Gasto exportarGasto(ResultSet rs) throws SQLException {
-    // Registro Actual > Campos
-    int id = rs.getInt("id");
-    int abonoID = rs.getInt("abono_id");
-    String abonoInfo = rs.getString("abono_info");
-    double importe = rs.getDouble("importe");
-    String info = rs.getString("info");
-    int partidaID = rs.getInt("partida_id");
-    String partidaInfo = rs.getString("partida_info");
-    String recibo = rs.getString("recibo");
-    int status = rs.getInt("status");
-    String data = rs.getString("data");
-    Date createdAt = rs.getDate("created_at");
-    Date updatedAt = rs.getDate("updated_at");
+        // SQL
+        String sql = generarSQLComputo(pl);
 
-    // Retorno: Campos > Entidad
-    return new Gasto(id, abonoID, abonoInfo, importe,
-            info, partidaID, partidaInfo, recibo,
-            status, data, createdAt, updatedAt);
-  }
+        // Obtención del Contexto
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(pl);
 
-  public String generarSQLSelect() {
-    return ""
-            + "SELECT "
-            + "gastos.id AS id, "
-            + "gastos.abono AS abono_id, "
-            + "abonos.info AS abono_info, "
-            + "gastos.importe AS importe, "
-            + "gastos.info AS info, "
-            + "gastos.partida AS partida_id, "
-            + "partidas.nombre AS partida_info, "
-            + "gastos.recibo AS recibo, "
-            + "gastos.status AS status, "
-            + "gastos.data AS data, "
-            + "gastos.created_at AS created_at, "
-            + "gastos.updated_at AS updated_at "
-            + "FROM "
-            + "gastos "
-            + "INNER JOIN "
-            + "abonos ON abonos.id = gastos.abono "
-            + "INNER JOIN "
-            + "partidas ON partidas.id = gastos.partida";
-  }
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        filas = rs.getLong(1);
+                    }
+                }
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
 
-  public String generarSQLSelectComputo() {
-    return ""
-            + "SELECT "
-            + "COUNT(*) "
-            + "FROM "
-            + "gastos "
-            + "INNER JOIN "
-            + "abonos ON gastos.abono = abonos.id";
-  }
+        // Retorno Filas
+        return filas;
+    }
 
-  public String generarSQLInsert() {
-    return ""
-            + "INSERT INTO "
-            + "gastos "
-            + "("
-            + "abono, importe, info, partida, recibo, "
-            + "status, data, created_at, updated_at"
-            + ") "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-  }
+    public List<Gasto> obtenerGastos(ParametrosListado pl) {
+        // Número de Usuarios > Parámetro Listado
+        pl.setRowCount(contarGastos(pl));
 
-  public String generarSQLUpdate() {
-    return ""
-            + "UPDATE "
-            + "gastos "
-            + "SET "
-            + "abono=?, importe=?, info=?, partida=?, recibo=?, "
-            + "status=?, data=?, created_at=?, updated_at=? "
-            + "WHERE id=?";
-  }
+        // Navegación > Parametros listado
+        UtilesGastos.definirIndiceListado(pl);
 
-  private String generarSQLListado(ParametrosListado pl) {
-    // SQL Parciales
-    String select = generarSQLSelect();
-    String where = generarSQLWhere(pl);
-    String order = generarSQLOrder(pl);
-    String limit = generarSQLLimit(pl);
+        // SQL
+        String sql = generarSQLListado(pl);
 
-    // SQL Completo: SELECT + WHERE + ORDER + LIMIT
-    return String.format("%s%s%s%s", select, where, order, limit);
-  }
+        // Lista Vacía
+        List<Gasto> gastos = new ArrayList<>();
 
-  protected String generarSQLComputo(ParametrosListado pl) {
-    // SQL Parciales
-    String select = generarSQLSelectComputo();
-    String where = generarSQLWhere(pl);
+        // Obtención del Contexto
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(pl);
 
-    // SQL Completo: SELECT + WHERE + ORDER + LIMIT
-    return String.format("%s%s", select, where);
-  }
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                gastos = exportarListaGastos(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
 
-  private void parametrizarInsert(PreparedStatement ps, Gasto gasto)
-          throws SQLException {
-    ps.setInt(1, gasto.getAbonoID());
-    ps.setDouble(2, gasto.getImporte());
-    ps.setString(3, gasto.getInfo());
-    ps.setInt(4, gasto.getPartidaID());
-    ps.setString(5, gasto.getRecibo());
-    ps.setInt(6, gasto.getStatus());
-    ps.setString(7, gasto.getData());
-    ps.setDate(8, new java.sql.Date(gasto.getCreatedAt().getTime()));
-    ps.setDate(9, new java.sql.Date(gasto.getUpdatedAt().getTime()));
-  }
+        // Retorno Lista
+        return gastos;
+    }
 
-  private void parametrizarUpdate(PreparedStatement ps, Gasto gasto)
-          throws SQLException {
-    ps.setInt(1, gasto.getAbonoID());
-    ps.setDouble(2, gasto.getImporte());
-    ps.setString(3, gasto.getInfo());
-    ps.setInt(4, gasto.getPartidaID());
-    ps.setString(5, gasto.getRecibo());
-    ps.setInt(6, gasto.getStatus());
-    ps.setString(7, gasto.getData());
-    ps.setDate(8, new java.sql.Date(gasto.getCreatedAt().getTime()));
-    ps.setDate(9, new java.sql.Date(gasto.getUpdatedAt().getTime()));
-    ps.setInt(10, gasto.getId());
-  }
+    private List<Gasto> exportarListaGastos(PreparedStatement ps) throws SQLException {
+        // Lista 
+        List<Gasto> lista = new ArrayList<>();
+
+        // BD > Lista de Entidades
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                // Campos > Entidad
+                Gasto data = exportarGasto(rs);
+
+                // Entidad > Lista
+                lista.add(data);
+            }
+        }
+
+        // Retorno: Lista de Gastos
+        return lista;
+    }
+
+    private Gasto exportarGasto(ResultSet rs) throws SQLException {
+        // Registro Actual > Campos
+        int id = rs.getInt("id");
+        int abonoID = rs.getInt("abono_id");
+        String abonoInfo = rs.getString("abono_info");
+        double importe = rs.getDouble("importe");
+        String info = rs.getString("info");
+        int partidaID = rs.getInt("partida_id");
+        String partidaInfo = rs.getString("partida_info");
+        String recibo = rs.getString("recibo");
+        int status = rs.getInt("status");
+        String data = rs.getString("data");
+        Date createdAt = rs.getDate("created_at");
+        Date updatedAt = rs.getDate("updated_at");
+
+        // Retorno: Campos > Entidad
+        return new Gasto(id, abonoID, abonoInfo, importe,
+                info, partidaID, partidaInfo, recibo,
+                status, data, createdAt, updatedAt);
+    }
+
+    public String generarSQLSelect() {
+        return ""
+                + "SELECT "
+                + "gastos.id AS id, "
+                + "gastos.abono AS abono_id, "
+                + "abonos.info AS abono_info, "
+                + "gastos.importe AS importe, "
+                + "gastos.info AS info, "
+                + "gastos.partida AS partida_id, "
+                + "partidas.nombre AS partida_info, "
+                + "gastos.recibo AS recibo, "
+                + "gastos.status AS status, "
+                + "gastos.data AS data, "
+                + "gastos.created_at AS created_at, "
+                + "gastos.updated_at AS updated_at "
+                + "FROM "
+                + "gastos "
+                + "INNER JOIN "
+                + "abonos ON abonos.id = gastos.abono "
+                + "INNER JOIN "
+                + "partidas ON partidas.id = gastos.partida";
+    }
+
+    public String generarSQLSelectComputo() {
+        return ""
+                + "SELECT "
+                + "COUNT(*) "
+                + "FROM "
+                + "gastos "
+                + "INNER JOIN "
+                + "abonos ON gastos.abono = abonos.id";
+    }
+
+    public String generarSQLInsert() {
+        return ""
+                + "INSERT INTO "
+                + "gastos "
+                + "("
+                + "abono, importe, info, partida, recibo, "
+                + "status, data, created_at, updated_at"
+                + ") "
+                + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    }
+
+    public String generarSQLUpdate() {
+        return ""
+                + "UPDATE "
+                + "gastos "
+                + "SET "
+                + "abono=?, importe=?, info=?, partida=?, recibo=?, "
+                + "status=?, data=?, created_at=?, updated_at=? "
+                + "WHERE id=?";
+    }
+
+    private String generarSQLListado(ParametrosListado pl) {
+        // SQL Parciales
+        String select = generarSQLSelect();
+        String where = generarSQLWhere(pl);
+        String order = generarSQLOrder(pl);
+        String limit = generarSQLLimit(pl);
+
+        // SQL Completo: SELECT + WHERE + ORDER + LIMIT
+        return String.format("%s%s%s%s", select, where, order, limit);
+    }
+
+    protected String generarSQLComputo(ParametrosListado pl) {
+        // SQL Parciales
+        String select = generarSQLSelectComputo();
+        String where = generarSQLWhere(pl);
+
+        // SQL Completo: SELECT + WHERE + ORDER + LIMIT
+        return String.format("%s%s", select, where);
+    }
+
+    private void parametrizarInsert(PreparedStatement ps, Gasto gasto)
+            throws SQLException {
+        ps.setInt(1, gasto.getAbonoID());
+        ps.setDouble(2, gasto.getImporte());
+        ps.setString(3, gasto.getInfo());
+        ps.setInt(4, gasto.getPartidaID());
+        ps.setString(5, gasto.getRecibo());
+        ps.setInt(6, gasto.getStatus());
+        ps.setString(7, gasto.getData());
+        ps.setDate(8, new java.sql.Date(gasto.getCreatedAt().getTime()));
+        ps.setDate(9, new java.sql.Date(gasto.getUpdatedAt().getTime()));
+    }
+
+    private void parametrizarUpdate(PreparedStatement ps, Gasto gasto)
+            throws SQLException {
+        ps.setInt(1, gasto.getAbonoID());
+        ps.setDouble(2, gasto.getImporte());
+        ps.setString(3, gasto.getInfo());
+        ps.setInt(4, gasto.getPartidaID());
+        ps.setString(5, gasto.getRecibo());
+        ps.setInt(6, gasto.getStatus());
+        ps.setString(7, gasto.getData());
+        ps.setDate(8, new java.sql.Date(gasto.getCreatedAt().getTime()));
+        ps.setDate(9, new java.sql.Date(gasto.getUpdatedAt().getTime()));
+        ps.setInt(10, gasto.getId());
+    }
+
+    @Override
+    protected String generarSQLWhere(ParametrosListado pl) {
+        // SQL
+        String sql;
+
+        // SQL Perfil
+        String sqlPrf;
+        switch (pl.getUser().getPerfilID()) {
+            case Perfil.DEVEL:
+                sqlPrf = "";
+                break;
+            case Perfil.ADMIN:
+                sqlPrf = "";
+                break;
+            case Perfil.BASIC:
+                sqlPrf = generarSQLPerfil(pl);
+                break;
+            default:
+                sqlPrf = generarSQLPerfil(pl);
+        }
+
+        // SQL Filtro
+        String sqlFtr = generarSQLFilter(pl);
+
+        // Procesar SQL
+        if (sqlPrf.isBlank()) {
+            sql = sqlFtr.isBlank() ? "" : " WHERE " + sqlFtr;
+        } else if (sqlFtr.isBlank()) {
+            sql = " WHERE " + sqlPrf;
+        } else {
+            sql = " WHERE " + sqlPrf + " AND (" + sqlFtr + ")";
+        }
+
+        // Retorno: SQL
+        return sql;
+    }
+
+    private String generarSQLPerfil(ParametrosListado pl) {
+        // Retorno: SQL
+        return ""
+                + "gastos.abono IN "
+                + "("
+                + "SELECT abonos.id "
+                + "FROM abonos "
+                + "WHERE abonos.usuario=" + pl.getUser().getId()
+                + ")";
+    }
 }

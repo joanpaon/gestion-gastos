@@ -15,14 +15,11 @@ main th:nth-child(2), td:nth-child(2) {
 /* --- */
 
 main th:nth-child(3), td:nth-child(3) {
-  width: 15rem;
-  width: auto;
+  width: 4rem;
+  /*width: auto;*/
 
-  text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  text-align: center;
 }
-
 
 /* --- */
 

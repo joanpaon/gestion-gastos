@@ -18,6 +18,8 @@ package org.japo.java.bll.command.permisos;
 import org.japo.java.bll.command.Command;
 import javax.servlet.ServletException;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.servlet.http.HttpSession;
 import org.japo.java.bll.AdminBLL;
@@ -33,70 +35,103 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class CommandPermisoListado extends Command {
 
-  @Override
-  public void process() throws ServletException, IOException {
-    // JSP
-    String page = "messages/message";
+    // Constantes Referenciales
+    private static final String BASE_DATOS = "gestion_gastos";
+    private static final String TABLA = "permisos";
 
-    try {
-      // Sesión
-      HttpSession sesion = request.getSession(false);
+    // Constantes de Atributos - Filtro
+    private static final String FILTRO_CAMPOS = "filter-fld";
+    private static final String FILTRO_PATRON = "filter-exp";
 
-      // Validar Sesión
-      if (!UtilesGastos.validarSesion(sesion)) {
-        seleccionarMensaje(MSG_SESION_INVALIDA);
-      } else {
-        // Capas de Negocio
-        AdminBLL adminBLL = new AdminBLL(sesion);
+    // Constantes de Atributos - Ordenación
+    private static final String ORDEN_CAMPO = "sort-fld";
+    private static final String ORDEN_AVANCE = "sort-dir";
 
-        // Capas de Datos
-        PermisoDAL permisoDAL = new PermisoDAL(sesion);
+    // Constantes de Atributos - Paginación
+    private static final String FILAS_TOTAL = "row-count";
+    private static final String FILA_ACTUAL = "row-index";
+    private static final String FILAS_PAGINA = "rows-page";
 
-        if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
-          // Sesión > Usuario
-          Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+    // Lista de Campos a Listar - Ordenación
+    private static final String[] CAMPOS_LISTADO
+            = {"permisos.id", "procesos.nombre", "perfiles.nombre"};
 
-          // Parámetros Listado
-          ParametrosListado pl = new ParametrosListado("gestion_gastos", "permisos", usuario);
+    // Atributo ParámetrosListado - Sesión
+    private static final String PARAMETROS_LISTADO_SESION
+            = "parametros-listado-" + TABLA;
 
-          // Filtro > Parámetros Listado
-          UtilesGastos.definirListaFiltro(pl, request);
+    // Redirección Página JSP Proceso
+    private static final String PAGINA_PROCESO = "permisos/permiso-listado";
 
-          // Ordenación > Parámetros Listado
-          UtilesGastos.definirListaOrden(pl, request);
 
-          // Total de Filas > Parámetros Listado
-          pl.setRowCount(permisoDAL.contarPermisos(pl));
+    @Override
+    public void process() throws ServletException, IOException {
+        // JSP
+        String page = "messages/message";
 
-          // Navegación > Parámetros Listado
-          UtilesGastos.definirListaPagina(pl, request);
+        try {
+            // Sesión
+            HttpSession sesion = request.getSession(false);
 
-          // BD > Lista de Permisos de Perfil
-          List<Permiso> permisos = permisoDAL.obtenerPermisos(pl);
+            // Validar Sesión
+            if (!UtilesGastos.validarSesion(sesion)) {
+                seleccionarMensaje(MSG_SESION_INVALIDA);
+            } else {
+                // Capas de Negocio
+                AdminBLL adminBLL = new AdminBLL(sesion);
 
-          // Inyecta Datos Listado > JSP
-          request.setAttribute("permisos", permisos);
+                // Capas de Datos
+                PermisoDAL permisoDAL = new PermisoDAL(sesion);
 
-          // Inyecta Parámetros Listado > JSP
-          request.setAttribute("filter-fld", pl.getFilterField());
-          request.setAttribute("filter-exp", pl.getFilterValue());
-          request.setAttribute("sort-fld", pl.getOrderField());
-          request.setAttribute("sort-dir", pl.getOrderProgress());
-          request.setAttribute("row-count", pl.getRowCount());
-          request.setAttribute("row-index", pl.getRowIndex());
-          request.setAttribute("rows-page", pl.getRowsPage());
+                if (adminBLL.validarAccesoComando(getClass().getSimpleName())) {
+                    // Sesión > Usuario
+                    Usuario usuario = (Usuario) sesion.getAttribute("usuario");
 
-          // JSP
-          page = "permisos/permiso-listado";
-        } else {
-          seleccionarMensaje(MSG_ACCESO_DENEGADO);
+                    // Sesion > ParametrosListado ( Usuarios )
+                    ParametrosListado pl = (ParametrosListado) sesion.getAttribute(PARAMETROS_LISTADO_SESION);
+                    pl = pl != null ? pl : new ParametrosListado(BASE_DATOS, TABLA, usuario);
+
+                    // Campos de Listado > Parámetros Listado
+                    pl.setFilterFields(new ArrayList<>(Arrays.asList(CAMPOS_LISTADO)));
+
+                    // Request + Filtro > Parámetros Listado
+                    UtilesGastos.definirFiltroListado(pl, request);
+
+                    // Request + Orden > Parámetros Listado
+                    UtilesGastos.definirOrdenListado(pl, request);
+
+                    // Request + Navegación > Parámetros Listado
+                    UtilesGastos.definirNavegacionListado(pl, request);
+
+                    // BD > Lista de Permisos de Perfil
+                    List<Permiso> permisos = permisoDAL.obtenerPermisos(pl);
+
+                    // Inyecta Datos Listado > JSP
+                    request.setAttribute("permisos", permisos);
+
+                    // Inyecta Parámetros Listado > JSP
+                    request.setAttribute(FILTRO_CAMPOS, pl.getFilterField());
+                    request.setAttribute(FILTRO_PATRON, pl.getFilterValue());
+                    request.setAttribute(ORDEN_CAMPO, pl.getOrderField());
+                    request.setAttribute(ORDEN_AVANCE, pl.getOrderAdvance());
+                    request.setAttribute(FILAS_TOTAL, pl.getRowCount());
+                    request.setAttribute(FILA_ACTUAL, pl.getRowIndex());
+                    request.setAttribute(FILAS_PAGINA, pl.getRowsPage());
+
+                    // JSP
+                    page = PAGINA_PROCESO;
+
+                    // ParámetrosListado > Sesion
+                    sesion.setAttribute(PARAMETROS_LISTADO_SESION, pl);
+                } else {
+                    seleccionarMensaje(MSG_ACCESO_DENEGADO);
+                }
+            }
+        } catch (NumberFormatException | NullPointerException e) {
+            seleccionarMensaje(MSG_ERROR404);
         }
-      }
-    } catch (NumberFormatException | NullPointerException e) {
-        seleccionarMensaje(MSG_ERROR404);
-    }
 
-    // Redirección JSP
-    forward(page);
-  }
+        // Redirección JSP
+        forward(page);
+    }
 }
