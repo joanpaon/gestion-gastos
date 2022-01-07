@@ -64,7 +64,7 @@ public final class CommandAbonoInsercion extends Command {
           // Formulario Captura Datos
           if (op == null || op.equals("captura")) {
             // BD > Lista de Proyectos
-            List<Proyecto> proyectos = proyectoDAL.obtenerProyectos();
+            List<Proyecto> proyectos = proyectoDAL.obtenerProyectos(false);
 
             // BD > Lista de Usuarios
             List<Usuario> usuarios = usuarioDAL.obtenerUsuarios();

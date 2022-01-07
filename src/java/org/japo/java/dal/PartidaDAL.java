@@ -20,7 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.naming.NamingException;
@@ -37,39 +36,60 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class PartidaDAL extends AbstractDAL {
 
-    // Constantes
-    private final String TABLA = "partidas";
-
-    // Parámetros de Listado
-    private final ParametrosListado PL;
-
-    // Campos
-    private final HttpSession sesion;
+    // Usuario
+    private final Usuario usuario;
 
     public PartidaDAL(HttpSession sesion) {
-        this.sesion = sesion;
-
-        // Sesión > Usuario
-        Usuario usuario = (Usuario) sesion.getAttribute("usuario");
-
-        // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, usuario);
+        usuario = (Usuario) sesion.getAttribute("usuario");
     }
 
     public List<Partida> obtenerPartidas() {
-        return obtenerPartidas(PL);
+        // SQL
+        String sql = generarSQLSelect();
+
+        // Lista Vacía
+        List<Partida> partidas = new ArrayList<>();
+
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                partidas = exportarListaPartidas(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
+        return partidas;
     }
 
     public Partida obtenerPartida(int id) {
-        // Parámetros de Listado
-        PL.setFilterFields(new ArrayList<>(Arrays.asList("id")));
-        PL.setFilterValue(id + "");
-        PL.setFilterStrict(true);
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlWhere = " WHERE partidas.id=" + id;
+        String sql = sqlSelect + sqlWhere;
 
-        // Lista de Partidas
-        List<Partida> partidas = obtenerPartidas(PL);
+        // Lista Vacía
+        List<Partida> partidas = new ArrayList<>();
 
-        // Referencia de Entidad
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                partidas = exportarListaPartidas(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
         return partidas.isEmpty() ? null : partidas.get(0);
     }
 
@@ -83,7 +103,7 @@ public final class PartidaDAL extends AbstractDAL {
         // Obtención del Contexto
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -111,7 +131,7 @@ public final class PartidaDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -139,7 +159,7 @@ public final class PartidaDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -167,7 +187,7 @@ public final class PartidaDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -201,7 +221,7 @@ public final class PartidaDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();

@@ -20,13 +20,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 import org.japo.java.entities.ParametrosListado;
+import org.japo.java.entities.Perfil;
 import org.japo.java.entities.Usuario;
 import org.japo.java.libraries.UtilesGastos;
 
@@ -36,52 +36,93 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class UsuarioDAL extends AbstractDAL {
 
-    // Constantes
-    private final String TABLA = "usuarios";
-
-    // Parámetros de Listado
-    private final ParametrosListado PL;
-
-    // Sesión
-    private final HttpSession sesion;
+    // Usuario
+    private final Usuario usuario;
 
     public UsuarioDAL(HttpSession sesion) {
-        this.sesion = sesion;
-
-        // Sesión > Usuario
-        Usuario usuario = (Usuario) sesion.getAttribute("usuario");
-
-        // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, usuario);
+        usuario = (Usuario) sesion.getAttribute("usuario");
     }
 
+    public List<Usuario> obtenerUsuarios(boolean perfilOK) {
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlProfile = generarSQLPerfil();
+        sqlProfile = sqlProfile.isBlank() ? "" : " WHERE " + sqlProfile;
+        String sql = sqlSelect + (perfilOK ? sqlProfile : "");
+
+        // Lista Vacía
+        List<Usuario> usuarios = new ArrayList<>();
+
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                usuarios = exportarListaUsuarios(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
+        return usuarios;
+    }
+    
     public List<Usuario> obtenerUsuarios() {
-        return obtenerUsuarios(PL);
+        return obtenerUsuarios(true);
     }
 
     public Usuario obtenerUsuario(int id) {
-        // Parámetros de Listado
-        PL.setFilterFields(new ArrayList<>(Arrays.asList("usuarios.id")));
-        PL.setFilterValue(id + "");
-        PL.setFilterStrict(true);
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlWhere = " WHERE usuarios.id=" + id;
+        String sql = sqlSelect + sqlWhere;
 
-        // Lista de Usuarios
-        List<Usuario> usuarios = obtenerUsuarios(PL);
+        // Lista Vacía
+        List<Usuario> usuarios = new ArrayList<>();
 
-        // Referencia de Entidad
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                usuarios = exportarListaUsuarios(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
         return usuarios.isEmpty() ? null : usuarios.get(0);
     }
 
     public Usuario obtenerUsuario(String user) {
-        PL.setFilterFields(new ArrayList<>(Arrays.asList("usuarios.user")));
-        PL.setFilterValue(user);
-        PL.setFilterStrict(true);
-        PL.setRowsPage(Long.MAX_VALUE);
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlWhere = " WHERE usuarios.user='" + user + "'";
+        String sql = sqlSelect + sqlWhere;
 
-        // Lista de Usuarios
-        List<Usuario> usuarios = obtenerUsuarios(PL);
+        // Lista Vacía
+        List<Usuario> usuarios = new ArrayList<>();
 
-        // Referencia de Entidad
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                usuarios = exportarListaUsuarios(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
         return usuarios.isEmpty() ? null : usuarios.get(0);
     }
 
@@ -95,10 +136,11 @@ public final class UsuarioDAL extends AbstractDAL {
         // Obtención del Contexto
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(SQL)) {
                 // Parametrizar Sentencia
                 parametrizarInsert(ps, usuario);
 
@@ -122,10 +164,11 @@ public final class UsuarioDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(SQL)) {
                 // Parametrizar Sentencia
                 ps.setInt(1, id);
 
@@ -149,10 +192,11 @@ public final class UsuarioDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
+                    Connection conn = ds.getConnection(); 
+                    PreparedStatement ps = conn.prepareStatement(SQL)) {
                 // Parametrizar Sentencia
                 parametrizarUpdate(ps, usuario);
 
@@ -176,7 +220,7 @@ public final class UsuarioDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -210,7 +254,7 @@ public final class UsuarioDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(pl);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -225,7 +269,8 @@ public final class UsuarioDAL extends AbstractDAL {
         return usuarios;
     }
 
-    private List<Usuario> exportarListaUsuarios(PreparedStatement ps) throws SQLException {
+    private List<Usuario> exportarListaUsuarios(PreparedStatement ps) 
+            throws SQLException {
         // Lista 
         List<Usuario> usuarios = new ArrayList<>();
 
@@ -233,10 +278,10 @@ public final class UsuarioDAL extends AbstractDAL {
         try (ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 // Campos > Entidad
-                Usuario usuario = exportarUsuario(rs);
+                Usuario _usuario = exportarUsuario(rs);
 
                 // Entidad > Lista
-                usuarios.add(usuario);
+                usuarios.add(_usuario);
             }
         }
 
@@ -369,5 +414,49 @@ public final class UsuarioDAL extends AbstractDAL {
         ps.setDate(9, new java.sql.Date(usuario.getCreatedAt().getTime()));
         ps.setDate(10, new java.sql.Date(usuario.getUpdatedAt().getTime()));
         ps.setInt(11, usuario.getId());
+    }
+
+    @Override
+    protected String generarSQLWhere(ParametrosListado pl) {
+        // SQL
+        String sql;
+
+        // SQL Perfil
+        String sqlPrf = generarSQLPerfil();
+
+        // SQL Filtro
+        String sqlFtr = generarSQLFilter(pl);
+
+        // Procesar SQL
+        if (sqlPrf.isBlank()) {
+            sql = sqlFtr.isBlank() ? "" : " WHERE " + sqlFtr;
+        } else if (sqlFtr.isBlank()) {
+            sql = " WHERE " + sqlPrf;
+        } else {
+            sql = " WHERE " + sqlPrf + " AND (" + sqlFtr + ")";
+        }
+
+        // Retorno: SQL
+        return sql;
+    }
+    
+    private String generarSQLPerfil() {
+        String sqlProfile;
+
+        switch (usuario.getPerfilID()) {
+            case Perfil.DEVEL:
+                sqlProfile = "";
+                break;
+            case Perfil.ADMIN:
+                sqlProfile = "";
+                break;
+            case Perfil.BASIC:
+                sqlProfile = "usuarios.id=" + usuario.getId();
+                break;
+            default:
+                sqlProfile = "usuarios.id=" + usuario.getId();
+        }
+        
+        return sqlProfile;
     }
 }

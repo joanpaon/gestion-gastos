@@ -5,14 +5,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 import org.japo.java.entities.Perfil;
-import org.japo.java.entities.Usuario;
 import org.japo.java.entities.ParametrosListado;
 import org.japo.java.libraries.UtilesGastos;
 
@@ -22,39 +20,56 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class PerfilDAL extends AbstractDAL {
 
-    // Constantes
-    private final String TABLA = "perfiles";
-
-    // Parámetros de Listado
-    private final ParametrosListado PL;
-
-    // Campos
-    private final HttpSession sesion;
-
     public PerfilDAL(HttpSession sesion) {
-        this.sesion = sesion;
-
-        // Sesión > Usuario
-        Usuario usuario = (Usuario) sesion.getAttribute("usuario");
-
-        // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, usuario);
     }
 
     public List<Perfil> obtenerPerfiles() {
-        return obtenerPerfiles(PL);
+        // SQL
+        String sql = generarSQLSelect();
+
+        // Lista Vacía
+        List<Perfil> perfiles = new ArrayList<>();
+
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                perfiles = exportarListaPerfiles(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
+        return perfiles;
     }
 
     public Perfil obtenerPerfil(int id) {
-        // Parámetros de Listado
-        PL.setFilterFields(new ArrayList<>(Arrays.asList("id")));
-        PL.setFilterValue(id + "");
-        PL.setFilterStrict(true);
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlWhere = " WHERE perfiles.id=" + id;
+        String sql = sqlSelect + sqlWhere;
 
-        // Lista de Proyectos
-        List<Perfil> perfiles = obtenerPerfiles(PL);
+        // Lista Vacía
+        List<Perfil> perfiles = new ArrayList<>();
 
-        // Referencia de Entidad
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                perfiles = exportarListaPerfiles(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
         return perfiles.isEmpty() ? null : perfiles.get(0);
     }
 
@@ -68,7 +83,7 @@ public final class PerfilDAL extends AbstractDAL {
         // Obtención del Contexto
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -96,7 +111,7 @@ public final class PerfilDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -124,7 +139,7 @@ public final class PerfilDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -153,7 +168,7 @@ public final class PerfilDAL extends AbstractDAL {
         // Obtención del Contexto
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();

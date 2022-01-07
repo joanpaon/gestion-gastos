@@ -5,7 +5,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.naming.NamingException;
@@ -13,7 +12,6 @@ import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 import org.japo.java.entities.ParametrosListado;
 import org.japo.java.entities.Proceso;
-import org.japo.java.entities.Usuario;
 import org.japo.java.libraries.UtilesGastos;
 
 /**
@@ -22,53 +20,82 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class ProcesoDAL extends AbstractDAL {
 
-    // Constantes
-    private final String TABLA = "procesos";
-
-    // Parámetros de Listado
-    private final ParametrosListado PL;
-
-    // Campos
-    private final HttpSession sesion;
-
     public ProcesoDAL(HttpSession sesion) {
-        this.sesion = sesion;
-
-        // Sesión > Usuario
-        Usuario usuario = (Usuario) sesion.getAttribute("usuario");
-
-        // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, usuario);
     }
 
     public List<Proceso> obtenerProcesos() {
-        return obtenerProcesos(PL);
+        // SQL
+        String sql = generarSQLSelect();
+
+        // Lista Vacía
+        List<Proceso> procesos = new ArrayList<>();
+
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                procesos = exportarListaProcesos(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
+        return procesos;
     }
 
     public Proceso obtenerProceso(int id) {
-        // Parámetros de Listado
-        PL.setFilterFields(new ArrayList<>(Arrays.asList("id")));
-        PL.setFilterValue(id + "");
-        PL.setFilterStrict(true);
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlWhere = " WHERE procesos.id=" + id;
+        String sql = sqlSelect + sqlWhere;
 
-        // Lista de Proyectos
-        List<Proceso> procesos = obtenerProcesos(PL);
+        // Lista Vacía
+        List<Proceso> procesos = new ArrayList<>();
 
-        // Referencia de Entidad
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                procesos = exportarListaProcesos(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
         return procesos.isEmpty() ? null : procesos.get(0);
     }
 
     public Proceso obtenerProceso(String nombre) {
-        // Parámetros de Listado
-        PL.setFilterFields(new ArrayList<>(Arrays.asList("nombre")));
-        PL.setFilterValue(nombre);
-        PL.setFilterStrict(true);
-        PL.setRowsPage(Long.MAX_VALUE);
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlWhere = " WHERE procesos.nombre='" + nombre + "'";
+        String sql = sqlSelect + sqlWhere;
 
-        // Lista de Proyectos
-        List<Proceso> procesos = obtenerProcesos(PL);
+        // Lista Vacía
+        List<Proceso> procesos = new ArrayList<>();
 
-        // Referencia de Entidad
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                procesos = exportarListaProcesos(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
         return procesos.isEmpty() ? null : procesos.get(0);
     }
 
@@ -82,10 +109,11 @@ public final class ProcesoDAL extends AbstractDAL {
         // Obtención del Contexto
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
+                    Connection conn = ds.getConnection(); 
+                    PreparedStatement ps = conn.prepareStatement(SQL)) {
                 // Parametrizar Sentencia
                 parametrizarInsert(ps, proceso);
 
@@ -109,10 +137,11 @@ public final class ProcesoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
+                    Connection conn = ds.getConnection(); 
+                    PreparedStatement ps = conn.prepareStatement(SQL)) {
                 // Parametrizar Sentencia
                 ps.setInt(1, id);
 
@@ -136,10 +165,11 @@ public final class ProcesoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
+                    Connection conn = ds.getConnection(); 
+                    PreparedStatement ps = conn.prepareStatement(SQL)) {
                 // Parametrizar Sentencia
                 parametrizarUpdate(ps, proceso);
 
@@ -163,10 +193,11 @@ public final class ProcesoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+                    Connection conn = ds.getConnection(); 
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         filas = rs.getLong(1);
@@ -196,10 +227,11 @@ public final class ProcesoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+                    Connection conn = ds.getConnection(); 
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
                 procesos = exportarListaProcesos(ps);
             }
         } catch (NamingException | SQLException ex) {

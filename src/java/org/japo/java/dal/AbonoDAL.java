@@ -20,7 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.naming.NamingException;
@@ -38,51 +37,93 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class AbonoDAL extends AbstractDAL {
 
-    // Constantes
-    private final String TABLA = "abonos";
-
-    // Parámetros de Listado
-    private final ParametrosListado PL;
-
-    // Campos
-    private final HttpSession sesion;
+    // Usuario
+    private final Usuario usuario;
 
     public AbonoDAL(HttpSession sesion) {
-        this.sesion = sesion;
+        usuario = (Usuario) sesion.getAttribute("usuario");
+    }
 
-        // Sesión > Usuario
-        Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+    public List<Abono> obtenerAbonos(boolean perfilOK) {
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlProfile = generarSQLProfile();
+        sqlProfile = sqlProfile.isBlank() ? "" : " WHERE " + sqlProfile;
+        String sql = sqlSelect + (perfilOK ? sqlProfile : "");
 
-        // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, usuario);
+        // Lista Vacía
+        List<Abono> abonos = new ArrayList<>();
+
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                abonos = exportarListaAbonos(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
+        return abonos;
     }
 
     public List<Abono> obtenerAbonos() {
-        return obtenerAbonos(PL);
+        return obtenerAbonos(true);
     }
 
     public List<Abono> obtenerAbonos(int usuarioID) {
-        // Parámetros de Listado
-        PL.setFilterFields(new ArrayList<>(Arrays.asList("abonos.usuario")));
-        PL.setFilterValue(usuarioID + "");
-        PL.setFilterStrict(true);
-        PL.setRowsPage(Long.MAX_VALUE);
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlWhere = " WHERE abonos.usuario=" + usuarioID;
+        String sql = sqlSelect + sqlWhere;
 
-        // Retorno: Lista de Abonos
-        return obtenerAbonos(PL);
+        // Lista Vacía
+        List<Abono> abonos = new ArrayList<>();
+
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                abonos = exportarListaAbonos(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
+        return abonos;
     }
 
     public Abono obtenerAbono(int id) {
-        // Parámetros de Listado
-        PL.setFilterFields(new ArrayList<>(Arrays.asList("abonos.id")));
-        PL.setFilterValue(id + "");
-        PL.setFilterStrict(true);
-        PL.setRowsPage(Long.MAX_VALUE);
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlWhere = " WHERE abonos.id=" + id;
+        String sql = sqlSelect + sqlWhere;
 
-        // Lista de Abonos
-        List<Abono> abonos = obtenerAbonos(PL);
+        // Lista Vacía
+        List<Abono> abonos = new ArrayList<>();
 
-        // Referencia de Entidad
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                abonos = exportarListaAbonos(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
         return abonos.isEmpty() ? null : abonos.get(0);
     }
 
@@ -96,7 +137,7 @@ public final class AbonoDAL extends AbstractDAL {
         // Obtención del Contexto
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -124,7 +165,7 @@ public final class AbonoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -152,7 +193,7 @@ public final class AbonoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -181,7 +222,7 @@ public final class AbonoDAL extends AbstractDAL {
         // Obtención del Contexto
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -215,7 +256,7 @@ public final class AbonoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -354,10 +395,10 @@ public final class AbonoDAL extends AbstractDAL {
         ps.setInt(1, abono.getProyectoID());
         ps.setInt(2, abono.getUsuarioID());
         ps.setString(3, abono.getInfo());
-        ps.setInt(7, abono.getStatus());
-        ps.setString(8, abono.getData());
-        ps.setDate(9, new java.sql.Date(abono.getCreatedAt().getTime()));
-        ps.setDate(10, new java.sql.Date(abono.getUpdatedAt().getTime()));
+        ps.setInt(4, abono.getStatus());
+        ps.setString(5, abono.getData());
+        ps.setDate(6, new java.sql.Date(abono.getCreatedAt().getTime()));
+        ps.setDate(7, new java.sql.Date(abono.getUpdatedAt().getTime()));
     }
 
     private void parametrizarUpdate(PreparedStatement ps, Abono abono) throws SQLException {
@@ -377,20 +418,7 @@ public final class AbonoDAL extends AbstractDAL {
         String sql;
 
         // SQL Perfil
-        String sqlPrf;
-        switch (pl.getUser().getPerfilID()) {
-            case Perfil.DEVEL:
-                sqlPrf = "";
-                break;
-            case Perfil.ADMIN:
-                sqlPrf = "";
-                break;
-            case Perfil.BASIC:
-                sqlPrf = "abonos.usuario=" + pl.getUser().getId();
-                break;
-            default:
-                sqlPrf = "abonos.usuario=" + pl.getUser().getId();
-        }
+        String sqlPrf = generarSQLProfile();
 
         // SQL Filtro
         String sqlFtr = generarSQLFilter(pl);
@@ -406,5 +434,25 @@ public final class AbonoDAL extends AbstractDAL {
 
         // Retorno: SQL
         return sql;
+    }
+
+    private String generarSQLProfile() {
+        String sqlProfile;
+
+        switch (usuario.getPerfilID()) {
+            case Perfil.DEVEL:
+                sqlProfile = "";
+                break;
+            case Perfil.ADMIN:
+                sqlProfile = "";
+                break;
+            case Perfil.BASIC:
+                sqlProfile = "abonos.usuario=" + usuario.getId();
+                break;
+            default:
+                sqlProfile = "abonos.usuario=" + usuario.getId();
+        }
+
+        return sqlProfile;
     }
 }

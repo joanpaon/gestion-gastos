@@ -5,11 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
@@ -25,51 +22,94 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class PermisoDAL extends AbstractDAL {
 
-    // Constantes
-    private final String TABLA = "permisos";
-
-    // Parámetros de Listado
-    private final ParametrosListado PL;
-
-    // Campos
-    private final HttpSession sesion;
+    // Usuario
+    private final Usuario usuario;
 
     public PermisoDAL(HttpSession sesion) {
-        this.sesion = sesion;
+        usuario = (Usuario) sesion.getAttribute("usuario");
+    }
 
-        // Sesión > Usuario
-        Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+    public List<Permiso> obtenerPermisos(boolean perfilOK) {
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlProfile = generarSQLProfile();
+        sqlProfile = sqlProfile.isBlank() ? "" : " WHERE " + sqlProfile;
+        String sql = sqlSelect + (perfilOK ? sqlProfile : "");
 
-        // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, usuario);
+        // Lista Vacía
+        List<Permiso> permisos = new ArrayList<>();
+
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                permisos = exportarListaPermisos(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
+        return permisos;
     }
 
     public List<Permiso> obtenerPermisos() {
-        return obtenerPermisos(PL);
+        return obtenerPermisos(true);
     }
 
     public Permiso obtenerPermiso(int id) {
-        // Parámetros de Listado
-        PL.setFilterFields(new ArrayList<>(Arrays.asList("id")));
-        PL.setFilterValue(id + "");
-        PL.setFilterStrict(true);
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlWhere = " WHERE permisos.id=" + id;
+        String sql = sqlSelect + sqlWhere;
 
-        // Lista de Permisos
-        List<Permiso> permisos = obtenerPermisos(PL);
+        // Lista Vacía
+        List<Permiso> permisos = new ArrayList<>();
 
-        // Referencia de Entidad
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                permisos = exportarListaPermisos(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
         return permisos.isEmpty() ? null : permisos.get(0);
     }
 
     public List<Permiso> obtenerPermisos(int perfil) {
-        // Parámetros de Listado
-        PL.setFilterFields(new ArrayList<>(Arrays.asList("permisos.perfil")));
-        PL.setFilterValue(perfil + "");
-        PL.setFilterStrict(true);
-        PL.setRowsPage(Long.MAX_VALUE);
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlWhere = " WHERE permisos.perfil=" + perfil;
+        String sql = sqlSelect + sqlWhere;
 
-        // Retorno: Lista de Permisos
-        return obtenerPermisos(PL);
+        // Lista Vacía
+        List<Permiso> permisos = new ArrayList<>();
+
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                permisos = exportarListaPermisos(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
+        return permisos;
     }
 
     public boolean insertarPermiso(Permiso permiso) {
@@ -82,7 +122,7 @@ public final class PermisoDAL extends AbstractDAL {
         // Obtención del Contexto
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -110,10 +150,11 @@ public final class PermisoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(SQL)) {
                 // Parametrizar Sentencia
                 ps.setInt(1, id);
 
@@ -128,6 +169,8 @@ public final class PermisoDAL extends AbstractDAL {
         return numReg == 1;
     }
 
+    // Este método se utiliza cuando no se conoce la Id
+    // pero si el proceso y el perfil 
     public boolean borrarPermiso(Permiso permiso) {
         // SQL
         final String SQL
@@ -140,17 +183,12 @@ public final class PermisoDAL extends AbstractDAL {
         int numReg = 0;
 
         try {
-            // Contexto Inicial Nombrado JNDI
-            Context iniCtx = new InitialContext();
-
-            // Situar Contexto Inicial
-            Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
             // Contexto Inicial > DataSource
-            DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(SQL)) {
                 // Parametrizar Sentencia
                 ps.setInt(1, permiso.getProcesoId());
                 ps.setInt(2, permiso.getPerfilId());
@@ -175,10 +213,11 @@ public final class PermisoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
+                    Connection conn = ds.getConnection(); 
+                    PreparedStatement ps = conn.prepareStatement(SQL)) {
                 // Parametrizar Sentencia
                 parametrizarUpdate(ps, permiso);
 
@@ -202,10 +241,11 @@ public final class PermisoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+                    Connection conn = ds.getConnection(); 
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         filas = rs.getLong(1);
@@ -235,10 +275,11 @@ public final class PermisoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+                    Connection conn = ds.getConnection(); 
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
                 permisos = exportarListaPermisos(ps);
             }
         } catch (NamingException | SQLException ex) {
@@ -395,20 +436,7 @@ public final class PermisoDAL extends AbstractDAL {
         String sql;
 
         // SQL Perfil
-        String sqlPrf;
-        switch (pl.getUser().getPerfilID()) {
-            case Perfil.DEVEL:
-                sqlPrf = "";
-                break;
-            case Perfil.ADMIN:
-                sqlPrf = "";
-                break;
-            case Perfil.BASIC:
-                sqlPrf = "permisos.perfil=" + pl.getUser().getPerfilID();
-                break;
-            default:
-                sqlPrf = "permisos.perfil=" + pl.getUser().getPerfilID();
-        }
+        String sqlPrf = generarSQLProfile();
 
         // SQL Filtro
         String sqlFtr = generarSQLFilter(pl);
@@ -424,5 +452,25 @@ public final class PermisoDAL extends AbstractDAL {
 
         // Retorno: SQL
         return sql;
+    }
+
+    private String generarSQLProfile() {
+        String sqlProfile;
+
+        switch (usuario.getPerfilID()) {
+            case Perfil.DEVEL:
+                sqlProfile = "";
+                break;
+            case Perfil.ADMIN:
+                sqlProfile = "";
+                break;
+            case Perfil.BASIC:
+                sqlProfile = "permisos.perfil=" + usuario.getPerfilID();
+                break;
+            default:
+                sqlProfile = "permisos.perfil=" + usuario.getPerfilID();
+        }
+
+        return sqlProfile;
     }
 }

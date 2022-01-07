@@ -20,16 +20,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.http.HttpSession;
 import javax.sql.DataSource;
 import org.japo.java.entities.Cuota;
-import org.japo.java.entities.Usuario;
 import org.japo.java.entities.ParametrosListado;
 import org.japo.java.libraries.UtilesGastos;
 
@@ -39,43 +35,60 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class CuotaDAL extends AbstractDAL {
 
-    // Constantes
-    private final String TABLA = "cuotas";
-
-    // Parámetros de Listado
-    private final ParametrosListado PL;
-
-    // Campos
-    private final HttpSession sesion;
-
     public CuotaDAL(HttpSession sesion) {
-        this.sesion = sesion;
-
-        // Sesión > Usuario
-        Usuario usuario = (Usuario) sesion.getAttribute("usuario");
-
-        // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, usuario);
     }
 
     public List<Cuota> obtenerCuotas() {
-        return obtenerCuotas(PL);
+        // SQL
+        String sql = generarSQLSelect();
+
+        // Lista Vacía
+        List<Cuota> abonos = new ArrayList<>();
+
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                abonos = exportarListaCuotas(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
+        return abonos;
     }
 
     public Cuota obtenerCuota(int id) {
-        // Parámetros de Listado
-        PL.setFilterFields(new ArrayList<>(Arrays.asList("id")));
-        PL.setFilterValue(id + "");
-        PL.setFilterStrict(true);
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlWhere = " WHERE cuotas.id=" + id;
+        String sql = sqlSelect + sqlWhere;
 
-        // Lista de Cuotas
-        List<Cuota> cuotas = obtenerCuotas(PL);
+        // Lista Vacía
+        List<Cuota> cuotas = new ArrayList<>();
 
-        // Referencia de Entidad
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                cuotas = exportarListaCuotas(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
         return cuotas.isEmpty() ? null : cuotas.get(0);
     }
 
-    public boolean insertarCuota(Cuota usuario) {
+    public boolean insertarCuota(Cuota cuota) {
         // SQL
         final String SQL = generarSQLInsert();
 
@@ -85,13 +98,13 @@ public final class CuotaDAL extends AbstractDAL {
         // Obtención del Contexto
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
                     PreparedStatement ps = conn.prepareStatement(SQL)) {
                 // Parametrizar Sentencia
-                parametrizarInsert(ps, usuario);
+                parametrizarInsert(ps, cuota);
 
                 // Ejecutar Sentencia
                 numReg = ps.executeUpdate();
@@ -112,14 +125,8 @@ public final class CuotaDAL extends AbstractDAL {
         int numReg = 0;
 
         try {
-            // Contexto Inicial Nombrado JNDI
-            Context iniCtx = new InitialContext();
-
-            // Situar Contexto Inicial
-            Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
-
             // Contexto Inicial > DataSource
-            DataSource ds = (DataSource) envCtx.lookup("jdbc/gestion_gastos");
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -147,7 +154,7 @@ public final class CuotaDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -175,7 +182,7 @@ public final class CuotaDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -210,7 +217,7 @@ public final class CuotaDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();

@@ -20,7 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.naming.NamingException;
@@ -38,39 +37,67 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class GastoDAL extends AbstractDAL {
 
-    // Constantes
-    private final String TABLA = "gastos";
-
-    // Parámetros de Listado
-    private final ParametrosListado PL;
-
-    // Campos
-    private final HttpSession sesion;
+    // Usuario
+    private final Usuario usuario;
 
     public GastoDAL(HttpSession sesion) {
-        this.sesion = sesion;
+        usuario = (Usuario) sesion.getAttribute("usuario");
+    }
 
-        // Sesión > Usuario
-        Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+    public List<Gasto> obtenerGastos(boolean perfilOK) {
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlProfile = generarSQLPerfil();
+        sqlProfile = sqlProfile.isBlank() ? "" : " WHERE " + sqlProfile;
+        String sql = sqlSelect + (perfilOK ? sqlProfile : "");
 
-        // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, usuario);
+        // Lista Vacía
+        List<Gasto> gastos = new ArrayList<>();
+
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                gastos = exportarListaGastos(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
+        return gastos;
     }
 
     public List<Gasto> obtenerGastos() {
-        return obtenerGastos(PL);
+        return obtenerGastos(true);
     }
 
     public Gasto obtenerGasto(int id) {
-        // Parámetros de Listado
-        PL.setFilterFields(new ArrayList<>(Arrays.asList("gastos.id")));
-        PL.setFilterValue(id + "");
-        PL.setFilterStrict(true);
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlWhere = " WHERE gastos.id=" + id;
+        String sql = sqlSelect + sqlWhere;
 
-        // Lista de Usuarios
-        List<Gasto> gastos = obtenerGastos(PL);
+        // Lista Vacía
+        List<Gasto> gastos = new ArrayList<>();
 
-        // Referencia de Entidad
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                gastos = exportarListaGastos(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
         return gastos.isEmpty() ? null : gastos.get(0);
     }
 
@@ -84,7 +111,7 @@ public final class GastoDAL extends AbstractDAL {
         // Obtención del Contexto
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -112,7 +139,7 @@ public final class GastoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -140,7 +167,7 @@ public final class GastoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -366,20 +393,7 @@ public final class GastoDAL extends AbstractDAL {
         String sql;
 
         // SQL Perfil
-        String sqlPrf;
-        switch (pl.getUser().getPerfilID()) {
-            case Perfil.DEVEL:
-                sqlPrf = "";
-                break;
-            case Perfil.ADMIN:
-                sqlPrf = "";
-                break;
-            case Perfil.BASIC:
-                sqlPrf = generarSQLPerfil(pl);
-                break;
-            default:
-                sqlPrf = generarSQLPerfil(pl);
-        }
+        String sqlPrf = generarSQLPerfil();
 
         // SQL Filtro
         String sqlFtr = generarSQLFilter(pl);
@@ -397,14 +411,35 @@ public final class GastoDAL extends AbstractDAL {
         return sql;
     }
 
-    private String generarSQLPerfil(ParametrosListado pl) {
-        // Retorno: SQL
-        return ""
-                + "gastos.abono IN "
-                + "("
-                + "SELECT abonos.id "
-                + "FROM abonos "
-                + "WHERE abonos.usuario=" + pl.getUser().getId()
-                + ")";
+    private String generarSQLPerfil() {
+        String sqlProfile;
+
+        switch (usuario.getPerfilID()) {
+            case Perfil.DEVEL:
+                sqlProfile = "";
+                break;
+            case Perfil.ADMIN:
+                sqlProfile = "";
+                break;
+            case Perfil.BASIC:
+                sqlProfile = ""
+                        + "gastos.abono IN "
+                        + "("
+                        + "SELECT abonos.id "
+                        + "FROM abonos "
+                        + "WHERE abonos.usuario=" + usuario.getId()
+                        + ")";
+                break;
+            default:
+                sqlProfile = ""
+                        + "gastos.abono IN "
+                        + "("
+                        + "SELECT abonos.id "
+                        + "FROM abonos "
+                        + "WHERE abonos.usuario=" + usuario.getId()
+                        + ")";
+        }
+
+        return sqlProfile;
     }
 }

@@ -155,6 +155,10 @@ public abstract class AbstractDAL {
     }
 
     protected DataSource obtenerDataSource(ParametrosListado pl) throws NamingException {
+        return obtenerDataSource(pl.getDbName());
+    }
+
+    protected DataSource obtenerDataSource(String db) throws NamingException {
         // Contexto Inicial Nombrado JNDI
         Context iniCtx = new InitialContext();
 
@@ -162,6 +166,6 @@ public abstract class AbstractDAL {
         Context envCtx = (Context) iniCtx.lookup("java:/comp/env");
 
         // Contexto Inicial > DataSource
-        return (DataSource) envCtx.lookup("jdbc/" + pl.getDbName());
+        return (DataSource) envCtx.lookup("jdbc/" + db);
     }
 }

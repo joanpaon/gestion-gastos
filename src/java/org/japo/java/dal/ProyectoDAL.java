@@ -20,7 +20,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import javax.naming.NamingException;
@@ -38,39 +37,67 @@ import org.japo.java.libraries.UtilesGastos;
  */
 public final class ProyectoDAL extends AbstractDAL {
 
-    // Constantes
-    private final String TABLA = "proyectos";
-
-    // Parámetros de Listado
-    private final ParametrosListado PL;
-
-    // Sesión
-    private final HttpSession sesion;
+    // Usuario
+    private final Usuario usuario;
 
     public ProyectoDAL(HttpSession sesion) {
-        this.sesion = sesion;
+        usuario = (Usuario) sesion.getAttribute("usuario");
+    }
 
-        // Sesión > Usuario
-        Usuario usuario = (Usuario) sesion.getAttribute("usuario");
+    public List<Proyecto> obtenerProyectos(boolean perfilOK) {
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlProfile = generarSQLProfile();
+        sqlProfile = sqlProfile.isBlank() ? "" : " WHERE " + sqlProfile;
+        String sql = sqlSelect + (perfilOK ? sqlProfile : "");
 
-        // BD + TABLA + usuario > Parámetros de Listado
-        PL = new ParametrosListado(BD, usuario);
+        // Lista Vacía
+        List<Proyecto> proyectos = new ArrayList<>();
+
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                proyectos = exportarListaProyectos(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
+        return proyectos;
     }
 
     public List<Proyecto> obtenerProyectos() {
-        return obtenerProyectos(PL);
+        return obtenerProyectos(true);
     }
 
     public Proyecto obtenerProyecto(int id) {
-        // Parámetros de Listado
-        PL.setFilterFields(new ArrayList<>(Arrays.asList("proyectos.id")));
-        PL.setFilterValue(id + "");
-        PL.setFilterStrict(true);
+        // SQL
+        String sqlSelect = generarSQLSelect();
+        String sqlWhere = " WHERE proyectos.id=" + id;
+        String sql = sqlSelect + sqlWhere;
 
-        // Lista de Proyectos
-        List<Proyecto> proyectos = obtenerProyectos(PL);
+        // Lista Vacía
+        List<Proyecto> proyectos = new ArrayList<>();
 
-        // Referencia de Entidad
+        try {
+            // Contexto Inicial > DataSource
+            DataSource ds = obtenerDataSource(BD);
+
+            try (
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
+                proyectos = exportarListaProyectos(ps);
+            }
+        } catch (NamingException | SQLException ex) {
+            System.out.println("ERROR: " + ex.getMessage());
+        }
+
+        // Retorno Lista
         return proyectos.isEmpty() ? null : proyectos.get(0);
     }
 
@@ -84,10 +111,11 @@ public final class ProyectoDAL extends AbstractDAL {
         // Obtención del Contexto
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(SQL)) {
                 // Parametrizar Sentencia
                 parametrizarInsert(ps, proyecto);
 
@@ -111,10 +139,11 @@ public final class ProyectoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(SQL)) {
                 // Parametrizar Sentencia
                 ps.setInt(1, id);
 
@@ -138,10 +167,11 @@ public final class ProyectoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(SQL)) {
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(SQL)) {
                 // Parametrizar Sentencia
                 parametrizarUpdate(ps, proyecto);
 
@@ -165,7 +195,7 @@ public final class ProyectoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
                     Connection conn = ds.getConnection();
@@ -199,10 +229,11 @@ public final class ProyectoDAL extends AbstractDAL {
 
         try {
             // Contexto Inicial > DataSource
-            DataSource ds = obtenerDataSource(PL);
+            DataSource ds = obtenerDataSource(BD);
 
             try (
-                    Connection conn = ds.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+                    Connection conn = ds.getConnection();
+                    PreparedStatement ps = conn.prepareStatement(sql)) {
                 proyectos = exportarListaProyectos(ps);
             }
         } catch (NamingException | SQLException ex) {
@@ -366,21 +397,8 @@ public final class ProyectoDAL extends AbstractDAL {
         // SQL
         String sql;
 
-        // SQL Perfil ( Abonos )
-        String sqlPrf;
-        switch (pl.getUser().getPerfilID()) {
-            case Perfil.DEVEL:
-                sqlPrf = "";
-                break;
-            case Perfil.ADMIN:
-                sqlPrf = "";
-                break;
-            case Perfil.BASIC:
-                sqlPrf = generarSQLPerfil(pl);
-                break;
-            default:
-                sqlPrf = generarSQLPerfil(pl);
-        }
+        // SQL Perfil
+        String sqlPrf = generarSQLProfile();
 
         // SQL Filtro
         String sqlFtr = generarSQLFilter(pl);
@@ -398,14 +416,35 @@ public final class ProyectoDAL extends AbstractDAL {
         return sql;
     }
 
-    private String generarSQLPerfil(ParametrosListado pl) {
-        // Retorno: SQL
-        return ""
-                + "proyectos.id IN "
-                + "("
-                + "SELECT abonos.proyecto "
-                + "FROM abonos "
-                + "WHERE abonos.usuario=" + pl.getUser().getId()
-                + ")";
+    private String generarSQLProfile() {
+        String sqlProfile;
+
+        switch (usuario.getPerfilID()) {
+            case Perfil.DEVEL:
+                sqlProfile = "";
+                break;
+            case Perfil.ADMIN:
+                sqlProfile = "";
+                break;
+            case Perfil.BASIC:
+                sqlProfile = ""
+                        + "proyectos.id IN "
+                        + "("
+                        + "SELECT abonos.proyecto "
+                        + "FROM abonos "
+                        + "WHERE abonos.usuario=" + usuario.getId()
+                        + ")";
+                break;
+            default:
+                sqlProfile = ""
+                        + "proyectos.id IN "
+                        + "("
+                        + "SELECT abonos.proyecto "
+                        + "FROM abonos "
+                        + "WHERE abonos.usuario=" + usuario.getId()
+                        + ")";
+        }
+        
+        return sqlProfile;
     }
 }
