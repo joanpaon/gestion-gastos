@@ -85,6 +85,9 @@ public final class CommandProfile extends Command {
 
             // Inyeccion de Parámetros
             parametrizarMensaje(titulo, mensaje, imagen, destino);
+            
+            // Nuevo Usuario > Sesion
+            sesion.setAttribute("usuario", usuarioFin);
           } else {
             seleccionarMensaje(MSG_OPERACION_CANCELADA);
           }

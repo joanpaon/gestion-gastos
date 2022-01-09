@@ -53,7 +53,7 @@
   
   <!-- Mensajes --> 
   <a class="social" href="controller?cmd=mensajes&type=recibidos&op=listar&base=1" title="Centro de Mensajes">
-    <% if (usuarioFooter == null) {%>
+    <% if (usuarioFooter != null) {%>
     <span>0</span>
     <% }%>
     <img src="public/img//mail.png" alt="Contact" />

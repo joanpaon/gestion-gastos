@@ -5,44 +5,28 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
-  // Datos Inyectados
-  List<Perfil> perfiles = (ArrayList<Perfil>) request.getAttribute("perfiles");
+    // Datos Inyectados
+    // Con Perfil SI Usuario es el mismo de la sesión
+    // Con Perfil NO Usuario es cualquier usuario
+    List<Perfil> perfiles = (ArrayList<Perfil>) request.getAttribute("perfiles");
 %>
 
 <!DOCTYPE html>
 <html lang="es">
 
   <head>
-    <!-- These lines go in the first 1024 bytes -->
-    <meta charset="utf-8" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>Gestión de Gastos</title>
-
-    <!-- References -->
-    <meta name="author" content="2021 - José A. Pacheco Ondoño - japolabs@gmail.com" />
-    <meta name="description" content="Gestión de Gastos" />
-
-    <!-- Configuration -->
-    <meta name="keywords" content="" />
-    <meta name="robots" content="noindex, nofollow" />
-
-    <!-- Viewport Setup for mobile devices -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!-- Favicon -->
-    <link href="public/img/favicon.ico" rel="icon" type="image/x-icon" />
-
-    <!-- Style Sheet Links -->
-    <link rel="stylesheet" href="public/css/usuarios/usuario-insercion.css" /> 
+    <% request.setAttribute("tabla", "usuarios");%>
+    <%@include file="../../partials/partial-insercion-page-head.jspf"%>
   </head>
+
   <body>
     <div id="container">
-      <jsp:include page="../../partials/header.jsp" />
+      <%@include file="../../partials/partial-header.jspf"%>
 
       <main>
         <header>
           <h2>Incorporación de Usuarios</h2>
-          <a class="btn btn-perfiles" accept-charset="Windows-1252"
+          <a class="btn btn-listar" accept-charset="Windows-1252"
              href="controller?cmd=usuario-listado">Listado</a>
         </header> 
         <form method="post" accept-charset="Windows-1252"
@@ -85,9 +69,11 @@
         </form>
       </main>
 
-      <jsp:include page="../../partials/footer.jsp" />
+      <%@include file="../../partials/partial-footer.jspf"%>
     </div>
 
     <script src="public/js/usuarios/usuario-insercion.js"></script>
+    <script src="public/js/partials/partial-header.js"></script>
+    <script src="public/js/partials/partial-footer.js"></script>
   </body>
 </html>

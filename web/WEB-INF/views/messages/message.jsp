@@ -1,11 +1,11 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
-  // Datos Inyectados
-  String titulo = (String) request.getAttribute("titulo");
-  String mensaje = (String) request.getAttribute("mensaje");
-  String imagen = (String) request.getAttribute("imagen");
-  String destino = (String) request.getAttribute("destino");
+    // Datos Inyectados
+    String titulo = (String) request.getAttribute("titulo");
+    String mensaje = (String) request.getAttribute("mensaje");
+    String imagen = (String) request.getAttribute("imagen");
+    String destino = (String) request.getAttribute("destino");
 %>
 
 <!DOCTYPE html>
@@ -33,11 +33,13 @@
 
     <!-- Style Sheet Links -->
     <link rel="stylesheet" href="public/css/messages/message.css"/>
+    <link rel="stylesheet" href="public/css/partials/partial-header.css" /> 
+    <link rel="stylesheet" href="public/css/partials/partial-footer.css" /> 
   </head>
 
   <body>
     <div id="container">
-      <jsp:include page="../../partials/header.jsp" />
+      <%@include file="../../partials/partial-header.jspf"%>
 
       <main>
         <h1><%=titulo%></h1>
@@ -46,10 +48,12 @@
         <a class="btn" href="<%=destino%>">Continuar</a>
       </main>
 
-      <jsp:include page="../../partials/footer.jsp" />
+      <%@include file="../../partials/partial-footer.jspf"%>
     </div>
 
     <!-- Application Scripts -->
     <script src="public/js/messages/message.js"></script>
+    <script src="public/js/partials/partial-header.js"></script>
+    <script src="public/js/partials/partial-footer.js"></script>
   </body>
 </html>

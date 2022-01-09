@@ -7,47 +7,18 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
-    // Session > Usuario
-    Usuario usuario = (Usuario) (session.getAttribute("usuario"));
+    // Sesión > Usuario
+    Usuario usuario = (Usuario) session.getAttribute("usuario");
 
     // Datos Inyectados
     List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuarios");
-    String filterExp = (String) request.getAttribute("filter-exp");
-    String sortFld = (String) request.getAttribute("sort-fld");
-    String sortDir = (String) request.getAttribute("sort-dir");
-    Long rowCount = (Long) request.getAttribute("row-count");
-    Long rowIndex = (Long) request.getAttribute("row-index");
-    Long rowsPage = (Long) request.getAttribute("rows-page");
 %>
 
 <!DOCTYPE html>
 <html lang="es">
-
   <head>
-    <!-- These lines go in the first 1024 bytes -->
-    <meta charset="utf-8" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>Gestión de Gastos</title>
-
-    <!-- References -->
-    <meta name="author" content="2021 - José A. Pacheco Ondoño - japolabs@gmail.com" />
-    <meta name="description" content="Gestión de Gastos" />
-
-    <!-- Configuration -->
-    <meta name="keywords" content="" />
-    <meta name="robots" content="noindex, nofollow" />
-
-    <!-- Viewport Setup for mobile devices -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!-- Favicon -->
-    <link href="public/img/favicon.ico" rel="icon" type="image/x-icon" />
-
-    <!-- Style Sheet Links -->
-    <link rel="stylesheet" href="public/css/crud/listado.css" /> 
-    <link rel="stylesheet" href="public/css/usuarios/usuario-listado.css" /> 
-    <link rel="stylesheet" href="public/css/partials/partial-header.css" /> 
-    <link rel="stylesheet" href="public/css/partials/partial-footer.css" /> 
+    <% request.setAttribute("tabla", "usuarios");%>
+    <%@include file="../../partials/partial-listado-page-head.jspf"%>
   </head>
 
   <body>
@@ -55,220 +26,75 @@
       <%@include file="../../partials/partial-header.jspf"%>
 
       <main>
-        <header>
-          <h2>Listado de Usuarios ( <%=rowCount%> )</h2>
-          <% if (usuario.getPerfilID() == Perfil.DEVEL) { %>
-          <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
-          <% } else if (usuario.getPerfilID() == Perfil.ADMIN) { %>
-          <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
-          <% } else { %>
-          <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
-          <% }%>
-          <a class="btn btn-insertar" href="controller?cmd=usuario-insercion&op=captura" title="Nuevo">N</a>
-        </header>
+        <% request.setAttribute("titulo-listado", "Listado de Usuarios");%>
+        <%@include file="../../partials/partial-list-header.jspf"%>
 
-        <% if (usuarios.size() <= 1) { %>
-        <nav class="paginacion" style="display: none;">
-          <% } else { %>
-          <nav class="paginacion">
-            <% }%>
-            <a href="controller?cmd=usuario-listado&op=ini" class="btn btn-ini" title="Principio">&lt;&lt;</a>
-            <a href="controller?cmd=usuario-listado&op=prv" class="btn btn-prv" title="Anterior">&lt;</a>
-            <div class="slider">
-              <input type="range" min="0" max="<%= rowsPage > 0 ? rowCount / rowsPage : 0%>" value="<%= rowsPage > 0 ? rowIndex / rowsPage : 0%>">
-              <a href="#" class="btn btn-num" title="Nº de Página"><%= rowsPage > 0 ? rowIndex / rowsPage : 0%></a>
-            </div>
-            <a href="controller?cmd=usuario-listado&op=nxt" class="btn btn-nxt" title="Siguiente">&gt;</a>
-            <a href="controller?cmd=usuario-listado&op=end" class="btn btn-end" title="Final">&gt;&gt;</a>
-            |
-            <div class="rows-page">
-              <label for="rows-page">Filas</label>
-              <select id="rows-page">
-                <% if (rowsPage == 10) { %>
-                <option value="10" selected>10</option>
-                <option value="20">20</option>
-                <option value="40">40</option>
-                <option value="80">80</option>
-                <% } else if (rowsPage == 20) { %>
-                <option value="10">10</option>
-                <option value="20" selected>20</option>
-                <option value="40">40</option>
-                <option value="80">80</option>
-                <% } else if (rowsPage == 40) { %>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="40" selected>40</option>
-                <option value="80">80</option>
-                <% } else if (rowsPage == 80) { %>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="40">40</option>
-                <option value="80" selected>80</option>
-                <% }%>
-              </select>
-            </div>
-            |
-            <div class="filter">
-              <input type="text" value="<%=filterExp%>" autofocus />
-              <a href="#" class="btn btn-filter">⚡</a>
-            </div>
-          </nav>
+        <% if (usuarios.size() > 1) {%>
+        <%@include file="../../partials/partial-paginator.jspf"%>
+        <% }%>
 
-          <% if (usuarios.isEmpty()) { %>
+        <% if (usuarios.isEmpty()) { %>
 
-          <h2>No hay usuarios disponibles</h2>
+        <h2>No hay usuarios disponibles</h2>
 
-          <% } else { %>
+        <% } else { %>
 
-          <table>
-            <thead>
-            <th>
-              <% if (sortFld.isEmpty() || sortDir.isEmpty()) { %>
-              <div>
-                <a href="controller?cmd=usuario-listado&sort-fld=id&sort-dir=asc">ID</a>
-                <span></span>
-              </div>
-              <% } else if (sortFld.equals("id") && sortDir.equalsIgnoreCase("asc")) { %>
-              <div>
-                <a href="controller?cmd=usuario-listado&sort-fld=id&sort-dir=desc">ID</a>
-                <span>&#9650;</span>
-              </div>
-              <% } else if (sortFld.equals("id") && sortDir.equalsIgnoreCase("desc")) { %>
-              <div>
-                <a href="controller?cmd=usuario-listado&sort-dir=">ID</a>
-                <span>&#9660;</span>
-              </div>
-              <% } else { %>
-              <div>
-                <a href="controller?cmd=usuario-listado&sort-fld=id&sort-dir=asc">ID</a>
-                <span></span>
-              </div>
-              <% } %>
-            </th>
-            <th>
-              <% if (sortFld.isEmpty() || sortDir.isEmpty()) { %>
-              <div>
-                <a href="controller?cmd=usuario-listado&sort-fld=user&sort-dir=asc">Nombre</a>
-                <span></span>
-              </div>
-              <% } else if (sortFld.equals("user") && sortDir.equalsIgnoreCase("asc")) { %>
-              <div>
-                <a href="controller?cmd=usuario-listado&sort-fld=user&sort-dir=desc">Nombre</a>
-                <span>&#9650;</span>
-              </div>
-              <% } else if (sortFld.equals("user") && sortDir.equalsIgnoreCase("desc")) { %>
-              <div>
-                <a href="controller?cmd=usuario-listado&sort-dir=none">Nombre</a>
-                <span>&#9660;</span>
-              </div>
-              <% } else { %>
-              <div>
-                <a href="controller?cmd=usuario-listado&sort-fld=user&sort-dir=asc">Nombre</a>
-                <span></span>
-              </div>
-              <% } %>
-            </th>
-            <th>
-              <% if (sortFld.isEmpty() || sortDir.isEmpty()) { %>
-              <div>
-                <a href="controller?cmd=usuario-listado&sort-fld=perfil&sort-dir=asc">Perfil</a>
-                <span></span>
-              </div>
-              <% } else if (sortFld.equals("perfil") && sortDir.equalsIgnoreCase("asc")) { %>
-              <div>
-                <a href="controller?cmd=usuario-listado&sort-fld=perfil&sort-dir=desc">Perfil</a>
-                <span>&#9650;</span>
-              </div>
-              <% } else if (sortFld.equals("perfil") && sortDir.equalsIgnoreCase("desc")) { %>
-              <div>
-                <a href="controller?cmd=usuario-listado&sort-dir=none">Perfil</a>
-                <span>&#9660;</span>
-              </div>
-              <% } else { %>
-              <div>
-                <a href="controller?cmd=usuario-listado&sort-fld=perfil&sort-dir=asc">Perfil</a>
-                <span></span>
-              </div>
-              <% } %>
-            </th>
-            <th>Acciones</th>
-            </thead>
+        <table>
+          <thead>
+          <th>
+            <% request.setAttribute("th-field", "id");%>
+            <% request.setAttribute("th-name", "Id");%>
+            <%@include file="../../partials/partial-table-header01.jspf"%>
+          </th>
+          <th>
+            <% request.setAttribute("th-field", "user");%>
+            <% request.setAttribute("th-name", "Nombre");%>
+            <%@include file="../../partials/partial-table-header02.jspf"%>
+          </th>
+          <th>
+            <% request.setAttribute("th-field", "perfil");%>
+            <% request.setAttribute("th-name", "Perfil");%>
+            <%@include file="../../partials/partial-table-header03.jspf"%>
+          </th>
+          <th>Acciones</th>
+          </thead>
 
-            <tbody>
-              <% for (Usuario _usuario : usuarios) {%>
+          <tbody>
+            <% for (Usuario _usuario : usuarios) {%>
+            <tr>
+              <td><%= _usuario.getId()%></td>
+              <td><%= _usuario.getUser()%></td>
+              <td><%= _usuario.getPerfilInfo()%></td>
+              <td>
+                <a class="btn btn-consultar" 
+                   href="controller?cmd=usuario-consulta&id=<%= _usuario.getId()%>" 
+                   title="Consulta">C</a>
+                <a class="btn btn-modificar" 
+                   href="controller?cmd=usuario-modificacion&id=<%= _usuario.getId()%>" 
+                   title="Modificación">M</a>
+                <a class="btn btn-borrar" 
+                   href="controller?cmd=usuario-borrado&id=<%= _usuario.getId()%>" 
+                   title="Eliminación">B</a>
+              </td>
+            </tr>
+            <% } %>
+          </tbody>
+        </table>
 
-              <tr>
-                <td><%= _usuario.getId()%></td>
-                <td><%= _usuario.getUser()%></td>
-                <td><%= _usuario.getPerfilInfo()%></td>
-                <td>
-                  <a class="btn btn-consultar" href="controller?cmd=usuario-consulta&id=<%= _usuario.getId()%>" title="Consulta">C</a>
-                  <a class="btn btn-modificar" href="controller?cmd=usuario-modificacion&id=<%= _usuario.getId()%>" title="Modificación">M</a>
-                  <a class="btn btn-borrar" href="controller?cmd=usuario-borrado&id=<%= _usuario.getId()%>" title="Eliminación">B</a>
-                </td>
-              </tr>
+        <% }%>
 
-              <% } %>
+        <% if (usuario.getPerfilID() != Perfil.BASIC) {%>
+        <%@include file="../../partials/partial-paginator.jspf"%>
+        <% }%>
+      </main>
 
-            </tbody>
-          </table>
+      <%@include file="../../partials/partial-footer.jspf"%>
+    </div>
 
-          <% }%>
-
-          <% if (usuario.getPerfilID() == Perfil.BASIC) { %>
-          <nav class="paginacion" style="display: none;">
-            <% } else { %>
-            <nav class="paginacion">
-              <% }%>
-              <a href="controller?cmd=usuario-listado&op=ini" class="btn btn-ini" title="Principio">&lt;&lt;</a>
-              <a href="controller?cmd=usuario-listado&op=prv" class="btn btn-prv" title="Anterior">&lt;</a>
-              <div class="slider">
-                <input type="range" min="0" max="<%= rowsPage > 0 ? rowCount / rowsPage : 0%>" value="<%= rowsPage > 0 ? rowIndex / rowsPage : 0%>">
-                <a href="#" class="btn btn-num" title="Nº de Página"><%= rowsPage > 0 ? rowIndex / rowsPage : 0%></a>
-              </div>
-              <a href="controller?cmd=usuario-listado&op=nxt" class="btn btn-nxt" title="Siguiente">&gt;</a>
-              <a href="controller?cmd=usuario-listado&op=end" class="btn btn-end" title="Final">&gt;&gt;</a>
-              |
-              <div class="rows-page">
-                <label for="rows-page">Filas</label>
-                <select id="rows-page">
-                  <% if (rowsPage == 10) { %>
-                  <option value="10" selected>10</option>
-                  <option value="20">20</option>
-                  <option value="40">40</option>
-                  <option value="80">80</option>
-                  <% } else if (rowsPage == 20) { %>
-                  <option value="10">10</option>
-                  <option value="20" selected>20</option>
-                  <option value="40">40</option>
-                  <option value="80">80</option>
-                  <% } else if (rowsPage == 40) { %>
-                  <option value="10">10</option>
-                  <option value="20">20</option>
-                  <option value="40" selected>40</option>
-                  <option value="80">80</option>
-                  <% } else if (rowsPage == 80) { %>
-                  <option value="10">10</option>
-                  <option value="20">20</option>
-                  <option value="40">40</option>
-                  <option value="80" selected>80</option>
-                  <% }%>
-                </select>
-              </div>
-              |
-              <div class="filter">
-                <input type="text" value="<%=filterExp%>" autofocus />
-                <a href="#" class="btn btn-filter">⚡</a>
-              </div>
-            </nav>
-            </main>
-
-            <%@include file="../../partials/partial-footer.jspf"%>
-            </div>
-
-            <!-- Scripts Página -->
-            <script src="public/js/usuarios/usuario-listado.js"></script>
-            <script src="public/js/partials/partial-header.js"></script>
-            <script src="public/js/partials/partial-footer.js"></script>
-            </body>
-            </html>
+    <!-- Scripts Página -->
+    <script src="public/js/usuarios/usuario-listado.js"></script>
+    <script src="public/js/partials/partial-header.js"></script>
+    <script src="public/js/partials/partial-footer.js"></script>
+    <script src="public/js/partials/partial-paginator.js"></script>
+  </body>
+</html>

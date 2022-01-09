@@ -25,12 +25,14 @@
 
     <!-- Style Sheet Links -->
     <link rel="stylesheet" href="public/css/admin/landing.css" />
+    <link rel="stylesheet" href="public/css/partials/partial-header.css" /> 
+    <link rel="stylesheet" href="public/css/partials/partial-footer.css" /> 
   </head>
 
   <body>
     <!-- Web Content-->
     <div id="container">
-      <jsp:include page="../../partials/header.jsp" />
+      <%@include file="../../partials/partial-header.jspf"%>
 
       <main>
         <div class="holder">
@@ -40,10 +42,12 @@
         </div>
       </main>
 
-      <jsp:include page="../../partials/footer.jsp" />
+      <%@include file="../../partials/partial-footer.jspf"%>
     </div>
 
     <!-- Application Scripts -->
     <script src="public/js/admin/landing.js"></script>
+    <script src="public/js/partials/partial-header.js"></script>
+    <script src="public/js/partials/partial-footer.js"></script>
   </body>
 </html>

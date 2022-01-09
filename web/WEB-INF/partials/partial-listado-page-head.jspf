@@ -1,0 +1,48 @@
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+
+<%
+    String tabla = request.getAttribute("tabla").toString();
+%>
+
+<!-- These lines go in the first 1024 bytes -->
+<meta charset="utf-8" />
+<meta http-equiv="x-ua-compatible" content="ie=edge" />
+<title>Gestión de Gastos</title>
+
+<!-- References -->
+<meta name="author" content="2021 - José A. Pacheco Ondoño - japolabs@gmail.com" />
+<meta name="description" content="Gestión de Gastos" />
+
+<!-- Configuration -->
+<meta name="keywords" content="" />
+<meta name="robots" content="noindex, nofollow" />
+
+<!-- Viewport Setup for mobile devices -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<!-- Favicon -->
+<link href="public/img/favicon.ico" rel="icon" type="image/x-icon" />
+
+<!-- Style Sheet Links -->
+<link rel="stylesheet" href="public/css/crud/listado.css" />
+<% if (tabla.equals("abonos")) {%>
+<link rel="stylesheet" href="public/css/usuarios/usuario-listado.css" /> 
+<% } else if (tabla.equals("cuotas")) {%>
+<link rel="stylesheet" href="public/css/cuotas/cuota-listado.css" /> 
+<% } else if (tabla.equals("gastos")) {%>
+<link rel="stylesheet" href="public/css/gastos/gasto-listado.css" /> 
+<% } else if (tabla.equals("partidas")) {%>
+<link rel="stylesheet" href="public/css/partidas/partida-listado.css" /> 
+<% } else if (tabla.equals("perfiles")) {%>
+<link rel="stylesheet" href="public/css/perfiles/perfil-listado.css" /> 
+<% } else if (tabla.equals("permisos")) {%>
+<link rel="stylesheet" href="public/css/permisos/permiso-listado.css" /> 
+<% } else if (tabla.equals("procesos")) {%>
+<link rel="stylesheet" href="public/css/procesos/proceso-listado.css" /> 
+<% } else if (tabla.equals("proyectos")) {%>
+<link rel="stylesheet" href="public/css/proyectos/proyecto-listado.css" /> 
+<% } else if (tabla.equals("usuarios")) {%>
+<link rel="stylesheet" href="public/css/usuarios/usuario-listado.css" /> 
+<% }%>
+<link rel="stylesheet" href="public/css/partials/partial-header.css" /> 
+<link rel="stylesheet" href="public/css/partials/partial-footer.css" /> 

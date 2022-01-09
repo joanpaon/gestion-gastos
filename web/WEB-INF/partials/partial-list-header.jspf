@@ -1,0 +1,29 @@
+<%@page import="org.japo.java.entities.Perfil"%>
+<%@page import="java.util.ArrayList"%>
+<%@page import="java.util.List"%>
+<%@page import="org.japo.java.entities.Usuario"%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+
+<%
+    // Session > Usuario
+    Usuario listHeaderUsuario = (Usuario) (session.getAttribute("usuario"));
+
+    // Datos Inyectados
+    long listHeaderRowCount = Long.parseLong(request.getAttribute("row-count").toString());
+
+    // Título Cabecera
+    String listHeaderTitulo = request.getAttribute("titulo-listado").toString();
+%>
+
+<header>
+  <h2><%=listHeaderTitulo%> ( <%=listHeaderRowCount%> )</h2>
+  <% if (listHeaderUsuario.getPerfilID() == Perfil.DEVEL) { %>
+  <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
+  <% } else if (listHeaderUsuario.getPerfilID() == Perfil.ADMIN) { %>
+  <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
+  <% } else { %>
+  <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
+  <% }%>
+  <a class="btn btn-insertar" href="controller?cmd=usuario-insercion&op=captura" title="Nuevo">N</a>
+</header>

@@ -23,17 +23,20 @@
     <span>Gastos</span>
   </a>
 
+  <% if (usuarioHeader != null) {%>
   <a class="lookup" href="#">
     <img src="public/img/lupa.png" alt="Carrito" />
   </a>
+  <% }%>
 
+  <% if (usuarioHeader != null) {%>
   <a class="cart" href="#">
     <span>0</span>
     <img src="public/img/cart.png" alt="Carrito" />
   </a>
+  <% }%>
 
-  <% if (usuarioHeader instanceof Usuario) {%>
-
+  <% if (usuarioHeader != null) {%>
   <a class="user" href="controller?cmd=profile&op=captura&id=<%= usuarioHeader.getId()%>" >
     <% if (UtilesGastos.validarImagenBase64(usuarioHeader.getIcono())) {%>
     <img src="<%= usuarioHeader.getIcono()%>" alt="User" />
@@ -42,18 +45,19 @@
     <% }%>
     <span><%= usuarioHeader.getUser()%></span>
   </a>
+  <% }%>
 
+  <% if (usuarioHeader != null) {%>
   <a class="exit" href="controller?cmd=logout">
     <img src="public/img/exit.png" alt="Salida" />
   </a>
+  <% }%>
 
-  <% } else { %>
-
+  <% if (usuarioHeader == null) {%>
   <a class="user" href="controller?cmd=login">
     <img src="public/img/user.png" alt="User" />
     <span>login</span>
   </a>
-
   <% }%>
 
 </header>

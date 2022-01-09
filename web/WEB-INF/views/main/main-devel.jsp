@@ -25,13 +25,15 @@
 
     <!-- Style Sheet Links -->
     <link rel="stylesheet" href="public/css/main/main-dev.css" />
+    <link rel="stylesheet" href="public/css/partials/partial-header.css" /> 
+    <link rel="stylesheet" href="public/css/partials/partial-footer.css" /> 
   </head>
 
   <body>
     <!-- Web Content-->
     <div id="container">
-      <jsp:include page="../../partials/header.jsp" />
-      
+      <%@include file="../../partials/partial-header.jspf"%>
+
       <main>
         <h1>Operaciones Perfil Desarrollador</h1>
         <nav>
@@ -47,10 +49,12 @@
         </nav>
       </main>
 
-      <jsp:include page="../../partials/footer.jsp" />
+      <%@include file="../../partials/partial-footer.jspf"%>
     </div>
 
     <!-- Application Scripts -->
     <script src="public/js/main/main-dev.js"></script>
+    <script src="public/js/partials/partial-header.js"></script>
+    <script src="public/js/partials/partial-footer.js"></script>
   </body>
 </html>
