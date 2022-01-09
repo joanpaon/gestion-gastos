@@ -1,0 +1,60 @@
+﻿<%@page import="org.japo.java.libraries.UtilesGastos"%>
+<%@page import="org.japo.java.entities.Usuario"%> 
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+
+<%
+    Usuario usuarioHeader = session == null ? null : (Usuario) (session.getAttribute("usuario"));
+%>
+
+<header>
+
+  <div class="menu"><a href="controller?cmd=landing">&#9776;</a></div>
+
+  <a class="logo" href="controller?cmd=landing">
+    <span>G</span>
+    <span>de</span>
+    <span>G</span>
+  </a>
+
+  <a class="slogan" href="controller?cmd=landing">
+    <span>Gestión</span>
+    <span>de</span>
+    <span>Gastos</span>
+  </a>
+
+  <a class="lookup" href="#">
+    <img src="public/img/lupa.png" alt="Carrito" />
+  </a>
+
+  <a class="cart" href="#">
+    <span>0</span>
+    <img src="public/img/cart.png" alt="Carrito" />
+  </a>
+
+  <% if (usuarioHeader instanceof Usuario) {%>
+
+  <a class="user" href="controller?cmd=profile&op=captura&id=<%= usuarioHeader.getId()%>" >
+    <% if (UtilesGastos.validarImagenBase64(usuarioHeader.getIcono())) {%>
+    <img src="<%= usuarioHeader.getIcono()%>" alt="User" />
+    <% } else { %>
+    <img src="public/img/user.png" alt="User" />
+    <% }%>
+    <span><%= usuarioHeader.getUser()%></span>
+  </a>
+
+  <a class="exit" href="controller?cmd=logout">
+    <img src="public/img/exit.png" alt="Salida" />
+  </a>
+
+  <% } else { %>
+
+  <a class="user" href="controller?cmd=login">
+    <img src="public/img/user.png" alt="User" />
+    <span>login</span>
+  </a>
+
+  <% }%>
+
+</header>
+

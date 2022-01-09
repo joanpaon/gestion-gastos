@@ -6,6 +6,9 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
+    // Session > Usuario
+    Usuario usuario = (Usuario) (session.getAttribute("usuario"));
+
     // Datos Inyectados
     List<Perfil> perfiles = (ArrayList<Perfil>) request.getAttribute("perfiles");
     String filterExp = (String) request.getAttribute("filter-exp");
@@ -40,19 +43,19 @@
     <link href="public/img/favicon.ico" rel="icon" type="image/x-icon" />
 
     <!-- Style Sheet Links -->
-    <link rel="stylesheet" href="public/css/general.css" /> 
     <link rel="stylesheet" href="public/css/crud/listado.css" /> 
     <link rel="stylesheet" href="public/css/perfiles/perfil-listado.css" /> 
+    <link rel="stylesheet" href="public/css/partials/partial-header.css" /> 
+    <link rel="stylesheet" href="public/css/partials/partial-footer.css" /> 
   </head>
 
   <body>
     <div id="container">
-      <jsp:include page="../../partials/header.jsp" />
+      <%@include file="../../partials/partial-header.jspf"%>
 
       <main>
         <header>
-          <h2>Listado de Perfiles</h2>
-          <% Usuario usuario = (Usuario) session.getAttribute("usuario"); %>
+          <h2>Listado de Perfiles ( <%=rowCount%> )</h2>
           <% if (usuario.getPerfilID() == Perfil.DEVEL) { %>
           <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
           <% } else if (usuario.getPerfilID() == Perfil.ADMIN) { %>
@@ -211,7 +214,7 @@
 
           <% }%>
 
-          <% if (perfiles.size() <= 1) { %>
+          <% if (usuario.getPerfilID() == Perfil.BASIC) { %>
           <nav class="paginacion" style="display: none;">
             <% } else { %>
             <nav class="paginacion">
@@ -264,5 +267,7 @@
             </div>
 
             <script src="public/js/perfiles/perfil-listado.js"></script>
+            <script src="public/js/partials/partial-header.js"></script>
+            <script src="public/js/partials/partial-footer.js"></script>
             </body>
             </html>

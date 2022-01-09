@@ -7,6 +7,9 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 
 <%
+    // Session > Usuario
+    Usuario usuario = (Usuario) (session.getAttribute("usuario"));
+
     // Datos Inyectados
     List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuarios");
     String filterExp = (String) request.getAttribute("filter-exp");
@@ -41,19 +44,19 @@
     <link href="public/img/favicon.ico" rel="icon" type="image/x-icon" />
 
     <!-- Style Sheet Links -->
-    <link rel="stylesheet" href="public/css/general.css" /> 
     <link rel="stylesheet" href="public/css/crud/listado.css" /> 
     <link rel="stylesheet" href="public/css/usuarios/usuario-listado.css" /> 
+    <link rel="stylesheet" href="public/css/partials/partial-header.css" /> 
+    <link rel="stylesheet" href="public/css/partials/partial-footer.css" /> 
   </head>
 
   <body>
     <div id="container">
-      <jsp:include page="../../partials/header.jsp" />
+      <%@include file="../../partials/partial-header.jspf"%>
 
       <main>
         <header>
-          <h2>Listado de Usuarios</h2>
-          <% Usuario usuario = (Usuario) session.getAttribute("usuario"); %>
+          <h2>Listado de Usuarios ( <%=rowCount%> )</h2>
           <% if (usuario.getPerfilID() == Perfil.DEVEL) { %>
           <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
           <% } else if (usuario.getPerfilID() == Perfil.ADMIN) { %>
@@ -79,6 +82,7 @@
             <a href="controller?cmd=usuario-listado&op=end" class="btn btn-end" title="Final">&gt;&gt;</a>
             |
             <div class="rows-page">
+              <label for="rows-page">Filas</label>
               <select id="rows-page">
                 <% if (rowsPage == 10) { %>
                 <option value="10" selected>10</option>
@@ -102,8 +106,6 @@
                 <option value="80" selected>80</option>
                 <% }%>
               </select>
-              /
-              <label for="rows-page"><%=rowCount%></label>
             </div>
             |
             <div class="filter">
@@ -213,7 +215,7 @@
 
           <% }%>
 
-          <% if (usuarios.size() <= 1) { %>
+          <% if (usuario.getPerfilID() == Perfil.BASIC) { %>
           <nav class="paginacion" style="display: none;">
             <% } else { %>
             <nav class="paginacion">
@@ -261,9 +263,12 @@
             </nav>
             </main>
 
-            <jsp:include page="../../partials/footer.jsp" />
+            <%@include file="../../partials/partial-footer.jspf"%>
             </div>
 
+            <!-- Scripts Página -->
             <script src="public/js/usuarios/usuario-listado.js"></script>
+            <script src="public/js/partials/partial-header.js"></script>
+            <script src="public/js/partials/partial-footer.js"></script>
             </body>
             </html>

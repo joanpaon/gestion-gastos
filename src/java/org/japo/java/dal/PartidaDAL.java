@@ -302,7 +302,7 @@ public final class PartidaDAL extends AbstractDAL {
                 + "FROM "
                 + "partidas "
                 + "INNER JOIN "
-                + "proyectos ON proyectos.id = partidas.iproyecto";
+                + "proyectos ON proyectos.id = partidas.proyecto";
     }
 
     public String generarSQLInsert() {
