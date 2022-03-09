@@ -12,8 +12,8 @@
     // Datos Inyectados
     long listHeaderRowCount = Long.parseLong(request.getAttribute("row-count").toString());
 
-    // Título Cabecera
-    String listHeaderTitulo = request.getAttribute("titulo-listado").toString();
+    // Parámetros
+    String listHeaderTitulo = (String) request.getAttribute("titulo");
 %>
 
 <header>

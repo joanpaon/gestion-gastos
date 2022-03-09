@@ -27,48 +27,20 @@
 <html lang="es">
 
   <head>
-    <!-- These lines go in the first 1024 bytes -->
-    <meta charset="utf-8" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge" />
-    <title>Gestión de Gastos</title>
-
-    <!-- References -->
-    <meta name="author" content="2021 - José A. Pacheco Ondoño - japolabs@gmail.com" />
-    <meta name="description" content="Gestión de Gastos" />
-
-    <!-- Configuration -->
-    <meta name="keywords" content="" />
-    <meta name="robots" content="noindex, nofollow" />
-
-    <!-- Viewport Setup for mobile devices -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!-- Favicon -->
-    <link href="public/img/favicon.ico" rel="icon" type="image/x-icon" />
-
-    <!-- Style Sheet Links -->
-    <link rel="stylesheet" href="public/css/crud/listado.css" /> 
-    <link rel="stylesheet" href="public/css/gastos/gasto-listado.css" /> 
-    <link rel="stylesheet" href="public/css/partials/partial-header.css" /> 
-    <link rel="stylesheet" href="public/css/partials/partial-footer.css" /> 
+    <!-- Head de la Página - Listado -->
+    <% request.setAttribute("tabla", "gastos");%>
+    <%@include file="../../partials/crud/listado-head.jspf"%>
   </head>
 
   <body>
     <div id="container">
-      <%@include file="../../partials/partial-header.jspf"%>
+      <%@include file="../../partials/general/header.jspf"%>
 
       <main>
-        <header>
-          <h2>Listado de Gastos</h2>
-          <% if (usuario.getPerfilID() == Perfil.DEVEL) { %>
-          <a class="btn btn-principal" href="controller?cmd=main-devel" title="Principal">P</a>
-          <% } else if (usuario.getPerfilID() == Perfil.ADMIN) { %>
-          <a class="btn btn-principal" href="controller?cmd=main-admin" title="Principal">P</a>
-          <% } else { %>
-          <a class="btn btn-principal" href="controller?cmd=main-basic" title="Principal">P</a>
-          <% }%>
-          <a class="btn btn-insertar" href="controller?cmd=gasto-insercion&op=captura" title="Nuevo">N</a>
-        </header>
+
+        <!-- Cabecera de la Página -->
+        <% request.setAttribute("titulo-listado", "Listado de Gastos");%>
+        <%@include file="../../partials/crud/listado-header.jspf"%>
 
         <% if (gastos.size() <= 1) { %>
         <nav class="paginacion" style="display: none;">
@@ -286,7 +258,7 @@
 
       </main>
 
-      <%@include file="../../partials/partial-footer.jspf"%>
+      <%@include file="../../partials/general/footer.jspf"%>
     </div>
 
     <script src="public/js/gastos/gasto-listado.js"></script>

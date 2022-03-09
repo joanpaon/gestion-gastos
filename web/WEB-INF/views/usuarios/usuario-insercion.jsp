@@ -16,12 +16,12 @@
 
   <head>
     <% request.setAttribute("tabla", "usuarios");%>
-    <%@include file="../../partials/partial-insercion-page-head.jspf"%>
+    <%@include file="../../partials/crud/insercion-head.jspf"%>
   </head>
 
   <body>
     <div id="container">
-      <%@include file="../../partials/partial-header.jspf"%>
+      <%@include file="../../partials/general/header.jspf"%>
 
       <main>
         <header>
@@ -69,7 +69,7 @@
         </form>
       </main>
 
-      <%@include file="../../partials/partial-footer.jspf"%>
+      <%@include file="../../partials/general/footer.jspf"%>
     </div>
 
     <script src="public/js/usuarios/usuario-insercion.js"></script>

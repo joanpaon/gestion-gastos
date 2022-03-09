@@ -32,7 +32,7 @@
   <body>
     <!-- Web Content-->
     <div id="container">
-      <%@include file="../../partials/partial-header.jspf"%>
+      <%@include file="../../partials/general/header.jspf"%>
 
       <main>
         <h1>Operaciones Perfil Básico</h1>
@@ -49,7 +49,7 @@
         </nav>
       </main>
 
-      <%@include file="../../partials/partial-footer.jspf"%>
+      <%@include file="../../partials/general/footer.jspf"%>
     </div>
 
     <!-- Application Scripts -->

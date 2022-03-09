@@ -14,12 +14,12 @@
 
   <head>
     <% request.setAttribute("tabla", "usuarios");%>
-    <%@include file="../../partials/partial-borrado-page-head.jspf"%>
+    <%@include file="../../partials/crud/borrado-head.jspf"%>
   </head>
 
   <body>
     <div id="container">
-      <%@include file="../../partials/partial-header.jspf"%>
+      <%@include file="../../partials/general/header.jspf"%>
 
       <main>
         <header>
@@ -67,7 +67,7 @@
         </nav>
       </main>
 
-      <%@include file="../../partials/partial-footer.jspf"%>
+      <%@include file="../../partials/general/footer.jspf"%>
     </div>
 
     <!-- Application Scripts -->

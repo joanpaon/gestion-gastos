@@ -12,83 +12,70 @@
 
     // Datos Inyectados
     List<Usuario> usuarios = (ArrayList<Usuario>) request.getAttribute("usuarios");
+
+    // Parametros Cabecera Listado
+    String[] thField = {"id", "user", "perfil"};
+    String[] thName = {"Id", "Nombre", "Perfil"};
+
+    // Parámetros
+    request.setAttribute("tabla", "usuarios");
+    request.setAttribute("entidad", "usuario");
+    request.setAttribute("titulo", "Listado de Usuarios");
+    request.setAttribute("th-field", thField);
+    request.setAttribute("th-name", thName);
 %>
 
 <!DOCTYPE html>
 <html lang="es">
+
   <head>
-    <% request.setAttribute("tabla", "usuarios");%>
-    <%@include file="../../partials/partial-listado-page-head.jspf"%>
+    <%@include file="../../partials/crud/listado-head.jspf"%>
   </head>
 
   <body>
     <div id="container">
-      <%@include file="../../partials/partial-header.jspf"%>
+      <!-- Cabecera de la Página -->
+      <%@include file="../../partials/general/header.jspf"%>
 
       <main>
-        <% request.setAttribute("titulo-listado", "Listado de Usuarios");%>
-        <%@include file="../../partials/partial-list-header.jspf"%>
 
+        <!-- Cabecera del Listado -->
+        <%@include file="../../partials/crud/listado-header.jspf"%>
+
+        <!-- Paginador Inicial -->
         <% if (usuarios.size() > 1) {%>
-        <%@include file="../../partials/partial-paginator.jspf"%>
+        <%@include file="../../partials/general/paginator.jspf"%>
         <% }%>
 
         <% if (usuarios.isEmpty()) { %>
 
         <h2>No hay usuarios disponibles</h2>
 
-        <% } else { %>
+        <% } else {%>
 
         <table>
+
           <thead>
-          <th>
-            <% request.setAttribute("th-field", "id");%>
-            <% request.setAttribute("th-name", "Id");%>
-            <%@include file="../../partials/partial-table-header01.jspf"%>
-          </th>
-          <th>
-            <% request.setAttribute("th-field", "user");%>
-            <% request.setAttribute("th-name", "Nombre");%>
-            <%@include file="../../partials/partial-table-header02.jspf"%>
-          </th>
-          <th>
-            <% request.setAttribute("th-field", "perfil");%>
-            <% request.setAttribute("th-name", "Perfil");%>
-            <%@include file="../../partials/partial-table-header03.jspf"%>
-          </th>
-          <th>Acciones</th>
+            <%@include file="../../partials/general/thead.jspf"%>
           </thead>
 
           <tbody>
-            <% for (Usuario _usuario : usuarios) {%>
-            <tr>
-              <td><%= _usuario.getId()%></td>
-              <td><%= _usuario.getUser()%></td>
-              <td><%= _usuario.getPerfilInfo()%></td>
-              <td>
-                <a class="btn btn-consultar" 
-                   href="controller?cmd=usuario-consulta&id=<%= _usuario.getId()%>" 
-                   title="Consulta">C</a>
-                <a class="btn btn-modificar" 
-                   href="controller?cmd=usuario-modificacion&id=<%= _usuario.getId()%>" 
-                   title="Modificación">M</a>
-                <a class="btn btn-borrar" 
-                   href="controller?cmd=usuario-borrado&id=<%= _usuario.getId()%>" 
-                   title="Eliminación">B</a>
-              </td>
-            </tr>
-            <% } %>
+            <%@include file="../../partials/usuarios/tbody.jspf"%>
           </tbody>
+
         </table>
 
         <% }%>
 
+        <!-- Paginador Final -->
         <% if (usuario.getPerfilID() != Perfil.BASIC) {%>
-        <%@include file="../../partials/partial-paginator.jspf"%>
+        <%@include file="../../partials/general/paginator.jspf"%>
         <% }%>
+
       </main>
 
-      <%@include file="../../partials/partial-footer.jspf"%>
+      <!-- Pie de la Página -->
+      <%@include file="../../partials/general/footer.jspf"%>
     </div>
 
     <!-- Scripts Página -->

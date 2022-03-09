@@ -8,25 +8,32 @@
     // Con Perfil SI Usuario es el mismo de la sesión
     // Con Perfil NO Usuario es cualquier usuario
     Usuario usuario = (Usuario) request.getAttribute("usuario");
+
+    // Parámetros
+    request.setAttribute("tabla", "usuarios");
+    request.setAttribute("entidad", "usuario");
+    request.setAttribute("titulo", "Consulta de Usuarios");
 %>
 
 <!DOCTYPE html>
 <html lang="es">
 
   <head>
-    <% request.setAttribute("tabla", "usuarios");%>
-    <%@include file="../../partials/partial-consulta-page-head.jspf"%>
+    <%@include file="../../partials/crud/consulta-head.jspf"%>
   </head>
 
   <body>
     <div id="container">
-      <%@include file="../../partials/partial-header.jspf"%>
+      <!-- Cabecera de la Página -->
+      <%@include file="../../partials/general/header.jspf"%>
 
       <main>
+
         <header>
           <h2>Consulta de Usuarios</h2>
           <a class="btn btn-listar" href="controller?cmd=usuario-listado">Listado</a>
         </header>
+
         <div class="content">
           <table>
             <thead>
@@ -68,7 +75,7 @@
         </nav>
       </main>
 
-      <%@include file="../../partials/partial-footer.jspf"%>
+      <%@include file="../../partials/general/footer.jspf"%>
     </div>
 
     <script src="public/js/usuarios/usuario-consulta.js"></script>

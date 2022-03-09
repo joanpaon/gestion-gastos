@@ -32,7 +32,7 @@
   <body>
     <!-- Web Content-->
     <div id="container">
-      <%@include file="../../partials/partial-header.jspf"%>
+      <%@include file="../../partials/general/header.jspf"%>
 
       <main>
         <form action="controller?cmd=login&op=proceso" 
@@ -72,7 +72,7 @@
         </form>
       </main>
 
-      <%@include file="../../partials/partial-footer.jspf"%>
+      <%@include file="../../partials/general/footer.jspf"%>
     </div>
 
     <!-- Application Scripts -->

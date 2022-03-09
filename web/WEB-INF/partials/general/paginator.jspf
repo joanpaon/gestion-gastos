@@ -6,49 +6,50 @@
 
 <%
     // Datos Inyectados
-    String navigatorFilterExp = (String) request.getAttribute("filter-exp");
-    long navigatorRowCount = Long.parseLong(request.getAttribute("row-count").toString());
-    long navigatorRowIndex = Long.parseLong(request.getAttribute("row-index").toString());
-    long navigatorRowsPage = Long.parseLong(request.getAttribute("rows-page").toString());
+    String filterExp = (String) request.getAttribute("filter-exp");
+    long rowCount = Long.parseLong(request.getAttribute("row-count").toString());
+    long rowIndex = Long.parseLong(request.getAttribute("row-index").toString());
+    long rowsPage = Long.parseLong(request.getAttribute("rows-page").toString());
+    String entidad = (String) request.getAttribute("entidad");
 %>
 
 <nav class="paginacion">
-  <a href="controller?cmd=usuario-listado&op=ini" 
+  <a href="controller?cmd=<%=entidad%>-listado&op=ini" 
      class="btn btn-ini" title="Principio">&lt;&lt;</a>
-  <a href="controller?cmd=usuario-listado&op=prv" 
+  <a href="controller?cmd=<%=entidad%>-listado&op=prv" 
      class="btn btn-prv" title="Anterior">&lt;</a>
   <div class="slider">
     <input type="range" min="0" 
-           max="<%= navigatorRowsPage > 0 ? navigatorRowCount / navigatorRowsPage : 0%>" 
-           value="<%= navigatorRowsPage > 0 ? navigatorRowIndex / navigatorRowsPage : 0%>">
+           max="<%= rowsPage > 0 ? rowCount / rowsPage : 0%>" 
+           value="<%= rowsPage > 0 ? rowIndex / rowsPage : 0%>">
     <a href="#" class="btn btn-num" title="Nº de Página">
-      <%= navigatorRowsPage > 0 ? navigatorRowIndex / navigatorRowsPage : 0%>
+      <%= rowsPage > 0 ? rowIndex / rowsPage : 0%>
     </a>
   </div>
-  <a href="controller?cmd=usuario-listado&op=nxt" class="btn btn-nxt" 
+  <a href="controller?cmd=<%=entidad%>-listado&op=nxt" class="btn btn-nxt" 
      title="Siguiente">&gt;</a>
-  <a href="controller?cmd=usuario-listado&op=end" class="btn btn-end" 
+  <a href="controller?cmd=<%=entidad%>-listado&op=end" class="btn btn-end" 
      title="Final">&gt;&gt;</a>
   |
   <div class="rows-page">
     <label for="rows-page">Filas</label>
     <select id="rows-page">
-      <% if (navigatorRowsPage == 10) { %>
+      <% if (rowsPage == 10) { %>
       <option value="10" selected>10</option>
       <option value="20">20</option>
       <option value="40">40</option>
       <option value="80">80</option>
-      <% } else if (navigatorRowsPage == 20) { %>
+      <% } else if (rowsPage == 20) { %>
       <option value="10">10</option>
       <option value="20" selected>20</option>
       <option value="40">40</option>
       <option value="80">80</option>
-      <% } else if (navigatorRowsPage == 40) { %>
+      <% } else if (rowsPage == 40) { %>
       <option value="10">10</option>
       <option value="20">20</option>
       <option value="40" selected>40</option>
       <option value="80">80</option>
-      <% } else if (navigatorRowsPage == 80) { %>
+      <% } else if (rowsPage == 80) { %>
       <option value="10">10</option>
       <option value="20">20</option>
       <option value="40">40</option>
@@ -58,7 +59,7 @@
   </div>
   |
   <div class="filter">
-    <input type="text" value="<%=navigatorFilterExp%>" autofocus />
+    <input type="text" value="<%=filterExp%>" autofocus />
     <a href="#" class="btn btn-filter">⚡</a>
   </div>
 </nav>

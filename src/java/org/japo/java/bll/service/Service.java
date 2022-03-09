@@ -28,38 +28,38 @@ import javax.servlet.http.HttpServletResponse;
  */
 public abstract class Service implements IService {
 
-  // Interfaz de Comunicación con el Contenedor
-  protected ServletContext context;
+    // Interfaz de Comunicación con el Contenedor
+    protected ServletContext context;
 
-  // Petición del Cliente Encapsulada
-  protected HttpServletRequest request;
+    // Petición del Cliente Encapsulada
+    protected HttpServletRequest request;
 
-  // Respuesta al Cliente Encapsulada
-  protected HttpServletResponse response;
+    // Respuesta al Cliente Encapsulada
+    protected HttpServletResponse response;
 
-  // Inicialización del Servicio
-  @Override
-  public void init(
-          ServletContext context,
-          HttpServletRequest request,
-          HttpServletResponse response) {
-    this.context = context;
-    this.request = request;
-    this.response = response;
-  }
-
-  // Ejecución del Servicio
-  protected void forward(String json) throws ServletException, IOException {
-    // Establece Tipo Respuesta
-    response.setContentType("application-json");
-
-    // Establece Codificación Respuesta
-    response.setContentType("UTF-8");
-
-    // Enlaza la Salida
-    try (PrintWriter pw = response.getWriter()) {
-      // JSON > Salida
-      pw.write(json);
+    // Inicialización del Servicio
+    @Override
+    public void init(
+            ServletContext context,
+            HttpServletRequest request,
+            HttpServletResponse response) {
+        this.context = context;
+        this.request = request;
+        this.response = response;
     }
-  }
+
+    // Ejecución del Servicio
+    protected void forward(String json)
+            throws ServletException, IOException {
+        // Establece Tipo Respuesta
+        response.setContentType("application-json");
+
+        // Establece Codificación Respuesta
+        response.setContentType("UTF-8");
+
+        // JSON > Salida
+        try (PrintWriter pw = response.getWriter()) {
+            pw.write(json);
+        }
+    }
 }

@@ -38,7 +38,7 @@
 
   <body>
     <div id="container">
-      <%@include file="../../partials/partial-header.jspf"%>
+      <%@include file="../../partials/general/header.jspf"%>
 
       <main>
         <header>
@@ -99,7 +99,7 @@
         </form>
       </main>
 
-      <%@include file="../../partials/partial-footer.jspf"%>
+      <%@include file="../../partials/general/footer.jspf"%>
     </div>
 
     <!-- Application Scripts -->

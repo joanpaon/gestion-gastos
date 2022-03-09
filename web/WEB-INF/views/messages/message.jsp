@@ -39,7 +39,7 @@
 
   <body>
     <div id="container">
-      <%@include file="../../partials/partial-header.jspf"%>
+      <%@include file="../../partials/general/header.jspf"%>
 
       <main>
         <h1><%=titulo%></h1>
@@ -48,7 +48,7 @@
         <a class="btn" href="<%=destino%>">Continuar</a>
       </main>
 
-      <%@include file="../../partials/partial-footer.jspf"%>
+      <%@include file="../../partials/general/footer.jspf"%>
     </div>
 
     <!-- Application Scripts -->

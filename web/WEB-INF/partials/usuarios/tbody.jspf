@@ -1,0 +1,32 @@
+<%@page import="java.util.ArrayList"%>
+<%@page import="java.util.List"%>
+<%@page import="org.japo.java.entities.Usuario"%>
+
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+
+<%
+    // Datos Inyectados
+    List<Usuario> lista = (ArrayList<Usuario>) request.getAttribute("usuarios");
+
+    // Parametros Cabecera Listado   
+    String _entidad = (String) request.getAttribute("entidad");
+%>
+
+<% for (Usuario item : lista) {%>
+<tr>
+  <td><%= item.getId()%></td>
+  <td><%= item.getUser()%></td>
+  <td><%= item.getPerfilInfo()%></td>
+  <td>
+    <a class="btn btn-consultar" 
+       href="controller?cmd=<%=_entidad%>-consulta&id=<%= item.getId()%>" 
+       title="Consulta">C</a>
+    <a class="btn btn-modificar" 
+       href="controller?cmd=<%=_entidad%>-modificacion&id=<%= item.getId()%>" 
+       title="Modificación">M</a>
+    <a class="btn btn-borrar" 
+       href="controller?cmd=<%=_entidad%>-borrado&id=<%= item.getId()%>" 
+       title="Eliminación">B</a>
+  </td>
+</tr>
+<% }%>
